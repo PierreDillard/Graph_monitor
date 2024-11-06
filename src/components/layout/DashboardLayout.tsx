@@ -1,7 +1,7 @@
-// src/components/layout/DashboardLayout.tsx
+
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Responsive, WidthProvider } from 'react-grid-layout';
+import { Responsive, WidthProvider, Layout, Layouts as RGLLayouts } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
@@ -14,12 +14,11 @@ import AudioMonitor from '../widgets/AudioMonitor';
 import VideoMonitor from '../widgets/VideoMonitor';
 import LogsMonitor from '../widgets/LogsMonitor';
 import MetricsMonitor from '../widgets/MetricsMonitor';
-import { WidgetType } from '../../types/widget';
+import { Widget, WidgetType, WidgetComponent } from '../../types/widget';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-// Explicit mapping of widget types to components
-const WIDGET_COMPONENTS = {
+const WIDGET_COMPONENTS: Record<WidgetType, React.ComponentType<WidgetComponent>> = {
   [WidgetType.GRAPH]: GraphMonitor,
   [WidgetType.AUDIO]: AudioMonitor,
   [WidgetType.VIDEO]: VideoMonitor,
@@ -27,25 +26,26 @@ const WIDGET_COMPONENTS = {
   [WidgetType.METRICS]: MetricsMonitor,
 };
 
+
+
 const DashboardLayout: React.FC = () => {
   const dispatch = useDispatch();
   const activeWidgets = useSelector((state: RootState) => state.widgets.activeWidgets);
   const configs = useSelector((state: RootState) => state.widgets.configs);
 
-  // Generate layouts based on activeWidgets
-  const layouts = {
+  const layouts: RGLLayouts = {
     lg: activeWidgets.map(widget => ({
       i: widget.id,
-      x: widget.x || 0,
-      y: widget.y || 0,
-      w: widget.w || 6,
-      h: widget.h || 4,
+      x: widget.x,
+      y: widget.y,
+      w: widget.w,
+      h: widget.h,
       minW: 2,
       minH: 2,
     })),
   };
 
-  const renderWidget = (widget: any) => {
+  const renderWidget = (widget: Widget) => {
     const Component = WIDGET_COMPONENTS[widget.type];
     
     if (!Component) {
@@ -80,8 +80,8 @@ const DashboardLayout: React.FC = () => {
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
             cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
             rowHeight={60}
-            onLayoutChange={(layout, allLayouts) => {
-              layout.forEach((item) => {
+            onLayoutChange={(currentLayout: Layout[] ) => {
+              currentLayout.forEach((item: Layout) => {
                 dispatch(updateWidgetPosition({
                   id: item.i,
                   x: item.x,
@@ -95,8 +95,8 @@ const DashboardLayout: React.FC = () => {
             isResizable={true}
             margin={[16, 16]}
             containerPadding={[16, 16]}
-            draggableCancel=".no-drag"    
-            resizableCancel=".no-drag" 
+            draggableCancel=".no-drag"
+          
           >
             {activeWidgets.map(renderWidget)}
           </ResponsiveGridLayout>

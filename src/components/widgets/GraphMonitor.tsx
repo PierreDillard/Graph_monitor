@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo } from 'react';
 import {
   ReactFlow,
@@ -7,13 +8,15 @@ import {
   useNodesState,
   useEdgesState,
   MarkerType,
+  NodeMouseHandler,
+  BackgroundVariant
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { Gauge } from 'lucide-react';
 import { WidgetProps } from '../../types/widget';
+import { GpacNode, GpacEdge } from '../../types/gpac';
 
-// Styles mémorisés
 const flowStyles = {
   background: '#111827',
   height: '500px',
@@ -29,7 +32,7 @@ const nodeStyle = {
 };
 
 const legendStyle = {
-  position: 'absolute',
+  position: 'absolute' as const,
   bottom: '1rem',
   left: '1rem',
   background: '#1f2937',
@@ -38,14 +41,14 @@ const legendStyle = {
   border: '1px solid #374151'
 };
 
-const GraphMonitor = React.memo(({ id, title }) => {
+const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title,  }) => {
   // Nœuds initiaux mémorisés
-  const initialNodes = useMemo(() => [
+  const initialNodes = useMemo<GpacNode[]>(() => [
     {
       id: '1',
       type: 'input',
       data: { 
-        label: 'File Input (input.mp4)', // Représente le filtre de source
+        label: 'File Input (input.mp4)', 
         icon: <Gauge className="w-4 h-4 text-blue-400" />,
         gpacCommand: '-i input.mp4'
       },
@@ -56,7 +59,7 @@ const GraphMonitor = React.memo(({ id, title }) => {
       id: '2',
       type: 'default',
       data: { 
-        label: 'ffdec', // Filtre GPAC pour le décodage H.264
+        label: 'ffdec', 
         details: 'H.264 Video Decoding',
         gpacCommand: 'ffdec:h264'
       },
@@ -67,7 +70,7 @@ const GraphMonitor = React.memo(({ id, title }) => {
       id: '3',
       type: 'default',
       data: { 
-        label: 'ffdec', // Filtre GPAC pour le traitement AAC
+        label: 'ffdec', 
         details: 'AAC Audio Processing',
         gpacCommand: 'ffdec:aac'
       },
@@ -78,7 +81,7 @@ const GraphMonitor = React.memo(({ id, title }) => {
       id: '4',
       type: 'output',
       data: { 
-        label: 'output', // Filtre de sortie pour RTMP
+        label: 'output',
         details: 'RTMP Output Stream',
         gpacCommand: '-o rtmp://server/live/stream'
       },
@@ -88,7 +91,7 @@ const GraphMonitor = React.memo(({ id, title }) => {
   ], []);
   
   // Liens initiaux mémorisés
-  const initialEdges = useMemo(() => [
+  const initialEdges = useMemo<GpacEdge[]>(() => [
     {
       id: 'e1-2',
       source: '1',
@@ -131,15 +134,14 @@ const GraphMonitor = React.memo(({ id, title }) => {
     },
   ], []);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState<GpacNode>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<GpacEdge>(initialEdges);
 
-  const onNodeClick = useCallback((event, node) => {
+  const onNodeClick: NodeMouseHandler = useCallback((event, node) => {
     console.log('Node clicked:', node);
   }, []);
 
-  // Mémorisation des options de la minimap
-  const minimapNodeColor = useCallback((node) => {
+  const minimapNodeColor = useCallback((node: GpacNode) => {
     switch (node.type) {
       case 'input': return '#3b82f6';
       case 'output': return '#ef4444';
@@ -148,7 +150,7 @@ const GraphMonitor = React.memo(({ id, title }) => {
   }, []);
 
   return (
-    <WidgetWrapper id={id} title={title}>
+    <WidgetWrapper id={id} title={title} >
       <div style={flowStyles}>
         <ReactFlow
           nodes={nodes}
@@ -175,7 +177,7 @@ const GraphMonitor = React.memo(({ id, title }) => {
           <Background 
             color="#4b5563" 
             gap={16} 
-            variant="dots"
+            variant={BackgroundVariant.Dots} 
           />
         </ReactFlow>
 

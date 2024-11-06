@@ -8,17 +8,19 @@ import {
   maximizeWidget, 
   restoreWidget,
 } from '../../store/slices/widgetsSlice';
-import type { WidgetConfig } from '../../types/widget';
+
 import type { RootState } from '../../store';
+
 
 interface WidgetWrapperProps {
   id: string;
   title: string;
+  
   children: React.ReactNode;
   className?: string;
 }
 
-// Styles communs mémorisés
+// Memoized styles
 const headerStyles = {
   base: "flex items-center justify-between px-4 py-2 bg-gray-700 border-b border-gray-600",
   title: "flex items-center gap-2",
@@ -32,7 +34,7 @@ const buttonStyles = {
 const WidgetWrapper = ({ id, title, children, className = '' }: WidgetWrapperProps) => {
   const dispatch = useDispatch();
   
-  // Sélecteur mémorisé pour la config du widget
+  // Memoized widget config
   const config = useSelector((state: RootState) => 
     state.widgets.configs[id] ?? {
       isMaximized: false,
@@ -43,7 +45,7 @@ const WidgetWrapper = ({ id, title, children, className = '' }: WidgetWrapperPro
 
   const { isMaximized, isMinimized } = config;
 
-  // Callbacks mémorisés pour les actions
+  // Memoized callbacks
   const handleMinimize = useCallback(() => {
     dispatch(minimizeWidget(id));
   }, [dispatch, id]);
@@ -61,7 +63,7 @@ const WidgetWrapper = ({ id, title, children, className = '' }: WidgetWrapperPro
     dispatch(removeWidget(id));
   }, [dispatch, id]);
 
-  // Classes dynamiques mémorisées
+  //Memoized container classes
   const containerClasses = React.useMemo(() => {
     return [
       'flex flex-col bg-gray-800 overflow-hidden rounded-lg',

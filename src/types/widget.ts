@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 export enum WidgetType {
     GRAPH = 'graph-monitor',
     AUDIO = 'audio-monitor',
@@ -5,13 +7,6 @@ export enum WidgetType {
     METRICS = 'metrics-monitor',
     LOGS = 'logs-monitor'
   }
-  
-  export interface WidgetConfig {
-    isMaximized: boolean;
-    isMinimized: boolean;
-    settings: Record<string, any>;
-  }
-  
   export interface Widget {
     id: string;
     type: WidgetType;
@@ -20,7 +15,25 @@ export enum WidgetType {
     y: number;
     w: number;
     h: number;
+    isResizable?: boolean;
+    isDraggable?: boolean;
   }
+  export interface WidgetComponent {
+    id: string;
+    title: string;
+    config: WidgetConfig;
+    children?: ReactNode;
+  }
+
+  export type WidgetSetting = string | number | boolean | null | undefined;
+
+  export interface WidgetConfig {
+    isMaximized: boolean;
+    isMinimized: boolean;
+    settings: Record<string, WidgetSetting>;
+  }
+
+
   
   export interface WidgetProps {
     id: string;

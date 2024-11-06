@@ -1,8 +1,7 @@
 // src/components/layout/Header.tsx
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Play, Pause, Save, Layout, Settings, Download, Upload } from 'lucide-react';
-import { RootState } from '../../store';
+
 
 interface HeaderProps {
   onSaveLayout?: () => void;
