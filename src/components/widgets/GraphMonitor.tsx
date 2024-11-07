@@ -1,5 +1,6 @@
 
 import React, { useCallback, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 import {
   ReactFlow,
   MiniMap,
@@ -11,6 +12,8 @@ import {
   NodeMouseHandler,
   BackgroundVariant
 } from '@xyflow/react';
+
+import { setSelectNode, setPidData } from '../../store/slices/graphSlice';
 import '@xyflow/react/dist/style.css';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { Gauge } from 'lucide-react';
@@ -42,6 +45,7 @@ const legendStyle = {
 };
 
 const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title,  }) => {
+  const dispatch = useDispatch();
   // Nœuds initiaux mémorisés
   const initialNodes = useMemo<GpacNode[]>(() => [
     {
@@ -139,7 +143,31 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title,  }) => {
 
   const onNodeClick: NodeMouseHandler = useCallback((event, node) => {
     console.log('Node clicked:', node);
-  }, []);
+    
+    // Dispatch l'action pour sélectionner le nœud
+    dispatch(setSelectNode(node.id));
+    
+    // Simuler des données PID pour le nœud sélectionné
+    const mockPIDData = {
+      name: node.data.label,
+      type: node.type,
+      ipid: {
+        "video1": {
+          buffer: Math.random() * 100,
+          buffer_total: 100,
+          source_idx: 1
+        }
+      },
+      opid: {
+        "video1": {
+          buffer: Math.random() * 100,
+          buffer_total: 100
+        }
+      }
+    };
+    
+    dispatch(setPidData(mockPIDData));
+  }, [dispatch]);
 
   const minimapNodeColor = useCallback((node: GpacNode) => {
     switch (node.type) {

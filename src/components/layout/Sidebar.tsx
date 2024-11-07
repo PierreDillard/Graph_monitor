@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { addWidget } from '../../store/slices/widgetsSlice';
 import { WidgetType } from '../../types/widget';
-import { Gauge, Video, Volume2, FileText, Share2 } from 'lucide-react';
+import { Gauge, Video, Volume2, FileText, Share2, Activity } from 'lucide-react';
 
 const availableWidgets = [
   {
@@ -22,6 +22,12 @@ const availableWidgets = [
     title: 'System Metrics',
     icon: Gauge,
     defaultSize: { w: 6, h: 4 }
+  },
+  {
+    type: WidgetType.PID,
+    title: 'PID Metrics',
+    icon: Activity,
+    defaultSize: { w: 4, h: 4 }
   },
   {
     type: WidgetType.LOGS,

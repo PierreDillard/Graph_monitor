@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+
 import { Responsive, WidthProvider, Layout, Layouts as RGLLayouts } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -13,6 +14,7 @@ import GraphMonitor from '../widgets/GraphMonitor';
 import AudioMonitor from '../widgets/AudioMonitor';
 import VideoMonitor from '../widgets/VideoMonitor';
 import LogsMonitor from '../widgets/LogsMonitor';
+import PIDMonitor from '../widgets/PIDMonitor';
 import MetricsMonitor from '../widgets/MetricsMonitor';
 import { Widget, WidgetType, WidgetComponent } from '../../types/widget';
 
@@ -24,6 +26,7 @@ const WIDGET_COMPONENTS: Record<WidgetType, React.ComponentType<WidgetComponent>
   [WidgetType.VIDEO]: VideoMonitor,
   [WidgetType.LOGS]: LogsMonitor,
   [WidgetType.METRICS]: MetricsMonitor,
+  [WidgetType.PID]: PIDMonitor,
 };
 
 
