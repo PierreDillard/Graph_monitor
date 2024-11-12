@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { addWidget } from '../../store/slices/widgetsSlice';
 import { WidgetType } from '../../types/widget';
-import { Gauge, Video, Volume2, FileText, Share2 } from 'lucide-react';
+import {Activity, Gauge, Video, Volume2, FileText, Share2 } from 'lucide-react';
 
 const availableWidgets = [
   {
@@ -34,7 +34,13 @@ const availableWidgets = [
     title: 'Pipeline Graph',
     icon: Share2,
     defaultSize: { w: 8, h: 6 }
-  }
+  },
+  {
+    type: WidgetType.PID,
+    title: 'PID Metrics',
+    icon: Activity,
+    defaultSize: { w: 4, h: 4 }
+  },
 ];
 
 const Sidebar: React.FC = () => {

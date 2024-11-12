@@ -3,13 +3,27 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Widget, WidgetType, WidgetConfig } from '../../types/widget';
 import { createSelector } from '@reduxjs/toolkit';
 
-interface RootState {
+export interface RootState {
   widgets: WidgetsState;
 }
 
 interface WidgetsState {
   activeWidgets: Widget[];
   configs: Record<string, WidgetConfig>;
+  selectedNode: {
+    name: string;
+    type: string;
+    itag: string | null;
+    ID: string | null;
+    nb_ipid: number;
+    nb_opid: number;
+    status: string;
+    bytes_done: number;
+    idx: number;
+    gpac_args: string[];
+    ipid: Record<string, any>;
+    opid: Record<string, any>;
+  } | null;
 }
 
 
@@ -51,7 +65,8 @@ const initialState: WidgetsState = {
   configs: {
     'metrics-1': { ...defaultConfig },
     'graph-1': { ...defaultConfig }
-  }
+  },
+  selectedNode: null
 };
 
 const widgetsSlice = createSlice({
@@ -121,7 +136,25 @@ const widgetsSlice = createSlice({
         widget.h = action.payload.h;
       }
     },
-  },
+    setSelectedNode: (state, action: PayloadAction<WidgetsState['selectedNode']>) => {
+      state.selectedNode = action.payload;
+      
+      // Ajouter automatiquement le widget PID s'il n'existe pas déjà
+      if (action.payload && !state.activeWidgets.some(w => w.type === WidgetType.PID)) {
+        const pidWidget: Widget = {
+          id: `pid-${Date.now()}`,
+          type: WidgetType.PID,
+          title: 'PID Monitor',
+          x: 0,
+          y: 8,
+          w: 8,
+          h: 6,
+        };
+        state.activeWidgets.push(pidWidget);
+        state.configs[pidWidget.id] = { ...defaultConfig };
+      }
+    },
+  }
 });
 
 export const { 
@@ -131,6 +164,7 @@ export const {
   minimizeWidget, 
   restoreWidget,
   updateWidgetPosition,
+  setSelectedNode
 } = widgetsSlice.actions;
 
 export default widgetsSlice.reducer;
