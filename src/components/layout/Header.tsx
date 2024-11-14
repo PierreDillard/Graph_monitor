@@ -1,7 +1,14 @@
 // src/components/layout/Header.tsx
 import React from 'react';
-import { Play, Pause, Save, Layout, Settings, Download, Upload } from 'lucide-react';
-
+import {
+  Play,
+  Pause,
+  Save,
+  Layout,
+  Settings,
+  Download,
+  Upload,
+} from 'lucide-react';
 
 interface HeaderProps {
   onSaveLayout?: () => void;
@@ -10,7 +17,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
   const [isMonitoring, setIsMonitoring] = React.useState(false);
-  
+
   const toggleMonitoring = () => {
     setIsMonitoring(!isMonitoring);
     // Ici, vous pouvez ajouter la logique pour démarrer/arrêter le monitoring GPAC
@@ -33,9 +40,10 @@ const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
             <button
               onClick={toggleMonitoring}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                ${isMonitoring 
-                  ? 'bg-red-600 text-white hover:bg-red-700' 
-                  : 'bg-green-600 text-white hover:bg-green-700'
+                ${
+                  isMonitoring
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-green-600 text-white hover:bg-green-700'
                 }`}
             >
               {isMonitoring ? (

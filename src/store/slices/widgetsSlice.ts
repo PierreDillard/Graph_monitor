@@ -26,19 +26,22 @@ interface WidgetsState {
   } | null;
 }
 
-
-export const selectActiveWidgets = (state: RootState) => state.widgets.activeWidgets;
+export const selectActiveWidgets = (state: RootState) =>
+  state.widgets.activeWidgets;
 export const selectWidgetConfigs = (state: RootState) => state.widgets.configs;
 
 export const selectWidgetById = createSelector(
-  [(state: RootState) => state.widgets.activeWidgets, (_: RootState, widgetId: string) => widgetId],
-  (widgets, widgetId) => widgets.find(w => w.id === widgetId)
+  [
+    (state: RootState) => state.widgets.activeWidgets,
+    (_: RootState, widgetId: string) => widgetId,
+  ],
+  (widgets, widgetId) => widgets.find((w) => w.id === widgetId),
 );
 
 const defaultConfig: WidgetConfig = {
   isMaximized: false,
   isMinimized: false,
-  settings: {}
+  settings: {},
 };
 
 const initialState: WidgetsState = {
@@ -60,13 +63,13 @@ const initialState: WidgetsState = {
       y: 0,
       w: 6,
       h: 4,
-    }
+    },
   ],
   configs: {
     'metrics-1': { ...defaultConfig },
-    'graph-1': { ...defaultConfig }
+    'graph-1': { ...defaultConfig },
   },
-  selectedNode: null
+  selectedNode: null,
 };
 
 const widgetsSlice = createSlice({
@@ -80,10 +83,11 @@ const widgetsSlice = createSlice({
     removeWidget: (state, action: PayloadAction<string>) => {
       console.log('removeWidget action triggered with id:', action.payload);
       const widgetId = action.payload;
-      
-      
-      state.activeWidgets = state.activeWidgets.filter(w => w.id !== widgetId);
-     
+
+      state.activeWidgets = state.activeWidgets.filter(
+        (w) => w.id !== widgetId,
+      );
+
       if (state.configs[widgetId]) {
         const { [widgetId]: _, ...remainingConfigs } = state.configs;
         state.configs = remainingConfigs;
@@ -91,7 +95,7 @@ const widgetsSlice = createSlice({
 
       console.log('State after removal:', {
         activeWidgets: state.activeWidgets,
-        configs: state.configs
+        configs: state.configs,
       });
     },
     maximizeWidget: (state, action: PayloadAction<string>) => {
@@ -99,7 +103,7 @@ const widgetsSlice = createSlice({
         state.configs[action.payload] = {
           ...state.configs[action.payload],
           isMaximized: true,
-          isMinimized: false
+          isMinimized: false,
         };
       }
     },
@@ -108,7 +112,7 @@ const widgetsSlice = createSlice({
         state.configs[action.payload] = {
           ...state.configs[action.payload],
           isMaximized: false,
-          isMinimized: true
+          isMinimized: true,
         };
       }
     },
@@ -117,18 +121,23 @@ const widgetsSlice = createSlice({
         state.configs[action.payload] = {
           ...state.configs[action.payload],
           isMaximized: false,
-          isMinimized: false
+          isMinimized: false,
         };
       }
     },
-    updateWidgetPosition: (state, action: PayloadAction<{
-      id: string;
-      x: number;
-      y: number;
-      w: number;
-      h: number;
-    }>) => {
-      const widget = state.activeWidgets.find(w => w.id === action.payload.id);
+    updateWidgetPosition: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+      }>,
+    ) => {
+      const widget = state.activeWidgets.find(
+        (w) => w.id === action.payload.id,
+      );
       if (widget) {
         widget.x = action.payload.x;
         widget.y = action.payload.y;
@@ -136,11 +145,17 @@ const widgetsSlice = createSlice({
         widget.h = action.payload.h;
       }
     },
-    setSelectedNode: (state, action: PayloadAction<WidgetsState['selectedNode']>) => {
+    setSelectedNode: (
+      state,
+      action: PayloadAction<WidgetsState['selectedNode']>,
+    ) => {
       state.selectedNode = action.payload;
-      
+
       // Ajouter automatiquement le widget PID s'il n'existe pas déjà
-      if (action.payload && !state.activeWidgets.some(w => w.type === WidgetType.PID)) {
+      if (
+        action.payload &&
+        !state.activeWidgets.some((w) => w.type === WidgetType.PID)
+      ) {
         const pidWidget: Widget = {
           id: `pid-${Date.now()}`,
           type: WidgetType.PID,
@@ -154,17 +169,17 @@ const widgetsSlice = createSlice({
         state.configs[pidWidget.id] = { ...defaultConfig };
       }
     },
-  }
+  },
 });
 
-export const { 
-  addWidget, 
-  removeWidget, 
-  maximizeWidget, 
-  minimizeWidget, 
+export const {
+  addWidget,
+  removeWidget,
+  maximizeWidget,
+  minimizeWidget,
   restoreWidget,
   updateWidgetPosition,
-  setSelectedNode
+  setSelectedNode,
 } = widgetsSlice.actions;
 
 export default widgetsSlice.reducer;

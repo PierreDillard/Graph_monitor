@@ -1,4 +1,4 @@
-import React, { useEffect, useRef} from 'react';
+import React, { useEffect, useRef } from 'react';
 import WidgetWrapper from '../common/WidgetWrapper';
 
 interface VideoMonitorProps {
@@ -10,7 +10,7 @@ const VideoMonitor: React.FC<VideoMonitorProps> = ({ id, title }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Simuler un flux vidéo 
+    // Simuler un flux vidéo
     if (videoRef.current) {
       videoRef.current.srcObject = null; // À remplacer par le vrai flux
     }

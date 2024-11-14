@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createSelector } from '@reduxjs/toolkit';
 import { ChartDataPoint, PIDType, BufferMetrics } from '../../types/pidMonitor';
@@ -34,7 +33,10 @@ const pidSlice = createSlice({
   name: 'pid',
   initialState,
   reducers: {
-    selectPID: (state, action: PayloadAction<{ pidName: string; type: PIDType }>) => {
+    selectPID: (
+      state,
+      action: PayloadAction<{ pidName: string; type: PIDType }>,
+    ) => {
       state.selectedPID = action.payload.pidName;
       state.selectedPIDType = action.payload.type;
       state.timeSeriesData = [];
@@ -56,7 +58,7 @@ const pidSlice = createSlice({
     addLog: (state, action: PayloadAction<Omit<LogEntry, 'timestamp'>>) => {
       state.logs.push({
         ...action.payload,
-        timestamp: Date.now() // Utiliser un timestamp numérique
+        timestamp: Date.now(), // Utiliser un timestamp numérique
       });
       if (state.logs.length > 100) {
         state.logs.shift();
@@ -66,8 +68,8 @@ const pidSlice = createSlice({
       state.timeSeriesData = [];
       state.logs = [];
       state.bufferMetrics = null;
-    }
-  }
+    },
+  },
 });
 
 // Selectors mis à jour
@@ -78,26 +80,26 @@ export const selectPIDMetrics = createSelector(
   (pidState) => ({
     selectedPID: pidState.selectedPID,
     selectedPIDType: pidState.selectedPIDType,
-    bufferMetrics: pidState.bufferMetrics
-  })
+    bufferMetrics: pidState.bufferMetrics,
+  }),
 );
 
 export const selectTimeSeriesData = createSelector(
   [selectPIDState],
-  (pidState) => pidState.timeSeriesData || []
+  (pidState) => pidState.timeSeriesData || [],
 );
 
 export const selectPIDLogs = createSelector(
   [selectPIDState],
-  (pidState) => pidState.logs || []
+  (pidState) => pidState.logs || [],
 );
 
-export const { 
-  selectPID, 
-  addDataPoint, 
-  updateBufferMetrics, 
-  addLog, 
-  clearPIDData 
+export const {
+  selectPID,
+  addDataPoint,
+  updateBufferMetrics,
+  addLog,
+  clearPIDData,
 } = pidSlice.actions;
 
 export default pidSlice.reducer;

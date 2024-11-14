@@ -1,4 +1,3 @@
-
 import { configureStore } from '@reduxjs/toolkit';
 import widgetsReducer from './slices/widgetsSlice';
 import pidReducer from './slices/pidSlice';
@@ -7,7 +6,6 @@ export const store = configureStore({
   reducer: {
     pid: pidReducer,
     widgets: widgetsReducer,
-    
   },
 });
 
