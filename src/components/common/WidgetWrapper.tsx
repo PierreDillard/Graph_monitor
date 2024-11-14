@@ -22,7 +22,7 @@ interface WidgetWrapperProps {
 
 // Memoized styles
 const headerStyles = {
-  base: "flex items-center justify-between px-4 py-2 bg-gray-700 border-b border-gray-600",
+  base: "flex items-center justify-between px-4 py-2 bg-gray-700 border-b border-gray-600 transition-colors hover:bg-gray-650",
   title: "flex items-center gap-2",
   actions: "flex items-center gap-2"
 };
@@ -75,12 +75,12 @@ const WidgetWrapper = ({ id, title, children, className = '' }: WidgetWrapperPro
 
   return (
     <div className={containerClasses}>
-      <div className={headerStyles.base}>
+        <div className={`${headerStyles.base} cursor-move drag-indicator`}>
         <div className={headerStyles.title}>
           <h3 className="text-sm font-medium">{title}</h3>
         </div>
         
-        <div className={headerStyles.actions}>
+        <div className={`${headerStyles.actions} no-drag`}>
           {!isMaximized && !isMinimized && (
             <button 
               onClick={handleMinimize}
@@ -132,7 +132,7 @@ const WidgetWrapper = ({ id, title, children, className = '' }: WidgetWrapperPro
       </div>
       
       {!isMinimized && (
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto no-drag">
           {children}
         </div>
       )}

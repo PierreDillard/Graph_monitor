@@ -25,9 +25,46 @@ export default {
       maxHeight: {
         'widget': '800px',
       },
+      // Ajout des styles pour le curseur de déplacement
+      cursor: {
+        'move': 'move',
+      },
+      // Ajout des styles pour l'indicateur de drag
+      animation: {
+        'drag-indicator': 'dragPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        dragPulse: {
+          '0%, 100%': { opacity: 0.5 },
+          '50%': { opacity: 0.25 },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    // Plugin pour ajouter la pseudo-classe before avec l'indicateur de drag
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.drag-indicator': {
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            height: '4px',
+            background: 'rgba(59, 130, 246, 0.5)',
+            opacity: '0',
+            transition: 'opacity 0.2s ease-in-out',
+          },
+          '&:hover::before': {
+            opacity: '1',
+          },
+        }
+      }
+      addUtilities(newUtilities, ['hover'])
+    }
+  ],
   // Activation du mode JIT
   mode: 'jit',
 }

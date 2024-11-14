@@ -63,30 +63,48 @@ const PIDList = React.memo(({
   onPIDSelect,
   nodeCount
 }: PIDListProps) => {
-  const handlePIDClick = useCallback((pidName: string) => {
-    console.log('PID clicked:', pidName, type);
+  const handlePIDClick = useCallback((event: React.MouseEvent<HTMLButtonElement>, pidName: string) => {
+    // Empêcher la propagation de l'événement si nécessaire
+    event.preventDefault();
+    event.stopPropagation();
     onPIDSelect(pidName, type);
-  }, [onPIDSelect, type, ]);
+  }, [onPIDSelect, type]);
+
+  // Vérifier si pids est défini et non vide
+  if (!pids || Object.keys(pids).length === 0) {
+    return (
+      <div className="mb-4">
+        <h3 className="text-sm font-medium text-gray-400 uppercase mb-2">
+          {type === 'input' ? 'Input PIDs' : 'Output PIDs'} (0)
+        </h3>
+        <div className="text-gray-400 text-sm">No PIDs available</div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-4">
-      <h3 className="text-sm font-medium text-gray-400 uppercase mb-2">
+      <h3 className="text-sm font-medium text-gray-400 uppercase mb-2 no-drag">
         {type === 'input' ? 'Input PIDs' : 'Output PIDs'} ({nodeCount})
       </h3>
       {Object.entries(pids).map(([pidName, data]) => {
         const isSelected = selectedPID === pidName && selectedPIDType === type;
-        const bufferPercentage = data.buffer_total
-  ? (data.buffer / data.buffer_total) * 100
-  : 0;
+        const bufferPercentage = data.buffer_total ? (data.buffer / data.buffer_total) * 100 : 0;
 
         return (
           <button
             key={pidName}
-            onClick={() => handlePIDClick(pidName)}
-            className={`w-full text-left mb-2 p-3 rounded-lg ${
-              isSelected ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
-            } transition-all duration-200 ease-in-out transform hover:scale-[1.02]`}
+            onClick={(e) => handlePIDClick(e, pidName)}
+            className={`w-full text-left mb-2 p-3 rounded-lg transition-all duration-200 no-drag
+              ${isSelected 
+                ? 'bg-blue-600 hover:bg-blue-700' 
+                : 'bg-gray-700 hover:bg-gray-600'
+              } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
             type="button"
+            role="button"
+            aria-pressed={isSelected}
+            data-pid={pidName}
+            data-type={type}
           >
             <div className="flex justify-between items-center">
               <span className="font-medium">{pidName}</span>

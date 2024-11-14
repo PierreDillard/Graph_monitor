@@ -67,7 +67,7 @@ export const usePIDMonitor = () => {
 
   // Fonction pour gérer la sélection d'un PID
   const handlePIDSelect = useCallback((pidName: string, type: PIDType) => {
-    console.log('Selecting PID:', pidName, type);
+    console.log('je suis clicqué!!!');
     dispatch(selectPID({ pidName, type }));
     // La gestion de l'intervalle est centralisée dans le useEffect
   }, [dispatch]);
