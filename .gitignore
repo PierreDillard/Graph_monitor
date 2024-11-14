@@ -14,4 +14,4 @@ pnpm-debug.log*
 
 # System files
 .DS_Store
-*.tsbuildinfo
+*.tsbuildinfosrc/output.css
