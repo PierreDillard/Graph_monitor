@@ -3,10 +3,10 @@ import { createSelector } from '@reduxjs/toolkit';
 import { ChartDataPoint, PIDType, BufferMetrics } from '../../types/pidMonitor';
 import { RootState } from '../index';
 
-// Mise à jour de l'interface LogEntry pour utiliser un timestamp numérique
+
 interface LogEntry {
   id: string;
-  timestamp: number; // Changé de Date à number
+  timestamp: number; 
   level: 'info' | 'warning' | 'error';
   message: string;
 }
@@ -58,7 +58,7 @@ const pidSlice = createSlice({
     addLog: (state, action: PayloadAction<Omit<LogEntry, 'timestamp'>>) => {
       state.logs.push({
         ...action.payload,
-        timestamp: Date.now(), // Utiliser un timestamp numérique
+        timestamp: Date.now(),
       });
       if (state.logs.length > 100) {
         state.logs.shift();
@@ -72,7 +72,7 @@ const pidSlice = createSlice({
   },
 });
 
-// Selectors mis à jour
+// Updated selector 
 export const selectPIDState = (state: RootState) => state.pid;
 
 export const selectPIDMetrics = createSelector(

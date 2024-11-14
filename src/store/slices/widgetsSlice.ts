@@ -1,4 +1,4 @@
-// src/store/slices/widgetSlice.ts
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Widget, WidgetType, WidgetConfig } from '../../types/widget';
 import { createSelector } from '@reduxjs/toolkit';
@@ -151,7 +151,6 @@ const widgetsSlice = createSlice({
     ) => {
       state.selectedNode = action.payload;
 
-      // Ajouter automatiquement le widget PID s'il n'existe pas déjà
       if (
         action.payload &&
         !state.activeWidgets.some((w) => w.type === WidgetType.PID)
