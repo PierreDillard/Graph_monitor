@@ -12,7 +12,7 @@ import {
 import { PIDType } from '../types/pidMonitor';
 import { RootState } from '../store';
 
-export const usePIDMonitor = () => {
+export const useFilterMonitor = () => {
   const dispatch = useDispatch();
   const selectedNode = useSelector(
     (state: RootState) => state.widgets.selectedNode,

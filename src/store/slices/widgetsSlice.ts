@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Widget, WidgetType, WidgetConfig } from '../../types/widget';
 import { createSelector } from '@reduxjs/toolkit';
@@ -153,12 +152,12 @@ const widgetsSlice = createSlice({
 
       if (
         action.payload &&
-        !state.activeWidgets.some((w) => w.type === WidgetType.PID)
+        !state.activeWidgets.some((w) => w.type === WidgetType.FILTER)
       ) {
         const pidWidget: Widget = {
           id: `pid-${Date.now()}`,
-          type: WidgetType.PID,
-          title: 'PID Monitor',
+          type: WidgetType.FILTER,
+          title: 'FILTER Monitor',
           x: 0,
           y: 8,
           w: 8,

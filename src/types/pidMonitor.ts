@@ -19,7 +19,7 @@ export interface ChartDataPoint {
   bufferTotal: number;
 }
 
-export interface PIDMonitorProps {
+export interface FilterMonitorProps {
   id: string;
   title: string;
   config: {
@@ -29,7 +29,7 @@ export interface PIDMonitorProps {
   };
 }
 
-export interface PIDData {
+export interface FilterData {
   buffer: number;
   buffer_total: number;
   source_idx?: number;

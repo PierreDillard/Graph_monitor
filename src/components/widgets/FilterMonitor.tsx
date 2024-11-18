@@ -14,8 +14,12 @@ import {
   selectTimeSeriesData,
   selectPIDLogs,
 } from '../../store/slices/pidSlice';
-import { PIDMonitorProps, PIDType, PIDData } from '../../types/pidMonitor';
-import { usePIDMonitor } from '../../hooks/usePIDMonitor';
+import {
+  FilterMonitorProps,
+  PIDType,
+  FilterData,
+} from '../../types/pidMonitor';
+import { useFilterMonitor } from '../../hooks/useFilterMonitor';
 import { RootState } from '../../store';
 import WidgetWrapper from '../common/WidgetWrapper';
 
@@ -65,16 +69,16 @@ const NodeInfo = React.memo(({ node }: { node: any }) => (
 NodeInfo.displayName = 'NodeInfo';
 
 // Composant de la liste des PIDs
-interface PIDListProps {
+interface FilterListProps {
   type: PIDType;
-  pids: Record<string, PIDData>;
+  pids: Record<string, FilterData>;
   selectedPID: string | null;
   selectedPIDType: PIDType | null;
   onPIDSelect: (pidName: string, type: PIDType) => void;
   nodeCount: number;
 }
 
-const PIDList = React.memo(
+const FilterList = React.memo(
   ({
     type,
     pids,
@@ -82,7 +86,7 @@ const PIDList = React.memo(
     selectedPIDType,
     onPIDSelect,
     nodeCount,
-  }: PIDListProps) => {
+  }: FilterListProps) => {
     const handlePIDClick = useCallback(
       (event: React.MouseEvent<HTMLButtonElement>, pidName: string) => {
         // Empêcher la propagation de l'événement si nécessaire
@@ -157,11 +161,10 @@ const PIDList = React.memo(
   },
 );
 
-PIDList.displayName = 'PIDList';
+FilterList.displayName = 'PIDList';
 
-// Composant principal
-const PIDMonitor: React.FC<PIDMonitorProps> = ({ id, title }) => {
-  // Hooks Redux
+const FilterMonitor: React.FC<FilterMonitorProps> = ({ id, title }) => {
+  // Hooks
   const selectedNode = useSelector(
     (state: RootState) => state.widgets.selectedNode,
   );
@@ -169,9 +172,8 @@ const PIDMonitor: React.FC<PIDMonitorProps> = ({ id, title }) => {
     useSelector(selectPIDMetrics);
   const timeSeriesData = useSelector(selectTimeSeriesData);
   const logs = useSelector(selectPIDLogs);
-  const { handlePIDSelect } = usePIDMonitor();
+  const { handlePIDSelect } = useFilterMonitor();
 
-  // Rendu conditionnel si aucun nœud n'est sélectionné
   if (!selectedNode) {
     return (
       <WidgetWrapper id={id} title={title}>
@@ -183,12 +185,12 @@ const PIDMonitor: React.FC<PIDMonitorProps> = ({ id, title }) => {
   }
 
   return (
-    <WidgetWrapper id={id} title={`PID Monitor - ${selectedNode.name}`}>
+    <WidgetWrapper id={id} title={`Filter Monitor - ${selectedNode.name}`}>
       <div className="flex h-full">
         {/* Panneau latéral */}
         <div className="w-1/3 p-4 border-r border-gray-700 overflow-y-auto">
           <NodeInfo node={selectedNode} />
-          <PIDList
+          <FilterList
             type="input"
             pids={selectedNode.ipid || {}}
             selectedPID={selectedPID}
@@ -196,7 +198,7 @@ const PIDMonitor: React.FC<PIDMonitorProps> = ({ id, title }) => {
             onPIDSelect={handlePIDSelect}
             nodeCount={selectedNode.nb_ipid}
           />
-          <PIDList
+          <FilterList
             type="output"
             pids={selectedNode.opid || {}}
             selectedPID={selectedPID}
@@ -310,4 +312,4 @@ const PIDMonitor: React.FC<PIDMonitorProps> = ({ id, title }) => {
   );
 };
 
-export default React.memo(PIDMonitor);
+export default React.memo(FilterMonitor);

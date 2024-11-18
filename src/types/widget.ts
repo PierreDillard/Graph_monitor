@@ -6,7 +6,7 @@ export enum WidgetType {
   VIDEO = 'video-monitor',
   METRICS = 'metrics-monitor',
   LOGS = 'logs-monitor',
-  PID = 'pid-monitor',
+  FILTER = 'filter-monitor',
 }
 export interface Widget {
   id: string;

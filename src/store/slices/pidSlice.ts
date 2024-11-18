@@ -3,10 +3,9 @@ import { createSelector } from '@reduxjs/toolkit';
 import { ChartDataPoint, PIDType, BufferMetrics } from '../../types/pidMonitor';
 import { RootState } from '../index';
 
-
 interface LogEntry {
   id: string;
-  timestamp: number; 
+  timestamp: number;
   level: 'info' | 'warning' | 'error';
   message: string;
 }
@@ -72,7 +71,7 @@ const pidSlice = createSlice({
   },
 });
 
-// Updated selector 
+// Updated selector
 export const selectPIDState = (state: RootState) => state.pid;
 
 export const selectPIDMetrics = createSelector(
