@@ -1,6 +1,6 @@
 import { DataViewReader } from "./DataViewReader";
 
-type MessageHandler = (connection: WebSocketBase; dataView: DataViewReader) => void;
+type MessageHandler = (connection: WebSocketBase, dataView: DataViewReader) => void;
 type ConsoleType = { log: (message: string) => void };
 
 interface MessageHandlers {

@@ -43,7 +43,7 @@ const availableWidgets = [
     defaultSize: { w: 8, h: 6 },
   },
   {
-    type: WidgetType.PID,
+    type: WidgetType.FILTER,
     title: 'Filter Metrics',
     icon: Activity,
     defaultSize: { w: 4, h: 4 },
