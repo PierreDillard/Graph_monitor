@@ -1,20 +1,15 @@
-
-
 import { WebSocketBase } from './WebSocketBase';
 import { store } from '../store';
 import { updateGraphData, setLoading, setError } from '../store/slices/graphSlice';
 import { GpacNodeData } from '../types/gpac';
-
-interface MessageQueue {
-  parts: { [key: number]: string };
-  finalPart: number;
-}
+import { DataViewReader } from './DataViewReader';
 
 export class GpacWebSocket {
   private ws: WebSocketBase;
-  private messageIndex: number = 0;
-  private readonly MAX_MSGLEN = 800;
-  private messageQueues: { [key: number]: MessageQueue } = {};
+  private reconnectAttempts = 0;
+  private readonly MAX_RECONNECT_ATTEMPTS = 5;
+  private reconnectTimeout: NodeJS.Timeout | null = null;
+  private isConnecting = false;
 
   constructor(private address: string = 'ws://127.0.0.1:17815/rmt') {
     this.ws = new WebSocketBase();
@@ -24,112 +19,145 @@ export class GpacWebSocket {
   private setupHandlers(): void {
     this.ws.addConnectHandler(() => {
       console.log('Connected to GPAC WebSocket');
+      this.isConnecting = false;
+      this.reconnectAttempts = 0;
+      store.dispatch(setError(null));
+      
+      // Demande initiale des filtres
       this.sendMessage({ message: 'get_all_filters' });
     });
 
     this.ws.addDisconnectHandler(() => {
       console.log('Disconnected from GPAC WebSocket');
-      store.dispatch(setError('WebSocket connection lost'));
+      this.handleDisconnect();
     });
 
+    // Handler pour les messages JSON directs
+    this.ws.addMessageHandler("{\"me", (_, dataView) => {
+      try {
+        const text = new TextDecoder().decode(dataView.buffer);
+        console.log('[DEBUG] Direct JSON message:', text);
+        const jsonData = JSON.parse(text);
+        this.handleGpacMessage(jsonData);
+      } catch (error) {
+        console.error('Error parsing direct JSON message:', error);
+      }
+    });
+
+    // Handler pour les messages CONI
+    this.ws.addMessageHandler("CONI", (_, dataView) => {
+      try {
+        const reader = new DataViewReader(dataView, 4);
+        const text = reader.getText();
+        console.log('[DEBUG] CONI message:', text);
+        
+        if (text.startsWith('json:')) {
+          const jsonText = text.slice(5);
+          const jsonData = JSON.parse(jsonText);
+          this.handleGpacMessage(jsonData);
+        }
+      } catch (error) {
+        console.error('Error parsing CONI message:', error);
+      }
+    });
+
+    // Handler par défaut pour les autres messages
     this.ws.addDefaultMessageHandler((_, dataView) => {
-      const text = new TextDecoder().decode(dataView);
-      this.handleMessage(text);
+      try {
+        const text = new TextDecoder().decode(dataView.buffer);
+        if (text.startsWith('{')) {
+          // C'est probablement du JSON
+          const jsonData = JSON.parse(text);
+          this.handleGpacMessage(jsonData);
+        } else {
+          console.log('[DEBUG] Default message:', text);
+        }
+      } catch (error) {
+        console.error('Error handling default message:', error);
+      }
     });
-  }
-
-  private handleMessage(data: string): void {
-    if (!data.startsWith('json:')) return;
-
-    const [prefix, index, part, final, ...rest] = data.split(':');
-    const content = rest.join(':');
-    const messageIndex = parseInt(index);
-    const partNumber = parseInt(part);
-    const isFinal = parseInt(final) === 1;
-
- 
-    if (!this.messageQueues[messageIndex]) {
-      this.messageQueues[messageIndex] = {
-        parts: {},
-        finalPart: -1
-      };
-    }
-
-    // Store this part
-    this.messageQueues[messageIndex].parts[partNumber] = content;
-    if (isFinal) {
-      this.messageQueues[messageIndex].finalPart = partNumber;
-      this.processCompleteMessage(messageIndex);
-    }
-  }
-
-  private processCompleteMessage(messageIndex: number): void {
-    const queue = this.messageQueues[messageIndex];
-    if (!queue) return;
-
-    // Check if we have all parts
-    const allParts = [];
-    for (let i = 0; i <= queue.finalPart; i++) {
-      if (!(i in queue.parts)) return;
-      allParts.push(queue.parts[i]);
-    }
-
-    // Combine and process
-    const message = allParts.join('');
-    try {
-      const jsonData = JSON.parse(message);
-      this.handleGpacMessage(jsonData);
-    } catch (error) {
-      console.error('Error parsing message:', error);
-    }
-
-    // Cleanup
-    delete this.messageQueues[messageIndex];
   }
 
   private handleGpacMessage(data: any): void {
+    console.log('[DEBUG] Handling GPAC message:', data);
+    
+    if (!data.message) {
+      console.warn('[DEBUG] Received message without type:', data);
+      return;
+    }
+
     switch (data.message) {
       case 'filters':
+        console.log('[DEBUG] Received filters message:', data.filters);
         store.dispatch(setLoading(false));
-        store.dispatch(updateGraphData(data.filters));
-        break;
-      case 'update':
-        store.dispatch(updateGraphData(data.filters));
-        break;
-      case 'details':
-        if (data.filter) {
-          // À implémenter: mise à jour des détails du filtre
-          console.log('Filter details received:', data.filter);
+        if (Array.isArray(data.filters)) {
+          store.dispatch(updateGraphData(data.filters));
+        } else {
+          console.error('[DEBUG] Invalid filters data:', data.filters);
         }
         break;
+
+      case 'update':
+        console.log('[DEBUG] Received update message:', data.filters);
+        if (Array.isArray(data.filters)) {
+          store.dispatch(updateGraphData(data.filters));
+        }
+        break;
+
       default:
-        console.warn('Unknown message type:', data.message);
+        console.log('[DEBUG] Unknown message type:', data.message);
     }
   }
 
   public connect(): void {
+    if (this.isConnecting) return;
+    
+    console.log('Attempting to connect to GPAC...');
+    this.isConnecting = true;
     store.dispatch(setLoading(true));
-    this.ws.connect(this.address);
+    
+    try {
+      this.ws.connect(this.address);
+    } catch (error) {
+      console.error('Error connecting to GPAC:', error);
+      this.isConnecting = false;
+      this.handleDisconnect();
+    }
+  }
+
+  private handleDisconnect(): void {
+    if (this.isConnecting) return;
+    
+    if (this.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
+      const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+      if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+      
+      this.reconnectTimeout = setTimeout(() => {
+        this.reconnectAttempts++;
+        this.connect();
+      }, delay);
+    } else {
+      store.dispatch(setError('Failed to connect to GPAC'));
+    }
   }
 
   public disconnect(): void {
+    if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+    this.isConnecting = false;
     this.ws.disconnect();
   }
 
   public sendMessage(message: any): void {
-    const jsonString = JSON.stringify(message);
-    const parts = [];
-    for (let i = 0; i < jsonString.length; i += this.MAX_MSGLEN) {
-      parts.push(jsonString.slice(i, i + this.MAX_MSGLEN));
+    if (!this.ws.isConnected()) return;
+    
+    try {
+      // Important: Préfixer avec CONI comme dans l'ancien code
+      const jsonString = "CONI" + "json:" + JSON.stringify(message);
+      console.log('Sending message:', jsonString);
+      this.ws.send(jsonString);
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
-
-    parts.forEach((part, index) => {
-      const isFinal = index === parts.length - 1 ? 1 : 0;
-      const messageFormat = `json:${this.messageIndex}:${index}:${isFinal}:${part}`;
-      this.ws.send(messageFormat);
-    });
-
-    this.messageIndex = (this.messageIndex + 1) % 10000;
   }
 
   public getFilterDetails(idx: number): void {
@@ -143,29 +171,6 @@ export class GpacWebSocket {
     this.sendMessage({
       message: 'stop_details',
       idx: idx
-    });
-  }
-
-  public updateFilterArgument(
-    idx: number, 
-    name: string, 
-    argName: string, 
-    newValue: string
-  ): void {
-    this.sendMessage({
-      message: 'update_arg',
-      idx: idx,
-      name: name,
-      argName: argName,
-      newValue: newValue
-    });
-  }
-
-  public requestPNG(filter: GpacNodeData): void {
-    this.sendMessage({
-      message: 'get_png',
-      idx: filter.idx,
-      name: filter.name
     });
   }
 }

@@ -1,172 +1,120 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Node, Edge } from '@xyflow/react';
-import { MarkerType } from '@xyflow/react';
-import { GpacNodeData, PIDInfo } from '@/types/gpac';
+import { GpacNodeData } from '@/types/gpac';
 
 interface GraphState {
-    rawData: GpacNodeData[];
-    nodes: Node [];
-    edges: Edge[];
-    isLoading: boolean;
-    error: string | null;
-    selectedNodeId: string | null;
+  filters: GpacNodeData[];
+  nodes: Node[];
+  edges: Edge[];
+  isLoading: boolean;
+  error: string | null;
+  redraw: boolean;
+  selectedNodeId: string | null;
 }
 
 const initialState: GraphState = {
-    rawData: [],
-    nodes: [],
-    edges: [],
-    isLoading: false,
-    error: null,
-    selectedNodeId: null,
+  filters: [],
+  nodes: [],
+  edges: [],
+  isLoading: false,
+  error: null,
+  redraw: false,
+  selectedNodeId: null,
 };
 
-const calculatteNodePosition = (index: number, total: number) => {
+function createNodeFromFilter(filter: GpacNodeData, index: number): Node {
+  const position = {
+    x: 150 + (index % 3) * 300,
+    y: 100 + Math.floor(index / 3) * 200,
+  };
 
-    const GRID_SIZE = Math.ceil(Math.sqrt(total));
-    const X_SPACING = 250;
-    const Y_SPACING = 150;
+  return {
+    id: filter.idx.toString(),
+    type: 'default',
+    data: {
+      label: filter.name,
+      ...filter,
+    },
+    position,
+    style: {
+      background: filter.nb_ipid === 0 ? '#4ade80' : 
+                 filter.nb_opid === 0 ? '#ef4444' : '#3b82f6',
+      color: 'white',
+      padding: '10px',
+      borderRadius: '8px',
+      border: '1px solid #4b5563',
+      width: 180,
+    },
+  };
+}
 
-    const row = Math.floor(index / GRID_SIZE);
-    const col = index % GRID_SIZE;
+function createEdgesFromFilters(filters: GpacNodeData[]): Edge[] {
+  const edges: Edge[] = [];
 
-    return {
-        x: col * X_SPACING + 50,
-        y: row * Y_SPACING + 50
-    };
-};
+  filters.forEach(filter => {
+    if (filter.ipid) {
+      Object.entries(filter.ipid).forEach(([pidName, pid]: [string, any]) => {
+        if (pid.source_idx !== undefined) {
+          edges.push({
+            id: `${pid.source_idx}-${filter.idx}-${pidName}`,
+            source: pid.source_idx.toString(),
+            target: filter.idx.toString(),
+            label: pidName,
+            animated: true,
+            style: { stroke: '#4b5563' },
+          });
+        }
+      });
+    }
+  });
 
-const getNodeType =(filter: GpacNodeData) : 'input' | 'filter' | 'output' => {
-    if (filter.nb_ipid === 0) return 'input';
-    if (filter.nb_opid === 0) return 'output';
-    return 'filter';
-};
+  return edges;
+}
 
-const transformGpacData = (data: GpacNodeData[]): { nodes: Node[], edges: Edge[] } => { 
-    const nodes: Node[] = [];
-    const edges: Edge[] = [];
+const graphSlice = createSlice({
+  name: 'graph',
+  initialState,
+  reducers: {
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.isLoading = action.payload;
+    },
+    setError(state, action: PayloadAction<string | null>) {
+      state.error = action.payload;
+      state.isLoading = false;
+    },
+    updateGraphData(state, action: PayloadAction<GpacNodeData[]>) {
+      state.filters = action.payload;
+      state.nodes = action.payload.map(createNodeFromFilter);
+      state.edges = createEdgesFromFilters(action.payload);
+      state.isLoading = false;
+      state.error = null;
+      state.redraw = true;
+    },
+    updateLayout(state, action: PayloadAction<{ nodes: Node[], edges: Edge[] }>) {
+      state.nodes = action.payload.nodes;
+      state.edges = action.payload.edges;
+      state.redraw = false;
+    },
+    setSelectedNode(state, action: PayloadAction<string>) {
+      state.selectedNodeId = action.payload;
+    },
+  },
+});
 
-    data.forEach((filter, index) => {
-       
-        const position = calculatteNodePosition(index, data.length);
-        const nodeType = getNodeType(filter);
-       
-        nodes.push({
-            id: filter.idx.toString(),
-            type: nodeType,
-            position,
-            data: {
-                ...filter,
-                label: filter.name,
-            },
-            style: {
-                background: nodeType === 'input' ? '#4ade80' : 
-                           nodeType === 'output' ? '#ef4444' : '#3b82f6',
-                color: 'white',
-                border: '1px solid #4b5563',
-                borderRadius: '0.5rem',
-                padding: '0.5rem'
-              },
-            });
+export const {
+  setLoading,
+  setError,
+  updateGraphData,
+  updateLayout,
+  setSelectedNode,
+} = graphSlice.actions;
 
-            Object.entries(filter.ipid).forEach(([pidName, pid]) => {
-                if (pid.source_idx !== undefined) {
-                  const edgeId = `e${pid.source_idx}-${filter.idx}-${pidName}`;
-                  edges.push({
-                    id: edgeId,
-                    source: pid.source_idx.toString(),
-                    target: filter.idx.toString(),
-                    type: 'smoothstep',
-                    animated: true,
-                    label: `${pidName} (${(pid.buffer / pid.buffer_total * 100).toFixed(0)}%)`,
-                    labelBgStyle: { fill: '#1f2937' },
-                    labelStyle: { fill: '#ffffff', fontSize: 12 },
-                    markerEnd: {
-                      type: MarkerType.ArrowClosed,
-                      color: pidName.includes('video') ? '#3b82f6' : '#10b981'
-                    },
-                    style: {
-                      stroke: pidName.includes('video') ? '#3b82f6' : '#10b981',
-                      strokeWidth: 2
-                    }
-                  });
-                }
-              });
-            });
-          
-            return { nodes, edges };
-          };
+export default graphSlice.reducer;
 
-          const graphSlice = createSlice({
-            name: 'graph',
-            initialState,
-            reducers: {
-              setLoading(state, action: PayloadAction<boolean>) {
-                state.isLoading = action.payload;
-              },
-              setError(state, action: PayloadAction<string>) {
-                state.error = action.payload;
-              },
-              updateGraphData: (state, action: PayloadAction<GpacNodeData[]>) => {
-                state.rawData = action.payload;
-                const { nodes, edges } = transformGpacData(action.payload);
-                state.nodes = nodes;
-                state.edges = edges;
-                state.isLoading = false;
-                state.error = null;
-              },
-
-              setSelectedNode(state, action: PayloadAction<string>) {
-                state.selectedNodeId = action.payload;
-              },
-              updateNodeData: (state, action: PayloadAction<{
-                nodeId: string;
-                data: Partial<GpacNodeData>;
-              }>) => {
-                const { nodeId, data } = action.payload;
-
-                 // update the node data in the raw data
-
-                const rawIndex = state.rawData.findIndex((node) => node.idx.toString() === nodeId);
-                if (rawIndex !== -1) {
-                  state.rawData[rawIndex] = {
-                    ...state.rawData[rawIndex],
-                    ...data
-                  };
-                }
-
-                // update the node in React Flow
-                const nodeIndex = state.nodes.findIndex((node) => node.id === nodeId);
-                if(nodeIndex !== -1) {
-                  state.nodes[nodeIndex].data = {
-                    ...state.nodes[nodeIndex].data,
-                    ...data
-                  };
-                }
-
-                if('ipid' in data || 'opid' in data) {
-                    const { nodes, edges } = transformGpacData(state.rawData);
-                    state.nodes = nodes;
-                    state.edges = edges;
-                }
-                }
-            }
-            });
-
-            //Selectors
-            export const selectGraphData = (state: { graph: GraphState }) => state.graph;
-            export const selectNodes = (state: { graph: GraphState }) => state.graph.nodes;
-            export const selectEdges = (state: { graph: GraphState }) => state.graph.edges;
-            export const selectIsLoading = (state: { graph: GraphState }) => state.graph.isLoading;
-            export const selectError = (state: { graph: GraphState }) => state.graph.error;
-            export const selectSelectedNodeId = (state: { graph: GraphState }) => state.graph.selectedNodeId;
-
-            export const {
-                setLoading,
-                setError,
-                updateGraphData,
-                setSelectedNode,
-                updateNodeData          
-            } = graphSlice.actions;
-
-            export default graphSlice.reducer;
+export const selectGraphState = (state: { graph: GraphState }) => state.graph;
+export const selectNodes = (state: { graph: GraphState }) => state.graph.nodes;
+export const selectEdges = (state: { graph: GraphState }) => state.graph.edges;
+export const selectIsLoading = (state: { graph: GraphState }) => state.graph.isLoading;
+export const selectError = (state: { graph: GraphState }) => state.graph.error;
+export const selectRedraw = (state: { graph: GraphState }) => state.graph.redraw;
+export const selectSelectedNodeId = (state: { graph: GraphState }) => state.graph.selectedNodeId;

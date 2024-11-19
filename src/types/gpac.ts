@@ -12,11 +12,9 @@ export interface PIDInfo {
   fps?: string;
   samplerate?: number;
   channels?: number;
-  format?: string;
-  pixel_format?: string;
 }
 
-export interface GpacNodeData extends Record<string, unknown> {
+export interface GpacNodeData {
   name: string;
   type: string;
   itag: string | null;
@@ -29,9 +27,6 @@ export interface GpacNodeData extends Record<string, unknown> {
   gpac_args: string[];
   ipid: Record<string, PIDInfo>;
   opid: Record<string, PIDInfo>;
-  label?: ReactNode;
-  details?: string;
-  icon?: ReactNode;
 }
 
 export type GpacNode = Node<GpacNodeData>;
