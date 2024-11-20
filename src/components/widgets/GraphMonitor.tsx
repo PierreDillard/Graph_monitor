@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState , useRef, useMemo} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   ReactFlow,
@@ -19,11 +19,12 @@ import { WidgetProps } from '../../types/widget';
 import { gpacWebSocket } from '../../services/gpacWebSocket';
 import { setSelectedNode } from '../../store/slices/graphSlice';
 import {
-  selectNodes,
+  selectNodesForGraphMonitor,
   selectEdges,
   selectIsLoading,
   selectError,
-} from '../../store/slices/graphSlice';
+} from '../../store/selectors/graphSelectors';
+
 
 const flowStyles = {
   background: '#111827',
@@ -31,28 +32,100 @@ const flowStyles = {
   height: '100%',
 };
 
+
 const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const dispatch = useDispatch();
+  const nodesRef = useRef<Node[]>([])
+  const edgesRef = useRef<Edge[]>([])
+  const renderCount = useRef(0);
+
   
-  // Sélecteurs Redux
-  const nodes = useSelector(selectNodes);
+  // Redux selectors
+  const nodes = useSelector(selectNodesForGraphMonitor);
   const edges = useSelector(selectEdges);
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  // État local React Flow
+  // React Flow local state
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState([]);
   const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState([]);
 
-  // Gestionnaire de clic sur un nœud
+   // Memoisatin Node update
+   const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
+    return newNodes.map((node) => {
+      const existingNode = nodesRef.current.find((n) => n.id === node.id);
+      if (existingNode) {
+        return {
+          ...node,
+          position: existingNode.position,
+          selected: existingNode.selected,
+          dragging: existingNode.dragging,
+        };
+      }
+      return node;
+    });
+  }, []);
+  
+
+  // Memoisation Edge update
+  const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
+    return newEdges.map(edge => {
+      const existingEdge = edgesRef.current.find(e => e.id === edge.id);
+      if(existingEdge) {
+        return {
+          ...edge,
+          selected: existingEdge.selected,
+          animated: existingEdge.animated,
+        };
+      }
+      return edge;
+    });
+  }, []);
+
+ 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     console.log('Node clicked:', node);
     dispatch(setSelectedNode(node.id));
     gpacWebSocket.getFilterDetails(parseInt(node.id));
   }, [dispatch]);
 
-  // Connexion WebSocket
+   const handleNodesChange = useCallback((changes: any[]) => {
+    onNodesChange(changes);
+    // Update references
+    nodesRef.current = localNodes.map(node => ({ ...node }));
+  }, [localNodes, onNodesChange]);
+
+  // Same logic for edges..
+  const handleEdgesChange = useCallback((changes: any[]) => {
+    onEdgesChange(changes);
+
+    edgesRef.current = localEdges.map(edge => ({ ...edge }));
+  }, [localEdges, onEdgesChange]);
+  const updatedNodes = useMemo(() => updateNodesWithPositions(nodes), [nodes, updateNodesWithPositions]);
+  const updatedEdges = useMemo(() => updateEdgesWithState(edges), [edges, updateEdgesWithState]);
+  // update data
+  useEffect(() => {
+    if (updatedNodes.length > 0 || updatedEdges.length > 0) {
+     
+
+      
+      setLocalNodes(updatedNodes);
+      setLocalEdges(updatedEdges);
+      
+      // Update references
+      nodesRef.current = updatedNodes;
+      edgesRef.current = updatedEdges;
+
+      renderCount.current++;
+      console.log(`[GraphMonitor] Render #${renderCount.current}`, {
+        nodesCount: nodes.length,
+        edgesCount: edges.length
+      });
+    }
+  }, [updatedNodes, updatedEdges]);
+
+  // WebSocket Connection
   useEffect(() => {
     console.log('GraphMonitor: Mounting and connecting WebSocket');
     
@@ -66,13 +139,12 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       gpacWebSocket.disconnect();
     };
   }, []);
-
-  // Surveillance de l'état de chargement
+ 
+ 
   useEffect(() => {
     console.log('Loading state changed:', isLoading);
   }, [isLoading]);
 
-  // Surveillance des erreurs
   useEffect(() => {
     if (error) {
       console.error('Graph error:', error);
@@ -80,12 +152,13 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     }
   }, [error]);
 
-  // Mise à jour des données locales
-  useEffect(() => {
-    console.log('Nodes/Edges updated:', { nodes: nodes.length, edges: edges.length });
-    setLocalNodes(nodes);
-    setLocalEdges(edges);
-  }, [nodes, edges, setLocalNodes, setLocalEdges]);
+  const flowOptions = useMemo(() => ({
+    fitView: true,
+    minZoom: 0.1,
+    maxZoom: 4,
+    defaultViewport: { x: 0, y: 0, zoom: 1 },
+    proOptions: { hideAttribution: true }
+  }), []);
 
   if (isLoading) {
     return (
@@ -126,8 +199,8 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
         <ReactFlow
           nodes={localNodes}
           edges={localEdges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
           onNodeClick={onNodeClick}
           fitView
           minZoom={0.1}

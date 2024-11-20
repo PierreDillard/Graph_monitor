@@ -23,7 +23,7 @@ export class GpacWebSocket {
       this.reconnectAttempts = 0;
       store.dispatch(setError(null));
       
-      // Demande initiale des filtres
+      // Ask filters
       this.sendMessage({ message: 'get_all_filters' });
     });
 
@@ -32,7 +32,7 @@ export class GpacWebSocket {
       this.handleDisconnect();
     });
 
-    // Handler pour les messages JSON directs
+    // Handler JSON 
     this.ws.addMessageHandler("{\"me", (_, dataView) => {
       try {
         const text = new TextDecoder().decode(dataView.buffer);
@@ -61,7 +61,6 @@ export class GpacWebSocket {
       }
     });
 
-    // Handler par défaut pour les autres messages
     this.ws.addDefaultMessageHandler((_, dataView) => {
       try {
         const text = new TextDecoder().decode(dataView.buffer);
