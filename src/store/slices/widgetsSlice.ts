@@ -46,14 +46,15 @@ const defaultConfig: WidgetConfig = {
 const initialState: WidgetsState = {
   activeWidgets: [
     {
-      id: 'metrics-1',
-      type: WidgetType.METRICS,
-      title: 'System Metrics',
+      id: `pid-${Date.now()}`,
+      type: WidgetType.FILTER,
+      title: 'FILTER Monitor',
       x: 0,
-      y: 0,
+      y: 8,
       w: 6,
       h: 4,
     },
+
     {
       id: 'graph-1',
       type: WidgetType.GRAPH,
