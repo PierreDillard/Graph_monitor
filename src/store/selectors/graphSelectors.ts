@@ -4,7 +4,7 @@ import type { RootState } from '../index';
 
 const selectGraphState = (state: RootState) => state.graph;
 
-// Sélecteur mémoïsé avec comparaison profonde des nœuds
+// Selectors memoized 
 export const selectNodesForGraphMonitor = createSelector(
   [selectGraphState],
   (graph) => graph.nodes.map((node) => {

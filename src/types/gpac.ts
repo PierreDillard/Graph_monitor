@@ -1,6 +1,6 @@
 // src/types/gpac.ts
-import { Node, Edge } from '@xyflow/react';
-import { ReactNode } from 'react';
+import { Node, Edge, EdgeProps } from '@xyflow/react';
+
 
 export interface PIDInfo {
   buffer: number;
@@ -31,8 +31,21 @@ export interface GpacNodeData {
 
 export type GpacNode = Node<GpacNodeData>;
 
-export interface GpacEdgeData {
-  label?: ReactNode;
+export type FilterType = 'video' | 'audio' | 'text' | 'image' | 'other';
+
+export interface EdgeData extends Record<string, unknown> {
+  id: string;
+  source: string;
+  target: string;
+  filterType: FilterType;
+  bufferPercentage: number;
+  pidName: string;
 }
 
-export type GpacEdge = Edge & GpacEdgeData;
+export type GpacEdge = Edge<EdgeData>;
+
+export interface GpacEdgeProps extends EdgeProps<EdgeData> {
+  data: EdgeData;
+}
+
+
