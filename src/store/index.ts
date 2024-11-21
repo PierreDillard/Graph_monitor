@@ -1,22 +1,27 @@
 import { configureStore } from '@reduxjs/toolkit';
+import filterReducer from './slices/filterSlice';
 import graphReducer from './slices/graphSlice';
 import widgetsReducer from './slices/widgetsSlice';
-import pidReducer from './slices/pidSlice';
 
 export const store = configureStore({
   reducer: {
+    filter: filterReducer,
     graph: graphReducer,
-    pid: pidReducer,
     widgets: widgetsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these action types
-        ignoredActions: ['graph/updateGraphData', 'graph/updateNodeData'],
+        // Ignorer certaines actions non-sérialisables si nécessaire
+        ignoredActions: ['SOCKET_CONNECT', 'SOCKET_DISCONNECT'],
       },
     }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// Hooks typés pour useDispatch et useSelector
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

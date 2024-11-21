@@ -1,6 +1,11 @@
 import { WebSocketBase } from './WebSocketBase';
 import { store } from '../store';
-import { updateGraphData, setLoading, setError } from '../store/slices/graphSlice';
+import {
+  updateGraphData,
+  setLoading,
+  setError,
+} from '../store/slices/graphSlice';
+import { updateFilterDetails } from '../store/slices/filterSlice';
 import { GpacNodeData } from '../types/gpac';
 import { DataViewReader } from './DataViewReader';
 
@@ -22,7 +27,7 @@ export class GpacWebSocket {
       this.isConnecting = false;
       this.reconnectAttempts = 0;
       store.dispatch(setError(null));
-      
+
       // Ask filters
       this.sendMessage({ message: 'get_all_filters' });
     });
@@ -32,8 +37,8 @@ export class GpacWebSocket {
       this.handleDisconnect();
     });
 
-    // Handler JSON 
-    this.ws.addMessageHandler("{\"me", (_, dataView) => {
+    // Handler JSON
+    this.ws.addMessageHandler('{"me', (_, dataView) => {
       try {
         const text = new TextDecoder().decode(dataView.buffer);
         console.log('[DEBUG] Direct JSON message:', text);
@@ -45,12 +50,12 @@ export class GpacWebSocket {
     });
 
     // Handler pour les messages CONI
-    this.ws.addMessageHandler("CONI", (_, dataView) => {
+    this.ws.addMessageHandler('CONI', (_, dataView) => {
       try {
         const reader = new DataViewReader(dataView, 4);
         const text = reader.getText();
         console.log('[DEBUG] CONI message:', text);
-        
+
         if (text.startsWith('json:')) {
           const jsonText = text.slice(5);
           const jsonData = JSON.parse(jsonText);
@@ -79,13 +84,18 @@ export class GpacWebSocket {
 
   private handleGpacMessage(data: any): void {
     console.log('[DEBUG] Handling GPAC message:', data);
-    
+
     if (!data.message) {
       console.warn('[DEBUG] Received message without type:', data);
       return;
     }
 
     switch (data.message) {
+      case 'details':
+        console.log('[DEBUG] Received details message:', data.filter);
+        store.dispatch(updateFilterDetails(data.filter));
+        break;
+
       case 'filters':
         console.log('[DEBUG] Received filters message:', data.filters);
         store.dispatch(setLoading(false));
@@ -110,11 +120,11 @@ export class GpacWebSocket {
 
   public connect(): void {
     if (this.isConnecting) return;
-    
+
     console.log('Attempting to connect to GPAC...');
     this.isConnecting = true;
     store.dispatch(setLoading(true));
-    
+
     try {
       this.ws.connect(this.address);
     } catch (error) {
@@ -124,13 +134,17 @@ export class GpacWebSocket {
     }
   }
 
+  public isConnected(): boolean {
+    return this.ws.isConnected();
+  }
+
   private handleDisconnect(): void {
     if (this.isConnecting) return;
-    
+
     if (this.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
-      
+
       this.reconnectTimeout = setTimeout(() => {
         this.reconnectAttempts++;
         this.connect();
@@ -148,10 +162,10 @@ export class GpacWebSocket {
 
   public sendMessage(message: any): void {
     if (!this.ws.isConnected()) return;
-    
+
     try {
-      // Important: Préfixer avec CONI comme dans l'ancien code
-      const jsonString = "CONI" + "json:" + JSON.stringify(message);
+      // Préfixer avec CONI comme dans l'ancien code
+      const jsonString = 'CONI' + 'json:' + JSON.stringify(message);
       console.log('Sending message:', jsonString);
       this.ws.send(jsonString);
     } catch (error) {
@@ -162,14 +176,14 @@ export class GpacWebSocket {
   public getFilterDetails(idx: number): void {
     this.sendMessage({
       message: 'get_details',
-      idx: idx
+      idx: idx,
     });
   }
 
   public stopFilterDetails(idx: number): void {
     this.sendMessage({
       message: 'stop_details',
-      idx: idx
+      idx: idx,
     });
   }
 }

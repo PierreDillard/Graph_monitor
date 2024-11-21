@@ -1,35 +1,42 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import {
-  selectPID,
-  addDataPoint,
-  updateBufferMetrics,
-  addLog,
-  selectPIDMetrics,
-  selectTimeSeriesData,
-  selectPIDLogs,
-} from '../store/slices/pidSlice';
-import { PIDType } from '../types/pidMonitor';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { gpacWebSocket } from '../services/gpacWebSocket';
+import { 
+  selectFilter, 
+  updateBufferMetrics, 
+  addDataPoint, 
+  addLog 
+} from '../store/slices/filterSlice';
+import { 
+  selectFilterDetails, 
+  selectTimeSeriesData, 
+  selectFilterLogs, 
+  selectSelectedFilter 
+} from '../store/selectors/filterSelector';
+import type { FilterType } from '../types/filter';
 
 export const useFilterMonitor = () => {
   const dispatch = useDispatch();
+
+  const filterDetails = useSelector(selectFilterDetails);
   const selectedNode = useSelector(
     (state: RootState) => state.widgets.selectedNode,
   );
-  const { selectedPID, selectedPIDType } = useSelector(selectPIDMetrics);
   const timeSeriesData = useSelector(selectTimeSeriesData);
-  const logs = useSelector(selectPIDLogs);
-  const bufferMetrics = useSelector(
-    (state: RootState) => state.pid.bufferMetrics,
+  const logs = useSelector(selectFilterLogs);
+  const { selectedFilter, selectedFilterType } = useSelector(
+    (state: RootState) => state.filter,
   );
+  const bufferMetrics = useSelector((state: RootState) => state.filter.bufferMetrics);
 
-  const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const updateIntervalRef = useRef<number>();
+  const isComponentMounted = useRef(true);
 
-  // Fonction pour calculer les métriques du buffer en évitant la division par zéro
+  // Calcul des métriques du buffer
   const calculateBufferMetrics = useCallback(
     (buffer: number, total: number) => {
-      const percentage = total ? (buffer / total) * 100 : 0;
+      const percentage = (buffer / total) * 100;
       return {
         currentBuffer: buffer,
         bufferTotal: total,
@@ -41,33 +48,38 @@ export const useFilterMonitor = () => {
     [],
   );
 
-  // Fonction pour mettre à jour les données du PID
-  const updatePIDData = useCallback(() => {
-    if (!selectedNode || !selectedPID) return;
+  // Mise à jour des données du filtre
+  const updateFilterData = useCallback(() => {
+    if (!selectedNode || !selectedFilter || !isComponentMounted.current) return;
 
-    const pidData =
-      selectedPIDType === 'input'
-        ? selectedNode.ipid[selectedPID]
-        : selectedNode.opid[selectedPID];
+   
 
-    if (!pidData) return;
+    const filterData =
+      selectedFilterType === 'input'
+        ? selectedNode.ipid[selectedFilter]
+        : selectedNode.opid[selectedFilter];
 
+    if (!filterData) return;
+
+    // Calcul et dispatch des nouvelles métriques
     const newMetrics = calculateBufferMetrics(
-      pidData.buffer,
-      pidData.buffer_total,
+      filterData.buffer,
+      filterData.buffer_total,
     );
 
     dispatch(updateBufferMetrics(newMetrics));
 
+    // Ajout d'un point de données pour le graphique
     dispatch(
       addDataPoint({
         timestamp: Date.now(),
         buffer: newMetrics.bufferPercentage,
-        rawBuffer: pidData.buffer,
-        bufferTotal: pidData.buffer_total,
+        rawBuffer: filterData.buffer,
+        bufferTotal: filterData.buffer_total,
       }),
     );
 
+    // Génération de logs si nécessaire
     if (newMetrics.isLow) {
       dispatch(
         addLog({
@@ -79,53 +91,84 @@ export const useFilterMonitor = () => {
     }
   }, [
     selectedNode,
-    selectedPID,
-    selectedPIDType,
+    selectedFilter,
+    selectedFilterType,
     dispatch,
     calculateBufferMetrics,
   ]);
 
-  // Fonction pour gérer la sélection d'un PID
-  const handlePIDSelect = useCallback(
-    (pidName: string, type: PIDType) => {
-      console.log('je suis clicqué!!!');
-      dispatch(selectPID({ pidName, type }));
-      // La gestion de l'intervalle est centralisée dans le useEffect
+  // Gestion de la sélection d'un filtre
+  const handleFilterSelect = useCallback(
+    (filterName: string, type: FilterType) => {
+      console.log('Selecting filter:', filterName, type);
+
+      dispatch(selectFilter({ name: filterName, type }));
+      if (selectedNode?.idx) {
+        gpacWebSocket.getFilterDetails(selectedNode.idx);
+      }
+
+      // Nettoyage et configuration du nouvel intervalle
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+      }
+
+      updateIntervalRef.current = window.setInterval(updateFilterData, 500);
+      updateFilterData();
     },
-    [dispatch],
+    [dispatch, updateFilterData],
   );
 
-  // Gestion centralisée de l'intervalle
+  // Gestion du cycle de vie du composant
   useEffect(() => {
-    // Nettoyage de l'intervalle existant
-    if (updateIntervalRef.current) {
-      clearInterval(updateIntervalRef.current);
-      updateIntervalRef.current = null;
+    isComponentMounted.current = true;
+
+    if (!gpacWebSocket.isConnected()) {
+      gpacWebSocket.connect();
     }
 
-    if (selectedPID && selectedNode) {
-      // Démarrage d'un nouvel intervalle
-      updateIntervalRef.current = setInterval(updatePIDData, 500);
-      // Mise à jour initiale
-      updatePIDData();
+    return () => {
+      isComponentMounted.current = false;
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+      }
+      // Arrêter la réception des détails du filtre
+      if (selectedNode) {
+        gpacWebSocket.stopFilterDetails(selectedNode.idx);
+      }
+    };
+  }, [selectedNode]);
+
+  // Configuration de la mise à jour des données
+  useEffect(() => {
+    if (selectedFilter && selectedNode) {
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+      }
+
+      gpacWebSocket.getFilterDetails(selectedNode.idx);
+
+      updateIntervalRef.current = window.setInterval(updateFilterData, 500);
+      updateFilterData();
     }
 
-    // Nettoyage à la démontage ou au changement de PID/nœud
     return () => {
       if (updateIntervalRef.current) {
         clearInterval(updateIntervalRef.current);
-        updateIntervalRef.current = null;
+      }
+      if (selectedNode) {
+        gpacWebSocket.stopFilterDetails(selectedNode.idx);
       }
     };
-  }, [selectedPID, selectedNode, updatePIDData]);
+  }, [selectedFilter, selectedNode, updateFilterData]);
 
   return {
     selectedNode,
-    selectedPID,
-    selectedPIDType,
-    timeSeriesData,
-    logs,
+    selectedFilter,
+    selectedFilterType,
     bufferMetrics,
-    handlePIDSelect,
+    timeSeriesData,     
+    logs,              
+    filterDetails,      
+    handleFilterSelect
   };
 };

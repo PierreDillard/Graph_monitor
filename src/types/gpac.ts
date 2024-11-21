@@ -1,7 +1,6 @@
 // src/types/gpac.ts
 import { Node, Edge, EdgeProps } from '@xyflow/react';
 
-
 export interface PIDInfo {
   buffer: number;
   buffer_total: number;
@@ -47,5 +46,3 @@ export type GpacEdge = Edge<EdgeData>;
 export interface GpacEdgeProps extends EdgeProps<EdgeData> {
   data: EdgeData;
 }
-
-
