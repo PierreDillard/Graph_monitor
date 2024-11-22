@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Node, Edge, MarkerType } from '@xyflow/react';
 import { GpacNodeData } from '@/types/gpac';
-import { isEqual } from 'lodash';
+import { isEqual, set } from 'lodash';
 
 interface GraphState {
   filters: GpacNodeData[];
@@ -12,6 +12,7 @@ interface GraphState {
   redraw: boolean;
   selectedNodeId: string | null;
   lastUpdate: number;
+  selectedFilterDetails: GpacNodeData | null;
 }
 
 const initialState: GraphState = {
@@ -23,6 +24,7 @@ const initialState: GraphState = {
   redraw: false,
   selectedNodeId: null,
   lastUpdate: Date.now(),
+  selectedFilterDetails: null
 };
 
 type FilterType = 'video' | 'audio' | 'text' | 'image' | 'other';
@@ -189,6 +191,14 @@ const graphSlice = createSlice({
         state.selectedNodeId = action.payload;
       }
     },
+    setFilterDetails: (state, action: PayloadAction<GpacNodeData>) => {
+      console.log('[GraphSlice] Updating filter details:', action.payload);
+      state.selectedFilterDetails = action.payload;
+    },
+
+    clearFilterDetails: (state) => {
+      state.selectedFilterDetails = null;
+    },
   },
 });
 
@@ -198,6 +208,8 @@ export const {
   updateGraphData,
   updateLayout,
   setSelectedNode,
+  setFilterDetails,
+  clearFilterDetails,
 } = graphSlice.actions;
 
 export default graphSlice.reducer;

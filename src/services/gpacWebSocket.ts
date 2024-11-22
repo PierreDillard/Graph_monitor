@@ -1,6 +1,6 @@
 import { WebSocketBase } from './WebSocketBase';
 import { store } from '../store';
-import { updateGraphData, setLoading, setError } from '../store/slices/graphSlice';
+import { updateGraphData, setLoading, setError, setFilterDetails } from '../store/slices/graphSlice';
 import { GpacNodeData } from '../types/gpac';
 import { DataViewReader } from './DataViewReader';
 
@@ -102,6 +102,13 @@ export class GpacWebSocket {
           store.dispatch(updateGraphData(data.filters));
         }
         break;
+
+      case 'details':
+        console.log('[DEBUG] Received details message:', data.filter);
+          if (data.filter) {
+            store.dispatch(setFilterDetails(data.filter));
+          }
+        break;  
 
       default:
         console.log('[DEBUG] Unknown message type:', data.message);
