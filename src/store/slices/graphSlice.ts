@@ -140,6 +140,7 @@ function createEdgesFromFilters(filters: GpacNodeData[], existingEdges: Edge[]):
 }
 
 
+
 const THROTTLE_INTERVAL = 100; 
 
 const graphSlice = createSlice({
@@ -155,22 +156,18 @@ const graphSlice = createSlice({
     },
     updateGraphData: {
       reducer(state, action: PayloadAction<GpacNodeData[]>) {
-        const now = Date.now();
-        if (now - state.lastUpdate < THROTTLE_INTERVAL) {
-          return;
-        }
-
-        if (!isEqual(state.filters, action.payload)) {
-          state.filters = action.payload;
-          state.nodes = action.payload.map((f, i) => 
-            createNodeFromFilter(f, i, state.nodes)
-          );
-          state.edges = createEdgesFromFilters(action.payload, state.edges);
-          state.isLoading = false;
-          state.error = null;
-          state.lastUpdate = now;
-        }
-      },
+        // Nettoyer l'état complet
+        state.filters = [];
+        state.nodes = [];
+        state.edges = [];
+        
+        // Mettre à jour avec les nouvelles données
+        state.filters = action.payload;
+        state.nodes = action.payload.map((f, i) => createNodeFromFilter(f, i, []));
+        state.edges = createEdgesFromFilters(action.payload, []);
+        state.lastUpdate = Date.now();
+      }
+      ,
       prepare(data: GpacNodeData[]) {
         return {
           payload: data,
@@ -178,6 +175,7 @@ const graphSlice = createSlice({
         };
       }
     },
+   
     updateLayout(state, action: PayloadAction<{ nodes: Node[], edges: Edge[] }>) {
       // Update only the positions of existing nodes
       state.nodes = state.nodes.map(node => {
@@ -208,7 +206,6 @@ const graphSlice = createSlice({
     }
   }
 });
-
 export const {
   setLoading,
   setError,

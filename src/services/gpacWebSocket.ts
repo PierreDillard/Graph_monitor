@@ -1,6 +1,8 @@
 import { WebSocketBase } from './WebSocketBase';
+import { isEqual } from 'lodash';
 import { store } from '../store';
 import { updateGraphData, setLoading, setError, setFilterDetails } from '../store/slices/graphSlice';
+import { updatePIDBuffer } from '../store/slices/pidSlice';
 import { GpacNodeData } from '../types/gpac';
 import { DataViewReader } from './DataViewReader';
 
@@ -79,6 +81,7 @@ export class GpacWebSocket {
 
   private handleGpacMessage(data: any): void {
     console.log('[DEBUG] Handling GPAC message:', data);
+    const currentState = store.getState();
     
     if (!data.message) {
       console.warn('[DEBUG] Received message without type:', data);
@@ -89,9 +92,10 @@ export class GpacWebSocket {
       case 'filters':
         console.log('[DEBUG] Received filters message:', data.filters);
         store.dispatch(setLoading(false));
-        if (Array.isArray(data.filters)) {
+        if (!isEqual(currentState.graph.filters, data.filters)) {
           store.dispatch(updateGraphData(data.filters));
-        } else {
+        }
+         else {
           console.error('[DEBUG] Invalid filters data:', data.filters);
         }
         break;
@@ -103,18 +107,18 @@ export class GpacWebSocket {
         }
         break;
 
-      case 'details':
-        console.log('[DEBUG] Received details message:', data.filter);
-          if (data.filter) {
+        case 'details':
+          // Process details if the filter is the current one
+          if (data.filter && data.filter.idx === this.currentFilterId) {
             store.dispatch(setFilterDetails(data.filter));
           }
-        break;  
+          break;
 
       default:
         console.log('[DEBUG] Unknown message type:', data.message);
     }
   }
-
+  private currentFilterId: number | null = null;
   public connect(): void {
     if (this.isConnecting) return;
     
@@ -167,6 +171,18 @@ export class GpacWebSocket {
   }
 
   public getFilterDetails(idx: number): void {
+    // If a filter is already selected, stop it
+    if (this.currentFilterId !== null && this.currentFilterId !== idx) {
+      this.sendMessage({
+        message: 'stop_details',
+        idx: this.currentFilterId
+      });
+    }
+
+    // Define the new filter as the current one
+    this.currentFilterId = idx;
+
+    // Ask for details
     this.sendMessage({
       message: 'get_details',
       idx: idx

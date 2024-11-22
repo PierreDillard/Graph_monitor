@@ -1,23 +1,37 @@
-import React, { useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+
+import { useSelector , shallowEqual} from 'react-redux';
 import { Activity } from 'lucide-react';
 import { RootState } from '../../store';
 import WidgetWrapper from '../common/WidgetWrapper';
 
 const FilterMonitor = ({ id, title }) => {
-  // Récupérer le nœud sélectionné depuis le store Redux
+
   const selectedNode = useSelector((state: RootState) => {
     console.log('FilterMonitor - Current Redux State:', state);
-    console.log('FilterMonitor - Selected Node:', state.graph?.selectedFilterDetails);
+    console.log('FilterMonitor - Selected Node:', state.graph?.selectedFilterDetails),
+    shallowEqual
     return state.graph?.selectedFilterDetails || null;
   });
 
-  // Log lors du rendu du composant
+  useEffect(() => {
+    console.log('FilterMonitor - Current selectedNode:', selectedNode);
+  }, [selectedNode]);
+
+  const nodeRef = useRef(selectedNode);
+
+  useEffect(() => {
+    nodeRef.current = selectedNode;
+  }, [selectedNode]);
+
+  const stableNodeData = useMemo(() =>  selectedNode, [selectedNode?.idx]);
+
+
+
   useEffect(() => {
     console.log('FilterMonitor - Component rendered with selectedNode:', selectedNode);
   }, [selectedNode]);
 
-  // Si aucun nœud n'est sélectionné, afficher un message d'instruction
   if (!selectedNode) {
     console.log('FilterMonitor - No node selected, showing placeholder');
     return (
@@ -35,6 +49,7 @@ const FilterMonitor = ({ id, title }) => {
   return (
     <WidgetWrapper id={id} title={title}>
       <div className="p-4">
+      {stableNodeData ? (
         <div className="bg-gray-800 rounded-lg p-4 mb-4">
           <h3 className="text-lg font-medium mb-2">Filter Details</h3>
           
@@ -60,7 +75,9 @@ const FilterMonitor = ({ id, title }) => {
             </div>
           </div>
         </div>
+            ) : null}
       </div>
+  
     </WidgetWrapper>
   );
 };

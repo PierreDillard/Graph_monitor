@@ -12,6 +12,7 @@ import {
   Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { GpacNodeData } from '../../types/gpac';
 
 import WidgetWrapper from '../common/WidgetWrapper';
 import { Activity } from 'lucide-react';
@@ -88,14 +89,14 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
  
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     console.log('NODE ID:', node.id);
-    dispatch(setSelectedFilterDetails(node.data));
+    dispatch(setSelectedFilterDetails(node.data as unknown as GpacNodeData));
     gpacWebSocket.getFilterDetails(parseInt(node.id));
   }, [dispatch]);
 
    const handleNodesChange = useCallback((changes: any[]) => {
     onNodesChange(changes);
     // Update references
-    nodesRef.current = localNodes.map(node => ({ ...node }));
+    nodesRef.current = localNodes.map(node => (typeof node === 'object' ? { ...node } : node));
   }, [localNodes, onNodesChange]);
 
   // Same logic for edges..
@@ -203,6 +204,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
           maxZoom={4}
           defaultViewport={{ x: 0, y: 0, zoom: 1 }}
           proOptions={{ hideAttribution: true }}
+          selectionKeyCode={null}
         >
           <Background
             color="#4b5563"
