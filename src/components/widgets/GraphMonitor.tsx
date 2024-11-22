@@ -17,7 +17,7 @@ import WidgetWrapper from '../common/WidgetWrapper';
 import { Activity } from 'lucide-react';
 import { WidgetProps } from '../../types/widget';
 import { gpacWebSocket } from '../../services/gpacWebSocket';
-import { setSelectedNode } from '../../store/slices/graphSlice';
+import { setSelectedFilterDetails } from '../../store/slices/graphSlice';
 import {
   selectNodesForGraphMonitor,
   selectEdges,
@@ -87,8 +87,8 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
 
  
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    console.log('Node clicked:', node);
-    dispatch(setSelectedNode(node.id));
+    console.log('NODE ID:', node.id);
+    dispatch(setSelectedFilterDetails(node.data));
     gpacWebSocket.getFilterDetails(parseInt(node.id));
   }, [dispatch]);
 

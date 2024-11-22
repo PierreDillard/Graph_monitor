@@ -195,11 +195,18 @@ const graphSlice = createSlice({
       console.log('[GraphSlice] Updating filter details:', action.payload);
       state.selectedFilterDetails = action.payload;
     },
-
+    
+    selectSelectedFilterDetails: (state, action: PayloadAction<any>) => {
+      state.selectedFilterDetails = action.payload;
+    }
+,
     clearFilterDetails: (state) => {
       state.selectedFilterDetails = null;
     },
-  },
+    setSelectedFilterDetails: (state, action: PayloadAction<GpacNodeData>) => {
+      state.selectedFilterDetails = action.payload;
+    }
+  }
 });
 
 export const {
@@ -210,6 +217,8 @@ export const {
   setSelectedNode,
   setFilterDetails,
   clearFilterDetails,
+  setSelectedFilterDetails,
+  selectSelectedFilterDetails,
 } = graphSlice.actions;
 
 export default graphSlice.reducer;
