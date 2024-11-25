@@ -6,7 +6,7 @@ export interface RootState {
   widgets: WidgetsState;
 }
 
-interface WidgetsState {
+export interface WidgetsState {
   activeWidgets: Widget[];
   configs: Record<string, WidgetConfig>;
   selectedNode: {
@@ -59,10 +59,10 @@ const initialState: WidgetsState = {
       id: 'graph-1',
       type: WidgetType.GRAPH,
       title: 'Pipeline Graph',
-      x: 6,
+      x: 0,
       y: 0,
-      w: 6,
-      h: 4,
+      w: 10,
+      h: 6,
     },
   ],
   configs: {

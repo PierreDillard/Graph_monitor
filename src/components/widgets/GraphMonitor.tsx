@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useState , useRef, useMemo} from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   ReactFlow,
@@ -26,22 +32,18 @@ import {
   selectError,
 } from '../../store/selectors/graphSelectors';
 
-
-
 const flowStyles = {
   background: '#111827',
   width: '100%',
   height: '100%',
 };
 
-
 const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const dispatch = useDispatch();
-  const nodesRef = useRef<Node[]>([])
-  const edgesRef = useRef<Edge[]>([])
+  const nodesRef = useRef<Node[]>([]);
+  const edgesRef = useRef<Edge[]>([]);
   const renderCount = useRef(0);
 
-  
   // Redux selectors
   const nodes = useSelector(selectNodesForGraphMonitor);
   const edges = useSelector(selectEdges);
@@ -53,8 +55,8 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState([]);
   const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState([]);
 
-   // Memoisatin Node update
-   const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
+  // Memoisatin Node update
+  const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
     return newNodes.map((node) => {
       const existingNode = nodesRef.current.find((n) => n.id === node.id);
       if (existingNode) {
@@ -68,13 +70,12 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       return node;
     });
   }, []);
-  
 
   // Memoisation Edge update
   const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
-    return newEdges.map(edge => {
-      const existingEdge = edgesRef.current.find(e => e.id === edge.id);
-      if(existingEdge) {
+    return newEdges.map((edge) => {
+      const existingEdge = edgesRef.current.find((e) => e.id === edge.id);
+      if (existingEdge) {
         return {
           ...edge,
           selected: existingEdge.selected,
@@ -85,37 +86,49 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     });
   }, []);
 
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      console.log('NODE ID:', node.id);
+      dispatch(setSelectedFilterDetails(node.data as unknown as GpacNodeData));
+      gpacWebSocket.getFilterDetails(parseInt(node.id));
+    },
+    [dispatch],
+  );
 
- 
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    console.log('NODE ID:', node.id);
-    dispatch(setSelectedFilterDetails(node.data as unknown as GpacNodeData));
-    gpacWebSocket.getFilterDetails(parseInt(node.id));
-  }, [dispatch]);
-
-   const handleNodesChange = useCallback((changes: any[]) => {
-    onNodesChange(changes);
-    // Update references
-    nodesRef.current = localNodes.map(node => (typeof node === 'object' ? { ...node } : node));
-  }, [localNodes, onNodesChange]);
+  const handleNodesChange = useCallback(
+    (changes: any[]) => {
+      onNodesChange(changes);
+      // Update references
+      nodesRef.current = localNodes.map((node) =>
+        typeof node === 'object' ? { ...node } : node,
+      );
+    },
+    [localNodes, onNodesChange],
+  );
 
   // Same logic for edges..
-  const handleEdgesChange = useCallback((changes: any[]) => {
-    onEdgesChange(changes);
+  const handleEdgesChange = useCallback(
+    (changes: any[]) => {
+      onEdgesChange(changes);
 
-    edgesRef.current = localEdges.map(edge => ({ ...edge }));
-  }, [localEdges, onEdgesChange]);
-  const updatedNodes = useMemo(() => updateNodesWithPositions(nodes), [nodes, updateNodesWithPositions]);
-  const updatedEdges = useMemo(() => updateEdgesWithState(edges), [edges, updateEdgesWithState]);
+      edgesRef.current = localEdges.map((edge) => ({ ...edge }));
+    },
+    [localEdges, onEdgesChange],
+  );
+  const updatedNodes = useMemo(
+    () => updateNodesWithPositions(nodes),
+    [nodes, updateNodesWithPositions],
+  );
+  const updatedEdges = useMemo(
+    () => updateEdgesWithState(edges),
+    [edges, updateEdgesWithState],
+  );
   // update data
   useEffect(() => {
     if (updatedNodes.length > 0 || updatedEdges.length > 0) {
-     
-
-      
       setLocalNodes(updatedNodes);
       setLocalEdges(updatedEdges);
-      
+
       // Update references
       nodesRef.current = updatedNodes;
       edgesRef.current = updatedEdges;
@@ -123,7 +136,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       renderCount.current++;
       console.log(`[GraphMonitor] Render #${renderCount.current}`, {
         nodesCount: nodes.length,
-        edgesCount: edges.length
+        edgesCount: edges.length,
       });
     }
   }, [updatedNodes, updatedEdges]);
@@ -131,7 +144,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   // WebSocket Connection
   useEffect(() => {
     console.log('GraphMonitor: Mounting and connecting WebSocket');
-    
+
     const connectionTimer = setTimeout(() => {
       gpacWebSocket.connect();
     }, 1000);
@@ -142,8 +155,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       gpacWebSocket.disconnect();
     };
   }, []);
- 
- 
+
   useEffect(() => {
     console.log('Loading state changed:', isLoading);
   }, [isLoading]);
@@ -154,8 +166,6 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       setConnectionError(error);
     }
   }, [error]);
-
-
 
   if (isLoading) {
     return (
@@ -173,10 +183,8 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       <WidgetWrapper id={id} title={title}>
         <div className="flex flex-col items-center justify-center h-full p-4">
           <div className="text-red-500 mb-4">Connection Error</div>
-          <div className="text-gray-400 text-center">
-            {connectionError}
-          </div>
-          <button 
+          <div className="text-gray-400 text-center">{connectionError}</div>
+          <button
             onClick={() => {
               setConnectionError(null);
               gpacWebSocket.connect();
@@ -216,11 +224,14 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
             showInteractive={false}
           />
           <MiniMap
-            nodeColor={n => {
+            nodeColor={(n) => {
               switch (n.type) {
-                case 'input': return '#4ade80';
-                case 'output': return '#ef4444';
-                default: return '#3b82f6';
+                case 'input':
+                  return '#4ade80';
+                case 'output':
+                  return '#ef4444';
+                default:
+                  return '#3b82f6';
               }
             }}
             maskColor="rgba(0, 0, 0, 0.3)"
@@ -228,36 +239,39 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
           />
 
           {/* Légende */}
-          <div 
-  className="absolute bottom-4 left-4 bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-700 z-50" 
-  style={{
-    backgroundColor: '#1f2937', 
-    backdropFilter: 'blur(8px)', 
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  }}
->
-  <div className="relative z-50"> 
-    <h4 className="text-sm font-medium mb-2 text-gray-200">Légende</h4>
-    <div className="space-y-2 text-sm text-gray-300">
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-[#4ade80] shadow-sm" />
-        <span className="relative z-50">Filtre d'entrée</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-[#3b82f6] shadow-sm" />
-        <span className="relative z-50">Filtre de traitement</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-[#ef4444] shadow-sm" />
-        <span className="relative z-50">Filtre de sortie</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Activity className="w-3 h-3 text-gray-400" />
-        <span className="relative z-50">Buffer actif</span>
-      </div>
-    </div>
-  </div>
-</div>
+          <div
+            className="absolute bottom-4 left-4 bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-700 z-50"
+            style={{
+              backgroundColor: '#1f2937',
+              backdropFilter: 'blur(8px)',
+              boxShadow:
+                '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            }}
+          >
+            <div className="relative z-50">
+              <h4 className="text-sm font-medium mb-2 text-gray-200">
+                Légende
+              </h4>
+              <div className="space-y-2 text-sm text-gray-300">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#4ade80] shadow-sm" />
+                  <span className="relative z-50">Filtre d'entrée</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#3b82f6] shadow-sm" />
+                  <span className="relative z-50">Filtre de traitement</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#ef4444] shadow-sm" />
+                  <span className="relative z-50">Filtre de sortie</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Activity className="w-3 h-3 text-gray-400" />
+                  <span className="relative z-50">Buffer actif</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </ReactFlow>
       </div>
     </WidgetWrapper>

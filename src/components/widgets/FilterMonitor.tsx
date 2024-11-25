@@ -1,83 +1,278 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-
-import { useSelector , shallowEqual} from 'react-redux';
-import { Activity } from 'lucide-react';
+import React, { useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+  Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 import { RootState } from '../../store';
+import { GpacNodeData } from '../../types/gpac';
+import { WidgetProps } from '../../types/widget';
 import WidgetWrapper from '../common/WidgetWrapper';
+import { addFilterMetric } from '../../store/slices/filter-monitoringSlice';
 
-const FilterMonitor = ({ id, title }) => {
+const ProcessingChart: React.FC<ProcessingChartProps> = ({ history = [] }) => {
+  // Vérifie et normalise les données
+  const processedHistory = useMemo(() => 
+    history.map(point => ({
+      ...point,
+      bytes_done: typeof point.bytes_done === 'number' ? point.bytes_done : 0,
+      timestamp: typeof point.timestamp === 'number' ? point.timestamp : Date.now()
+    }))
+  , [history]);
 
-  const selectedNode = useSelector((state: RootState) => {
-    console.log('FilterMonitor - Current Redux State:', state);
-    console.log('FilterMonitor - Selected Node:', state.graph?.selectedFilterDetails),
-    shallowEqual
-    return state.graph?.selectedFilterDetails || null;
-  });
-
+  // Log des données traitées
   useEffect(() => {
-    console.log('FilterMonitor - Current selectedNode:', selectedNode);
-  }, [selectedNode]);
+    console.log('Chart Data:', {
+      rawHistory: history,
+      processedHistory: processedHistory,
+      samplePoint: processedHistory[0],
+      latestBytes: processedHistory[processedHistory.length - 1]?.bytes_done
+    });
+  }, [processedHistory]);
 
-  const nodeRef = useRef(selectedNode);
+  if (!processedHistory.length) {
+    return (
+      <div className="bg-gray-800 p-4 rounded-lg">
+        <h3 className="text-sm font-medium mb-4">Processing Progress</h3>
+        <div className="h-48 flex items-center justify-center text-gray-500">
+          No processing data available
+        </div>
+      </div>
+    );
+  }
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload?.[0]) {
+      const bytesValue = payload[0].value;
+      // Choix de l'unité de mesure appropriée
+      let displayValue;
+      if (bytesValue >= 1024 * 1024) {
+        displayValue = `${(bytesValue / (1024 * 1024)).toFixed(2)} MB`;
+      } else if (bytesValue >= 1024) {
+        displayValue = `${(bytesValue / 1024).toFixed(2)} KB`;
+      } else {
+        displayValue = `${bytesValue} bytes`;
+      }
+
+      return (
+        <div className="bg-gray-800 p-3 rounded shadow-lg border border-gray-700">
+          <p className="text-gray-400">
+            {new Date(label).toLocaleTimeString()}
+          </p>
+          <p className="text-sm font-medium text-blue-400">
+            {displayValue}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="bg-gray-800 h-full p-4 rounded-lg">
+      <h3 className="text-sm font-medium mb-2">Processing Progress</h3>
+      <div className="h-[calc(100%-3rem)]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart 
+              data={processedHistory}
+              margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+            >
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis
+              dataKey="timestamp"
+              type="number"
+              scale="time"
+              domain={['auto', 'auto']}
+              tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString()}
+              stroke="#6B7280"
+              tickMargin={10}
+            />
+            <YAxis
+              stroke="#6B7280"
+              domain={['auto', 'auto']}
+              tickFormatter={(value) => {
+                if (value >= 1024 * 1024) {
+                  return `${(value / (1024 * 1024)).toFixed(1)}MB`;
+                } else if (value >= 1024) {
+                  return `${(value / 1024).toFixed(1)}KB`;
+                }
+                return `${value}B`;
+              }}
+              width={55}
+              tickMargin={5}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Line
+              type="monotone"
+              dataKey="bytes_done"
+              name="Bytes Processed"
+              stroke="#3b82f6"
+              dot={false}
+              strokeWidth={2}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+        
+        {/* Debug info */}
+        <div className="mt-2 text-xs text-gray-500 space-y-1">
+          <div>
+            Latest: {(() => {
+              const latest = processedHistory[processedHistory.length - 1]?.bytes_done || 0;
+              if (latest >= 1024 * 1024) {
+                return `${(latest / (1024 * 1024)).toFixed(2)} MB`;
+              } else if (latest >= 1024) {
+                return `${(latest / 1024).toFixed(2)} KB`;
+              }
+              return `${latest} bytes`;
+            })()}
+          </div>
+          <div>
+            Points: {processedHistory.length}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
+  const dispatch = useDispatch();
+  const selectedFilter = useSelector((state: RootState) => state.graph.selectedFilterDetails);
+  const filterHistory = useSelector((state: RootState) => 
+    selectedFilter ? state.filterMonitoring.selectedFilterHistory[selectedFilter.idx] : []
+  );
+
+  // Effect pour la mise à jour des métriques
   useEffect(() => {
-    nodeRef.current = selectedNode;
-  }, [selectedNode]);
+    if (selectedFilter) {
+      const bytes_done = Number(selectedFilter.bytes_done);
+      
+      // Log détaillé des buffers
+      const bufferDetails = {
+        input_pids: Object.entries(selectedFilter.ipid || {}).map(([name, data]) => ({
+          name,
+          raw_buffer: data.buffer,
+          raw_total: data.buffer_total,
+          parsed_buffer: Number(data.buffer),
+          parsed_total: data.buffer_total === -1 ? 'Infinity' : Number(data.buffer_total),
+          percentage: data.buffer_total === -1 ? 100 : 
+            ((Number(data.buffer) / Number(data.buffer_total || 1)) * 100).toFixed(1)
+        })),
+        output_pids: Object.entries(selectedFilter.opid || {}).map(([name, data]) => ({
+          name,
+          raw_buffer: data.buffer,
+          raw_total: data.buffer_total,
+          parsed_buffer: Number(data.buffer),
+          parsed_total: data.buffer_total === -1 ? 'Infinity' : Number(data.buffer_total),
+          percentage: data.buffer_total === -1 ? 100 : 
+            ((Number(data.buffer) / Number(data.buffer_total || 1)) * 100).toFixed(1)
+        }))
+      };
+      
+      console.log('Filter Details:', {
+        filter_id: selectedFilter.idx,
+        name: selectedFilter.name,
+        bytes_done: {
+          raw: selectedFilter.bytes_done,
+          parsed: bytes_done,
+          type: typeof bytes_done
+        },
+        buffers: bufferDetails,
+        status: selectedFilter.status
+      });
 
-  const stableNodeData = useMemo(() =>  selectedNode, [selectedNode?.idx]);
+      dispatch(addFilterMetric({
+        filterId: selectedFilter.idx.toString(),
+        metric: {
+          timestamp: Date.now(),
+          bytes_done: bytes_done,
+          buffers: Object.fromEntries(
+            [...Object.entries(selectedFilter.ipid || {}), ...Object.entries(selectedFilter.opid || {})]
+              .map(([name, data]) => [
+                name,
+                {
+                  buffer: Number(data.buffer) || 0,
+                  buffer_total: data.buffer_total === -1 ? Infinity : Number(data.buffer_total) || 0,
+                  percentage: data.buffer_total === -1 ? 100 : 
+                    (Number(data.buffer) / Number(data.buffer_total) * 100) || 0
+                }
+              ])
+          )
+        }
+      }));
+    }
+  }, [selectedFilter, dispatch]);
 
-
-
-  useEffect(() => {
-    console.log('FilterMonitor - Component rendered with selectedNode:', selectedNode);
-  }, [selectedNode]);
-
-  if (!selectedNode) {
-    console.log('FilterMonitor - No node selected, showing placeholder');
+  if (!selectedFilter) {
     return (
       <WidgetWrapper id={id} title={title}>
-        <div className="flex items-center justify-center h-full p-4 text-gray-400">
-          Select a node in the Graph Monitor to view details
+        <div className="flex items-center justify-center h-full text-gray-400">
+          Select a filter in the Graph Monitor to view details
         </div>
       </WidgetWrapper>
     );
   }
 
-  console.log('FilterMonitor - Rendering with node:', selectedNode);
-
-  // Afficher les informations du filtre sélectionné
   return (
     <WidgetWrapper id={id} title={title}>
-      <div className="p-4">
-      {stableNodeData ? (
-        <div className="bg-gray-800 rounded-lg p-4 mb-4">
-          <h3 className="text-lg font-medium mb-2">Filter Details</h3>
-          
-          <div className="space-y-2">
-            {/* Affichage du nom */}
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-blue-500" />
-              <span className="text-gray-300">Name:</span>
-              <span className="text-white font-medium">
-                {selectedNode.name || JSON.stringify(selectedNode)}
-              </span>
-            </div>
-
-            {/* Affichage du type */}
-            <div className="flex items-center gap-2">
-              <span className="text-gray-300">Type:</span>
-              <span className="text-white">{selectedNode.type || 'N/A'}</span>
-            </div>
-
-            {/* Debug info */}
-            <div className="mt-4 p-2 bg-gray-900 rounded text-xs text-gray-400">
-              <pre>{JSON.stringify(selectedNode, null, 2)}</pre>
-            </div>
+      <div className="flex flex-col h-full p-4 space-y-4">
+        {/* Informations basiques du filtre */}
+        <div className="grid grid-cols-2 gap-4 shrink-0">
+          <div className="bg-gray-700 p-4 rounded">
+            <span className="text-sm text-gray-400">Name</span>
+            <div className="font-medium">{selectedFilter.name}</div>
+          </div>
+          <div className="bg-gray-700 p-4 rounded">
+            <span className="text-sm text-gray-400">Type</span>
+            <div className="font-medium">{selectedFilter.type}</div>
           </div>
         </div>
-            ) : null}
+
+        {/* Graphique principal avec hauteur fixe */}
+        <div className="h-[250px] shrink-0">
+          <ProcessingChart history={filterHistory} />
+        </div>
+
+        {/* Buffer metrics */}
+        <div className="shrink-0">
+          <h4 className="text-sm font-medium mb-2">Buffer Status</h4>
+          <div className="grid grid-cols-2 gap-4">
+            {Object.entries({...selectedFilter.ipid, ...selectedFilter.opid}).map(([name, data]) => {
+  const buffer = data.buffer < 0 ? 0 : data.buffer;
+  const total = data.buffer_total === -1 ? Infinity : (data.buffer_total < 0 ? 0 : data.buffer_total);
+  const isStreaming = data.buffer_total === -1;
+  const percentage = isStreaming ? 100 : ((buffer / (total || 1)) * 100);
+
+  return (
+    <div key={name} className="bg-gray-700 p-3 rounded">
+      <span className="text-sm text-gray-400">{name}</span>
+      <div className="text-xs text-gray-400 mb-1">
+        {isStreaming ? 
+          'Streaming Mode' : 
+          `Buffer: ${buffer.toLocaleString()} / ${total.toLocaleString()}`
+        }
       </div>
-  
+      {/* Barre de progression */}
+      <div className="w-full bg-gray-600 h-1.5 rounded overflow-hidden mb-1">
+        <div 
+          className="h-full bg-blue-500 transition-all duration-300"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <div className="font-medium flex justify-between items-center">
+        <span>{isStreaming ? 'Streaming' : `${percentage.toFixed(1)}%`}</span>
+        {isStreaming && (
+          <span className="text-xs text-gray-400">
+            Buffer: {buffer.toLocaleString()}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+})}
+          </div>
+        </div>
+      </div>
     </WidgetWrapper>
   );
 };

@@ -3,7 +3,7 @@ import { Node, Edge, MarkerType } from '@xyflow/react';
 import { GpacNodeData } from '@/types/gpac';
 import { isEqual, set } from 'lodash';
 
-interface GraphState {
+export interface GraphState {
   filters: GpacNodeData[];
   nodes: Node[];
   edges: Edge[];
@@ -24,20 +24,31 @@ const initialState: GraphState = {
   redraw: false,
   selectedNodeId: null,
   lastUpdate: Date.now(),
-  selectedFilterDetails: null
+  selectedFilterDetails: null,
 };
 
 type FilterType = 'video' | 'audio' | 'text' | 'image' | 'other';
 
-
-const determineFilterType = (filterName: string, filterType: string): FilterType => {
+const determineFilterType = (
+  filterName: string,
+  filterType: string,
+): FilterType => {
   const name = filterName.toLowerCase();
   const type = filterType.toLowerCase();
-  
-  if (name.includes('video') || type.includes('vout') || type.includes('vflip') || type.includes('nvdec')) {
+
+  if (
+    name.includes('video') ||
+    type.includes('vout') ||
+    type.includes('vflip') ||
+    type.includes('nvdec')
+  ) {
     return 'video';
   }
-  if (name.includes('audio') || type.includes('aout') || type.includes('aenc')) {
+  if (
+    name.includes('audio') ||
+    type.includes('aout') ||
+    type.includes('aenc')
+  ) {
     return 'audio';
   }
   if (name.includes('text') || name.includes('subt') || type.includes('text')) {
@@ -55,15 +66,21 @@ const getFilterColor = (filterType: FilterType): string => {
     audio: '#10b981',
     text: '#f59e0b',
     image: '#8b5cf6',
-    other: '#6b7280'
+    other: '#6b7280',
   };
   return colors[filterType];
 };
 
-function createNodeFromFilter(filter: GpacNodeData, index: number, existingNodes: Node[]): Node {
-  const existingNode = existingNodes.find(n => n.id === filter.idx.toString());
+function createNodeFromFilter(
+  filter: GpacNodeData,
+  index: number,
+  existingNodes: Node[],
+): Node {
+  const existingNode = existingNodes.find(
+    (n) => n.id === filter.idx.toString(),
+  );
   const filterType = determineFilterType(filter.name, filter.type);
-  
+
   return {
     id: filter.idx.toString(),
     type: 'default',
@@ -77,9 +94,12 @@ function createNodeFromFilter(filter: GpacNodeData, index: number, existingNodes
       y: 100 + Math.floor(index / 3) * 200,
     },
     style: {
-      background: filter.nb_ipid === 0 ? '#4ade80' : 
-                 filter.nb_opid === 0 ? '#ef4444' : 
-                 getFilterColor(filterType),
+      background:
+        filter.nb_ipid === 0
+          ? '#4ade80'
+          : filter.nb_opid === 0
+            ? '#ef4444'
+            : getFilterColor(filterType),
       color: 'white',
       padding: '10px',
       borderRadius: '8px',
@@ -90,24 +110,28 @@ function createNodeFromFilter(filter: GpacNodeData, index: number, existingNodes
   };
 }
 
-function createEdgesFromFilters(filters: GpacNodeData[], existingEdges: Edge[]): Edge[] {
+function createEdgesFromFilters(
+  filters: GpacNodeData[],
+  existingEdges: Edge[],
+): Edge[] {
   const newEdges: Edge[] = [];
 
-  filters.forEach(filter => {
+  filters.forEach((filter) => {
     if (filter.ipid) {
       Object.entries(filter.ipid).forEach(([pidName, pid]: [string, any]) => {
         if (pid.source_idx !== undefined) {
           const edgeId = `${pid.source_idx}-${filter.idx}-${pidName}`;
-          const existingEdge = existingEdges.find(e => e.id === edgeId);
-          
+          const existingEdge = existingEdges.find((e) => e.id === edgeId);
+
           const filterType = determineFilterType(filter.name, filter.type);
           const filterColor = getFilterColor(filterType);
-          
-          // Calculer le pourcentage de buffer
-          const bufferPercentage = pid.buffer_total > 0 
-            ? Math.round((pid.buffer / pid.buffer_total) * 100)
-            : 0;
-            
+
+          // Calculate buffer percentage
+          const bufferPercentage =
+            pid.buffer_total > 0
+              ? Math.round((pid.buffer / pid.buffer_total) * 100)
+              : 0;
+
           newEdges.push({
             id: edgeId,
             source: pid.source_idx.toString(),
@@ -117,7 +141,7 @@ function createEdgesFromFilters(filters: GpacNodeData[], existingEdges: Edge[]):
             data: {
               filterType,
               bufferPercentage,
-              pidName
+              pidName,
             },
             animated: true,
             style: {
@@ -139,9 +163,7 @@ function createEdgesFromFilters(filters: GpacNodeData[], existingEdges: Edge[]):
   return newEdges;
 }
 
-
-
-const THROTTLE_INTERVAL = 100; 
+const THROTTLE_INTERVAL = 100;
 
 const graphSlice = createSlice({
   name: 'graph',
@@ -160,26 +182,30 @@ const graphSlice = createSlice({
         state.filters = [];
         state.nodes = [];
         state.edges = [];
-        
+
         // Mettre à jour avec les nouvelles données
         state.filters = action.payload;
-        state.nodes = action.payload.map((f, i) => createNodeFromFilter(f, i, []));
+        state.nodes = action.payload.map((f, i) =>
+          createNodeFromFilter(f, i, []),
+        );
         state.edges = createEdgesFromFilters(action.payload, []);
         state.lastUpdate = Date.now();
-      }
-      ,
+      },
       prepare(data: GpacNodeData[]) {
         return {
           payload: data,
-          meta: { throttle: THROTTLE_INTERVAL }
+          meta: { throttle: THROTTLE_INTERVAL },
         };
-      }
+      },
     },
-   
-    updateLayout(state, action: PayloadAction<{ nodes: Node[], edges: Edge[] }>) {
+
+    updateLayout(
+      state,
+      action: PayloadAction<{ nodes: Node[]; edges: Edge[] }>,
+    ) {
       // Update only the positions of existing nodes
-      state.nodes = state.nodes.map(node => {
-        const updatedNode = action.payload.nodes.find(n => n.id === node.id);
+      state.nodes = state.nodes.map((node) => {
+        const updatedNode = action.payload.nodes.find((n) => n.id === node.id);
         return updatedNode ? { ...node, position: updatedNode.position } : node;
       });
       state.edges = action.payload.edges;
@@ -193,18 +219,17 @@ const graphSlice = createSlice({
       console.log('[GraphSlice] Updating filter details:', action.payload);
       state.selectedFilterDetails = action.payload;
     },
-    
+
     selectSelectedFilterDetails: (state, action: PayloadAction<any>) => {
       state.selectedFilterDetails = action.payload;
-    }
-,
+    },
     clearFilterDetails: (state) => {
       state.selectedFilterDetails = null;
     },
     setSelectedFilterDetails: (state, action: PayloadAction<GpacNodeData>) => {
       state.selectedFilterDetails = action.payload;
-    }
-  }
+    },
+  },
 });
 export const {
   setLoading,

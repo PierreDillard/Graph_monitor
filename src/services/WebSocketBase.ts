@@ -1,6 +1,8 @@
 export class WebSocketBase {
   private socket: WebSocket | null = null;
-  private messageHandlers: { [key: string]: ((connection: WebSocketBase, dataView: DataView) => void)[] } = {};
+  private messageHandlers: {
+    [key: string]: ((connection: WebSocketBase, dataView: DataView) => void)[];
+  } = {};
 
   public isConnected(): boolean {
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
@@ -9,7 +11,7 @@ export class WebSocketBase {
   public connect(address: string): void {
     try {
       console.log(`[WebSocket] Attempting to connect to ${address}`);
-      
+
       if (this.socket) {
         console.log('[WebSocket] Closing existing connection');
         this.socket.close();
@@ -21,18 +23,21 @@ export class WebSocketBase {
 
       this.socket.onopen = () => {
         console.log('[WebSocket] Connection established');
-        this.callMessageHandlers('__OnConnect__', new DataView(new ArrayBuffer(0)));
+        this.callMessageHandlers(
+          '__OnConnect__',
+          new DataView(new ArrayBuffer(0)),
+        );
       };
 
       this.socket.onmessage = (event: MessageEvent) => {
         try {
           const dataView = new DataView(event.data);
-          
+
           // Pour les messages qui commencent par un caractère {
           const firstChar = String.fromCharCode(dataView.getInt8(0));
           if (firstChar === '{') {
             console.log('[WebSocket] Message received:', firstChar);
-            this.callMessageHandlers('{\"me', dataView);
+            this.callMessageHandlers('{"me', dataView);
             return;
           }
 
@@ -42,14 +47,14 @@ export class WebSocketBase {
               dataView.getInt8(0),
               dataView.getInt8(1),
               dataView.getInt8(2),
-              dataView.getInt8(3)
+              dataView.getInt8(3),
             );
             console.log('[WebSocket] Message received:', id);
-            
+
             // Essayer d'abord le handler spécifique
             const handlers = this.messageHandlers[id];
             if (handlers && handlers.length > 0) {
-              handlers.forEach(handler => handler(this, dataView));
+              handlers.forEach((handler) => handler(this, dataView));
               return;
             }
           }
@@ -63,15 +68,19 @@ export class WebSocketBase {
       };
 
       this.socket.onclose = (event) => {
-        console.log(`[WebSocket] Connection closed: Code=${event.code}, Clean=${event.wasClean}, Reason=${event.reason || 'No reason provided'}`);
+        console.log(
+          `[WebSocket] Connection closed: Code=${event.code}, Clean=${event.wasClean}, Reason=${event.reason || 'No reason provided'}`,
+        );
         this.socket = null;
-        this.callMessageHandlers('__OnDisconnect__', new DataView(new ArrayBuffer(0)));
+        this.callMessageHandlers(
+          '__OnDisconnect__',
+          new DataView(new ArrayBuffer(0)),
+        );
       };
 
       this.socket.onerror = (error) => {
         console.error('[WebSocket] Connection error:', error);
       };
-
     } catch (error) {
       console.error('[WebSocket] Error creating connection:', error);
       throw error;
@@ -104,19 +113,28 @@ export class WebSocketBase {
     }
   }
 
-  public addConnectHandler(handler: (connection: WebSocketBase, dataView: DataView) => void): void {
+  public addConnectHandler(
+    handler: (connection: WebSocketBase, dataView: DataView) => void,
+  ): void {
     this.addMessageHandler('__OnConnect__', handler);
   }
 
-  public addDisconnectHandler(handler: (connection: WebSocketBase, dataView: DataView) => void): void {
+  public addDisconnectHandler(
+    handler: (connection: WebSocketBase, dataView: DataView) => void,
+  ): void {
     this.addMessageHandler('__OnDisconnect__', handler);
   }
 
-  public addDefaultMessageHandler(handler: (connection: WebSocketBase, dataView: DataView) => void): void {
+  public addDefaultMessageHandler(
+    handler: (connection: WebSocketBase, dataView: DataView) => void,
+  ): void {
     this.addMessageHandler('__default__', handler);
   }
 
-  public addMessageHandler(messageName: string, handler: (connection: WebSocketBase, dataView: DataView) => void): void {
+  public addMessageHandler(
+    messageName: string,
+    handler: (connection: WebSocketBase, dataView: DataView) => void,
+  ): void {
     if (!(messageName in this.messageHandlers)) {
       this.messageHandlers[messageName] = [];
     }
@@ -131,7 +149,7 @@ export class WebSocketBase {
       if (messageName !== '__default__') {
         const defaultHandlers = this.messageHandlers['__default__'];
         if (defaultHandlers) {
-          defaultHandlers.forEach(handler => {
+          defaultHandlers.forEach((handler) => {
             try {
               handler(this, dataView);
             } catch (error) {
@@ -143,11 +161,14 @@ export class WebSocketBase {
       return;
     }
 
-    handlers.forEach(handler => {
+    handlers.forEach((handler) => {
       try {
         handler(this, dataView);
       } catch (error) {
-        console.error(`[WebSocket] Error in handler for ${messageName}:`, error);
+        console.error(
+          `[WebSocket] Error in handler for ${messageName}:`,
+          error,
+        );
       }
     });
   }

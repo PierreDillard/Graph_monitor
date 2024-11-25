@@ -1,8 +1,22 @@
-// src/types/gpac.ts
 import { Node, Edge, EdgeProps } from '@xyflow/react';
 
+export interface FilterMetadata {
+  CodecID?: string;
+  AvgFrameSize?: number;
+  Bitrate?: number;
+  ClockID?: number;
+  Duration?: number;
+  Extension?: string;
+  Height?: number;
+  Width?: number;
+  ISOBrand?: string;
+  Language?: string;
+  MIMEType?: string;
+  MovieTime?: number;
+  MaxFrameSize?: number;
+}
 
-export interface PIDInfo {
+export interface PIDData {
   buffer: number;
   buffer_total: number;
   source_idx?: number;
@@ -12,9 +26,10 @@ export interface PIDInfo {
   fps?: string;
   samplerate?: number;
   channels?: number;
+  format?: string;
 }
 
-export interface GpacNodeData {
+export interface GpacNodeData extends FilterMetadata {
   name: string;
   type: string;
   itag: string | null;
@@ -25,8 +40,8 @@ export interface GpacNodeData {
   bytes_done: number;
   idx: number;
   gpac_args: string[];
-  ipid: Record<string, PIDInfo>;
-  opid: Record<string, PIDInfo>;
+  ipid: Record<string, PIDData>;
+  opid: Record<string, PIDData>;
 }
 
 export type GpacNode = Node<GpacNodeData>;
@@ -47,5 +62,3 @@ export type GpacEdge = Edge<EdgeData>;
 export interface GpacEdgeProps extends EdgeProps<EdgeData> {
   data: EdgeData;
 }
-
-

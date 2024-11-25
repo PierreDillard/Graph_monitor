@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import graphReducer from './slices/graphSlice';
 import widgetsReducer from './slices/widgetsSlice';
-import pidReducer from './slices/pidSlice';
+import filterMonitoringReducer from './slices/filter-monitoringSlice';
 
 export const store = configureStore({
   reducer: {
     graph: graphReducer,
-    pid: pidReducer,
+    filterMonitoring: filterMonitoringReducer,
     widgets: widgetsReducer,
   },
   middleware: (getDefaultMiddleware) =>

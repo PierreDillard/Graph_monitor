@@ -4,42 +4,43 @@ import type { RootState } from '../index';
 
 const selectGraphState = (state: RootState) => state.graph;
 
-// Selectors memoized 
+// Selectors memoized
 export const selectNodesForGraphMonitor = createSelector(
   [selectGraphState],
-  (graph) => graph.nodes.map((node) => {
-    const { bytes_done, status, ...dataWithoutBytesDone } = node.data;
-    return {
-      ...node,
-      data: dataWithoutBytesDone,
-    };
-  }),
+  (graph) =>
+    graph.nodes.map((node) => {
+      const { bytes_done, status, ...dataWithoutBytesDone } = node.data;
+      return {
+        ...node,
+        data: dataWithoutBytesDone,
+      };
+    }),
   {
     memoizeOptions: {
-      resultEqualityCheck: isEqual
-    }
-  }
+      resultEqualityCheck: isEqual,
+    },
+  },
 );
 
-// Memoized selectors 
+// Memoized selectors
 export const selectEdges = createSelector(
   [selectGraphState],
   (graph) => graph.edges,
   {
     memoizeOptions: {
-      resultEqualityCheck: isEqual
-    }
-  }
+      resultEqualityCheck: isEqual,
+    },
+  },
 );
 
 export const selectIsLoading = createSelector(
   [selectGraphState],
-  (graph) => graph.isLoading
+  (graph) => graph.isLoading,
 );
 
 export const selectError = createSelector(
   [selectGraphState],
-  (graph) => graph.error
+  (graph) => graph.error,
 );
 
 export const selectSelectedFilterDetails = createSelector(
@@ -47,7 +48,7 @@ export const selectSelectedFilterDetails = createSelector(
   (graph) => graph.selectedFilterDetails,
   {
     memoizeOptions: {
-      resultEqualityCheck: isEqual
-    }
-  }
+      resultEqualityCheck: isEqual,
+    },
+  },
 );
