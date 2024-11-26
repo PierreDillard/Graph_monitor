@@ -6,4 +6,5 @@ export interface RootState {
   graph: GraphState;
   widgets: WidgetsState;
   filterMonitoring: FilterMonitoringState;
+
 }

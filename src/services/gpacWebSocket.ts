@@ -2,6 +2,10 @@ import { WebSocketBase } from './WebSocketBase';
 import { isEqual } from 'lodash';
 import { store } from '../store';
 import {
+  updateFilterData,
+  setSelectedFilters,
+} from '../store/slices/multiFilterSlice';
+import {
   updateGraphData,
   setLoading,
   setError,
@@ -82,8 +86,9 @@ export class GpacWebSocket {
     });
   }
 
+  private activeSubscriptions: Set<string> = new Set();
+
   private handleGpacMessage(data: any): void {
-    console.log('[DEBUG] Handling GPAC message:', data);
     const currentState = store.getState();
 
     if (!data.message) {
@@ -110,9 +115,23 @@ export class GpacWebSocket {
         break;
 
       case 'details':
-        // Process details if the filter is the current one
-        if (data.filter && data.filter.idx === this.currentFilterId) {
-          store.dispatch(setFilterDetails(data.filter));
+        if (data.filter) {
+          const filterId = data.filter.idx.toString();
+
+          // Support for single filter
+          if (data.filter.idx === this.currentFilterId) {
+            store.dispatch(setFilterDetails(data.filter));
+          }
+
+          // Support for multiple filters
+          if (this.activeSubscriptions.has(filterId)) {
+            store.dispatch(
+              updateFilterData({
+                id: filterId,
+                data: data.filter,
+              }),
+            );
+          }
         }
         break;
 
@@ -121,6 +140,43 @@ export class GpacWebSocket {
     }
   }
   private currentFilterId: number | null = null;
+
+  public setCurrentFilterId(id: number | null): void {
+    console.log('[WebSocket] Setting current filter ID:', id);
+    this.currentFilterId = id;
+  }
+
+  public getCurrentFilterId(): number | null {
+    return this.currentFilterId;
+  }
+
+  public subscribeToFilter(idx: string): void {
+    if (this.activeSubscriptions.has(idx)) {
+      return;
+    }
+
+    this.activeSubscriptions.add(idx);
+    this.sendMessage({
+      message: 'get_details',
+      idx: parseInt(idx),
+    });
+
+    console.log(`[WebSocket] Subscribed to filter ${idx}`);
+  }
+
+  public unsubscribeFromFilter(idx: string): void {
+    if (!this.activeSubscriptions.has(idx)) {
+      return;
+    }
+
+    this.activeSubscriptions.delete(idx);
+    this.sendMessage({
+      message: 'stop_details',
+      idx: parseInt(idx),
+    });
+
+    console.log(`[WebSocket] Unsubscribed from filter ${idx}`);
+  }
   public connect(): void {
     if (this.isConnecting) return;
 
@@ -154,9 +210,39 @@ export class GpacWebSocket {
   }
 
   public disconnect(): void {
-    if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+    console.log('[WebSocket] Initiating disconnect...');
+
+    // Clean up reconnect timeout
+    if (this.reconnectTimeout) {
+      console.log('[WebSocket] Clearing reconnect timeout');
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+    //Clean up active subscriptions
+    if (this.activeSubscriptions.size > 0) {
+      console.log(
+        '[WebSocket] Clearing active subscriptions:',
+        Array.from(this.activeSubscriptions),
+      );
+      this.activeSubscriptions.clear();
+    }
+
+    // Reset state
     this.isConnecting = false;
-    this.ws.disconnect();
+    this.currentFilterId = null;
+    this.reconnectAttempts = 0;
+
+    // Stop current filter details
+    store.dispatch(setSelectedFilters([])); // Nettoyer les filtres monitorés
+    store.dispatch(setFilterDetails(null)); // Nettoyer le PID Monitor actif
+
+    // Disconnect WebSocket
+    if (this.ws) {
+      console.log('[WebSocket] Disconnecting WebSocket');
+      this.ws.disconnect();
+    }
+
+    console.log('[WebSocket] Disconnect complete');
   }
 
   public sendMessage(message: any): void {

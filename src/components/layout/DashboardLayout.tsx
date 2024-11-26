@@ -13,6 +13,7 @@ import { RootState } from '../../store';
 import { updateWidgetPosition } from '../../store/slices/widgetsSlice';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import MultiFilterMonitor from '../widgets/MultiFilterMonitor';
 import GraphMonitor from '../widgets/GraphMonitor';
 import AudioMonitor from '../widgets/AudioMonitor';
 import VideoMonitor from '../widgets/VideoMonitor';
@@ -33,6 +34,7 @@ const WIDGET_COMPONENTS: Record<
   [WidgetType.LOGS]: LogsMonitor,
   [WidgetType.METRICS]: MetricsMonitor,
   [WidgetType.FILTER]: FilterMonitor,
+  [WidgetType.MULTI_FILTER]: MultiFilterMonitor,
 };
 
 const DashboardLayout: React.FC = () => {

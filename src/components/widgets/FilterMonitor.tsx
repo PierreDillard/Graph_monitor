@@ -205,7 +205,7 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
           />
           <MetricCard
             title="Packets Sent"
-            value={selectedFilter.pck_sent|| 0}
+            value={selectedFilter.pck_sent || 0}
             unit="pkts"
             className="bg-green-900/20"
           />
