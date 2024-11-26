@@ -152,8 +152,8 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
       const metric: FilterMetric = {
         timestamp: Date.now(),
         bytes_done: Number(selectedFilter.bytes_done) || 0,
-        packets_sent: Number(selectedFilter.nb_packets_sent) || 0,
-        packets_done: Number(selectedFilter.nb_packets_done) || 0,
+        packets_sent: Number(selectedFilter.pck_sent) || 0,
+        packets_done: Number(selectedFilter.pck_done) || 0,
       };
 
       dispatch(
@@ -168,7 +168,7 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
   if (!selectedFilter) {
     return (
       <WidgetWrapper id={id} title={title}>
-        <div className="flex items-center justify-center h-full text-gray-400">
+        <div className="flex items-center justify-center h-full  text-gray-400">
           Select a filter in the Graph Monitor to view details
         </div>
       </WidgetWrapper>
@@ -177,7 +177,7 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
 
   return (
     <WidgetWrapper id={id} title={title}>
-      <div className="flex flex-col h-full p-4 space-y-4">
+      <div className="flex flex-col h-full p-4 space-y-4 ">
         {/* Informations du filtre */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-gray-700 p-4 rounded">
@@ -205,13 +205,13 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
           />
           <MetricCard
             title="Packets Sent"
-            value={selectedFilter.nb_packets_sent || 0}
+            value={selectedFilter.pck_sent|| 0}
             unit="pkts"
             className="bg-green-900/20"
           />
           <MetricCard
             title="Packets Done"
-            value={selectedFilter.nb_packets_done || 0}
+            value={selectedFilter.pck_done || 0}
             unit="pkts"
             className="bg-yellow-900/20"
           />

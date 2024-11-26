@@ -38,8 +38,8 @@ export interface GpacNodeData extends FilterMetadata {
   nb_opid: number;
   status: string;
   bytes_done: number;
-  nb_packets_sent: number;  
-  nb_packets_done: number; 
+  pck_sent: number;  
+  pck_done: number;  
   idx: number;
   gpac_args: string[];
   ipid: Record<string, PIDData>;

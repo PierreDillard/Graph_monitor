@@ -20,7 +20,7 @@ interface WidgetWrapperProps {
 
 // Memoized styles
 const headerStyles = {
-  base: 'flex items-center justify-between px-4 py-2 bg-gray-700 border-b border-gray-600 transition-colors hover:bg-gray-650',
+  base: 'flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-600 transition-colors hover:bg-gray-650',
   title: 'flex items-center gap-2',
   actions: 'flex items-center gap-2',
 };
