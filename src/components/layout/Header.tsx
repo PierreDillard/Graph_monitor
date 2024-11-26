@@ -29,9 +29,8 @@ const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
         {/* Logo et titre */}
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-semibold text-white">GPAC Monitor</h1>
-          <span className="text-sm text-gray-400">   </span>
+          <span className="text-sm text-gray-400"> </span>
           <div className="h-6 w-px bg-gray-700" /> {/* Séparateur vertical */}
-
         </div>
 
         {/* Actions principales */}

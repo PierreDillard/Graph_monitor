@@ -93,6 +93,12 @@ function createNodeFromFilter(
       x: 150 + (index % 3) * 300,
       y: 100 + Math.floor(index / 3) * 200,
     },
+    className: `transition-all duration-200 ${
+      existingNode?.selected
+        ? 'ring-2 ring-offset-2 ring-blue-500 shadow-lg scale-105'
+        : ''
+    }`,
+    selected: existingNode?.selected,
     style: {
       background:
         filter.nb_ipid === 0
@@ -106,7 +112,6 @@ function createNodeFromFilter(
       border: '1px solid #4b5563',
       width: 180,
     },
-    selected: existingNode?.selected,
   };
 }
 

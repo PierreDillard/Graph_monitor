@@ -1,18 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { GpacNodeData } from '@/types/gpac';
+import { FilterMetric } from '@/types/filterMonitor';
 import { RootState } from '../index';
-
-interface FilterMetric {
-  timestamp: number;
-  bytes_done: number;
-  buffers: {
-    [pidName: string]: {
-      buffer: number;
-      buffer_total: number;
-      percentage: number;
-    };
-  };
-}
 
 export interface FilterMonitoringState {
   selectedFilterHistory: {
@@ -35,10 +23,21 @@ const filterMonitoringSlice = createSlice({
       action: PayloadAction<{ filterId: string; metric: FilterMetric }>,
     ) {
       const { filterId, metric } = action.payload;
+
+      const sanitizedMetric: FilterMetric = {
+        timestamp: metric.timestamp,
+        bytes_done: Number.isFinite(metric.bytes_done) ? metric.bytes_done : 0,
+        packets_sent: Number.isFinite(metric.packets_sent)
+          ? metric.packets_sent
+          : 0,
+        packets_done: Number.isFinite(metric.packets_done)
+          ? metric.packets_done
+          : 0,
+      };
       if (!state.selectedFilterHistory[filterId]) {
         state.selectedFilterHistory[filterId] = [];
       }
-      state.selectedFilterHistory[filterId].push(metric);
+      state.selectedFilterHistory[filterId].push(sanitizedMetric);
       if (
         state.selectedFilterHistory[filterId].length > state.maxHistoryLength
       ) {

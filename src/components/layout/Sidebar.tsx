@@ -77,7 +77,7 @@ const Sidebar: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Dashboard</h2>
         <p className="text-sm text-gray-400">
-        Drag and drop widgets to create your custom dashboard
+          Drag and drop widgets to create your custom dashboard
         </p>
       </div>
 
