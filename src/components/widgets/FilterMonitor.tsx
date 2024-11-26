@@ -177,17 +177,17 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
 
   return (
     <WidgetWrapper id={id} title={title}>
-      <div className="flex flex-col h-full p-4 space-y-4 ">
+      <div className="flex flex-col h-full p-2 space-y-2 ">
         {/* Informations du filtre */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-700 p-4 rounded">
+          <div className="bg-gray-700 p-1 rounded">
             <h3 className="text-sm text-gray-400 mb-1">Filter Name</h3>
             <div className="font-medium text-lg">{selectedFilter.name}</div>
             <div className="text-sm text-gray-400 mt-1">
               {selectedFilter.type}
             </div>
           </div>
-          <div className="bg-gray-700 p-4 rounded">
+          <div className="bg-gray-700 p-1 rounded">
             <h3 className="text-sm text-gray-400 mb-1">Status</h3>
             <div className="font-medium break-words">
               {selectedFilter.status || 'No status available'}
