@@ -75,9 +75,9 @@ const Sidebar: React.FC = () => {
   return (
     <div className="w-64 bg-gray-800 p-6">
       <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">GPAC Monitor</h2>
+        <h2 className="text-xl font-semibold mb-2">Dashboard</h2>
         <p className="text-sm text-gray-400">
-          Drag and drop widgets to create your custom dashboard
+        Drag and drop widgets to create your custom dashboard
         </p>
       </div>
 

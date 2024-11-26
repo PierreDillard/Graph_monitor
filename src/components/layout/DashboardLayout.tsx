@@ -80,7 +80,7 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900">
+    <div className="flex flex-col h-screen bg-gray-950">
       <Header />
       <div className="flex flex-1">
         <Sidebar />

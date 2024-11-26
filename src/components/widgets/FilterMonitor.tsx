@@ -218,11 +218,11 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
       <div className="flex flex-col h-full p-4 space-y-4">
         {/* Informations basiques du filtre */}
         <div className="grid grid-cols-2 gap-4 shrink-0">
-          <div className="bg-gray-700 p-4 rounded">
+          <div className="bg-gray-700 p-2 rounded">
             <span className="text-sm text-gray-400">Name</span>
             <div className="font-medium">{selectedFilter.name}</div>
           </div>
-          <div className="bg-gray-700 p-4 rounded">
+          <div className="bg-gray-700 p-2 rounded">
             <span className="text-sm text-gray-400">Type</span>
             <div className="font-medium">{selectedFilter.type}</div>
           </div>
@@ -244,7 +244,7 @@ const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
   const percentage = isStreaming ? 100 : ((buffer / (total || 1)) * 100);
 
   return (
-    <div key={name} className="bg-gray-700 p-3 rounded">
+    <div key={name} className="bg-gray-700 p-2 rounded">
       <span className="text-sm text-gray-400">{name}</span>
       <div className="text-xs text-gray-400 mb-1">
         {isStreaming ? 

@@ -52,8 +52,8 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   // React Flow local state
-  const [localNodes, setLocalNodes, onNodesChange] = useNodesState([]);
-  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState([]);
+  const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
+  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Memoisatin Node update
   const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
