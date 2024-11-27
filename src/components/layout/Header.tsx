@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
 
   const toggleMonitoring = () => {
     setIsMonitoring(!isMonitoring);
-    // Ici, vous pouvez ajouter la logique pour démarrer/arrêter le monitoring GPAC
+    // TODO: Add logic to start or stop monitoring
   };
 
   return (

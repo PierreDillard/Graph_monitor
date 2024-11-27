@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Node, Edge, MarkerType } from '@xyflow/react';
 import { GpacNodeData } from '@/types/gpac';
-import { isEqual, set } from 'lodash';
+
 
 export interface GraphState {
   filters: GpacNodeData[];
@@ -220,7 +220,7 @@ const graphSlice = createSlice({
         state.selectedNodeId = action.payload;
       }
     },
-    setFilterDetails: (state, action: PayloadAction<GpacNodeData>) => {
+    setFilterDetails: (state, action: PayloadAction<GpacNodeData | null>) => {
       console.log('[GraphSlice] Updating filter details:', action.payload);
       state.selectedFilterDetails = action.payload;
     },

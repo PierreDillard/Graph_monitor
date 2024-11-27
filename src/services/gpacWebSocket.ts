@@ -5,6 +5,7 @@ import {
   updateFilterData,
   setSelectedFilters,
 } from '../store/slices/multiFilterSlice';
+import { updateRealTimeMetrics } from '../store/slices/filter-monitoringSlice';
 import {
   updateGraphData,
   setLoading,
@@ -12,6 +13,7 @@ import {
   setFilterDetails,
 } from '../store/slices/graphSlice';
 import { DataViewReader } from './DataViewReader';
+
 
 export class GpacWebSocket {
   private ws: WebSocketBase;
@@ -74,7 +76,7 @@ export class GpacWebSocket {
       try {
         const text = new TextDecoder().decode(dataView.buffer);
         if (text.startsWith('{')) {
-          // C'est probablement du JSON
+          //Probably JSON
           const jsonData = JSON.parse(text);
           this.handleGpacMessage(jsonData);
         } else {
@@ -131,6 +133,13 @@ export class GpacWebSocket {
                 data: data.filter,
               }),
             );
+            const firstPid = data.filter.ipid[Object.keys(data.filter.ipid)[0]];
+            store.dispatch(updateRealTimeMetrics({
+              filterId,
+              bytes_done: data.filter.bytes_done,
+              buffer: firstPid?.buffer,
+              buffer_total: firstPid?.buffer_total
+            }));
           }
         }
         break;

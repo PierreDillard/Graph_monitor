@@ -1,16 +1,23 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FilterMetric } from '@/types/filterMonitor';
+import { FilterMetric, RealTimeMetrics } from '@/types/filterMonitor';
 import { RootState } from '../index';
+
 
 export interface FilterMonitoringState {
   selectedFilterHistory: {
     [filterId: string]: FilterMetric[];
   };
+  realtimeMetrics: {
+    [filterId: string]: RealTimeMetrics;
+  };
+  activeFilters: Set<string>; 
   maxHistoryLength: number;
 }
 
 const initialState: FilterMonitoringState = {
   selectedFilterHistory: {},
+  realtimeMetrics: {},
+  activeFilters: new Set(),
   maxHistoryLength: 50,
 };
 
@@ -44,6 +51,49 @@ const filterMonitoringSlice = createSlice({
         state.selectedFilterHistory[filterId].shift();
       }
     },
+    updateRealTimeMetrics(state, action: PayloadAction<{
+      filterId: string;
+      bytes_done: number;
+      buffer?: number;
+      buffer_total?: number;
+    }>) {
+      const { filterId, bytes_done, buffer, buffer_total } = action.payload;
+      const now = Date.now();
+      
+      if (!state.realtimeMetrics[filterId]) {
+        state.realtimeMetrics[filterId] = {
+          previousBytes: bytes_done,
+          currentBytes: bytes_done,
+          lastUpdate: now,
+          bufferStatus: {
+            current: buffer || 0,
+            total: buffer_total || 0
+          }
+        };
+      } else {
+        const metrics = state.realtimeMetrics[filterId];
+        metrics.previousBytes = metrics.currentBytes;
+        metrics.currentBytes = bytes_done;
+        metrics.lastUpdate = now;
+        if (buffer !== undefined) {
+          metrics.bufferStatus.current = buffer;
+        }
+        if (buffer_total !== undefined) {
+          metrics.bufferStatus.total = buffer_total;
+        }
+      }
+    },
+
+    addActiveFilter: (state, action: PayloadAction<string>) => {
+      state.activeFilters.add(action.payload);
+      if(!state.selectedFilterHistory[action.payload]) {
+        state.selectedFilterHistory[action.payload] = [];
+      }     
+    },
+    removeActiveFilter: (state, action: PayloadAction<string>) => {
+      state.activeFilters.delete(action.payload);
+      delete state.selectedFilterHistory[action.payload];
+    },
 
     clearFilterHistory(state, action: PayloadAction<string>) {
       delete state.selectedFilterHistory[action.payload];
@@ -61,7 +111,19 @@ const filterMonitoringSlice = createSlice({
         }
       }
     },
-  },
+    updateMultipleFilters: (state, action: PayloadAction<{
+      [filterId: string]: FilterMetric
+    }>) => {
+      Object.entries(action.payload).forEach(([filterId, metric]) => {
+        if (state.activeFilters.has(filterId)) {
+          if (state.selectedFilterHistory[filterId].length >= state.maxHistoryLength) {
+            state.selectedFilterHistory[filterId].shift();
+          }
+          state.selectedFilterHistory[filterId].push(metric);
+        }
+      });
+    }
+  }
 });
 
 export const selectFilterHistory = (state: RootState, filterId: string) =>
@@ -70,7 +132,21 @@ export const selectFilterHistory = (state: RootState, filterId: string) =>
 export const selectMaxHistoryLength = (state: RootState) =>
   state.filterMonitoring.maxHistoryLength;
 
-export const { addFilterMetric, clearFilterHistory, setMaxHistoryLength } =
+export const selectRealTimeMetrics = (state: RootState, filterId: string) =>
+  state.filterMonitoring.realtimeMetrics[filterId];
+
+export const selectProcessingRate = (state: RootState, filterId: string) => {
+  const metrics = state.filterMonitoring.realtimeMetrics[filterId];
+  if (!metrics) return 0;
+  
+  const timeDiff = Date.now() - metrics.lastUpdate;
+  if (timeDiff === 0) return 0;
+  
+  const bytesDiff = metrics.currentBytes - metrics.previousBytes;
+  return (bytesDiff / (1024 * 1024)) / (timeDiff / 1000); // MB/s
+};
+
+export const { addFilterMetric, clearFilterHistory, setMaxHistoryLength, updateMultipleFilters, updateRealTimeMetrics } =
   filterMonitoringSlice.actions;
 
 export default filterMonitoringSlice.reducer;

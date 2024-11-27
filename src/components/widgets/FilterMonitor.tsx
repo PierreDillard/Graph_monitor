@@ -19,7 +19,7 @@ import {
 } from '../../types/filterMonitor';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { addFilterMetric } from '../../store/slices/filter-monitoringSlice';
-import { formatBytes } from '../../utils/formatters';
+import { formatBytes } from '../../utils/filterMonitorUtils';
 
 const MetricCard: React.FC<MetricCardProps> = ({
   title,
