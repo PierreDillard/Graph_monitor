@@ -79,7 +79,7 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-64 bg-gray-800 p-6">
+    <div className="w-64 bg-gray-800 p-6 h-full">
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Dashboard</h2>
         <p className="text-sm text-gray-400">

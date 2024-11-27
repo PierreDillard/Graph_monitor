@@ -24,7 +24,7 @@ import WidgetWrapper from '../common/WidgetWrapper';
 import { Activity } from 'lucide-react';
 import { WidgetProps } from '../../types/widget';
 import { gpacWebSocket } from '../../services/gpacWebSocket';
-import { setFilterDetails, setSelectedFilterDetails , setSelectedNode} from '../../store/slices/graphSlice';
+import { setSelectedFilterDetails , setSelectedNode} from '../../store/slices/graphSlice';
 
 import {
   selectNodesForGraphMonitor,
