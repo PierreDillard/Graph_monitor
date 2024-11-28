@@ -1,6 +1,5 @@
-
-
 import { GpacNodeData } from '../types/gpac';
+import { TrendDirection } from '../types/bufferMetrics';
 
 // Types
 export type TrendType = 'up' | 'down' | 'stable';
@@ -11,21 +10,20 @@ const STATUS_COLORS = {
   active: 'bg-green-500',
   warning: 'bg-yellow-500',
   error: 'bg-red-500',
-  default: 'bg-gray-500'
+  default: 'bg-gray-500',
 } as const;
-
 
 export const getStatusColor = (status: string | undefined): StatusColorType => {
   if (!status) return STATUS_COLORS.default;
-  
+
   if (status.toLowerCase().includes('error')) {
     return STATUS_COLORS.error;
   }
-  
+
   if (status.toLowerCase().includes('warning')) {
     return STATUS_COLORS.warning;
   }
-  
+
   return STATUS_COLORS.active;
 };
 
@@ -33,11 +31,10 @@ export const getStatusColor = (status: string | undefined): StatusColorType => {
  * Format bytes into human readable string
  */
 
-
 export const formatBytes = (bytes: number | undefined): string => {
   const value = typeof bytes === 'number' ? bytes : 0;
   if (value === 0) return '0 B';
-  
+
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(value) / Math.log(k));
@@ -45,25 +42,33 @@ export const formatBytes = (bytes: number | undefined): string => {
 };
 
 /**
- * Détermine la tendance des données
+ * Determine the trend of the data
  */
-export const getDataTrend = (currentValue: number, previousValue?: number): TrendType => {
-  if (!previousValue) return 'stable';
-  if (currentValue > previousValue) return 'up';
-  if (currentValue < previousValue) return 'down';
-  return 'stable';
-};
+export function determineTrend(
+  currentValue: number | null,
+  previousValue: number | null,
+  threshold: number = 0.1,
+): TrendDirection {
+  if (currentValue === null || previousValue === null) {
+    return 'stable';
+  }
 
-/**
- * Calculate the processing rate
- */
-const calculateProcessingRate = (currentBytes: number, previousBytes: number, timeInterval: number) => {
-  const bytesDiff = currentBytes - previousBytes;
-  return (bytesDiff / (1024 * 1024)) / (timeInterval / 1000); 
-};
+  const percentChange = Math.abs(
+    (currentValue - previousValue) / previousValue,
+  );
+
+  if (percentChange < threshold) {
+    return 'stable';
+  }
+
+  return currentValue > previousValue ? 'increasing' : 'decreasing';
+}
+
 /**
  * Verify if the data is valid
  */
-export const isValidFilterData = (data: GpacNodeData | null): data is GpacNodeData => {
+export const isValidFilterData = (
+  data: GpacNodeData | null,
+): data is GpacNodeData => {
   return data !== null && typeof data === 'object';
 };

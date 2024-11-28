@@ -6,7 +6,7 @@ interface MonitoredFilter {
   nodeData: GpacNodeData;
 }
 
-interface MultifilterState {
+ export interface MultifilterState {
   selectedFilters: MonitoredFilter[];
   maxMonitors: number;
   activeSubscriptions: string[];

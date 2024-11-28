@@ -1,10 +1,9 @@
-
-import React, { useCallback, useState, useEffect } from 'react';
-import { 
+import React, { useCallback, useState, useEffect, useRef } from 'react';
+import {
   getStatusColor,
   getDataTrend,
   formatBytes,
-  isValidFilterData
+  isValidFilterData,
 } from '../../utils/filterMonitorUtils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
@@ -12,18 +11,19 @@ import WidgetWrapper from '../common/WidgetWrapper';
 import { WidgetProps } from '../../types/widget';
 import { GpacNodeData } from '../../types/gpac';
 import { gpacWebSocket } from '../../services/gpacWebSocket';
-import { removeSelectedFilter, updateFilterData } from '../../store/slices/multiFilterSlice';
+import BufferMonitoring from './monitoring/buffer/BufferMonitoring';
+import {
+  removeSelectedFilter,
+  updateFilterData,
+} from '../../store/slices/multiFilterSlice';
 import { setFilterDetails } from '../../store/slices/graphSlice';
-import { selectRealTimeMetrics, selectProcessingRate } from '../../store/slices/filter-monitoringSlice';
+import {
+  selectRealTimeMetrics,
+  selectProcessingRate,
+} from '../../store/slices/filter-monitoringSlice';
 
 // Import Recharts components
-import {
-  LineChart,
-  ResponsiveContainer,
-  Line,
-  XAxis,
-
-} from 'recharts';
+import { LineChart, ResponsiveContainer, Line, XAxis } from 'recharts';
 
 // MetricCard Component
 interface MetricCardProps {
@@ -41,40 +41,36 @@ const MetricCard: React.FC<MetricCardProps> = ({
   unit,
   type = 'number',
   trend,
-  color = 'blue'
+  color = 'blue',
 }) => {
   const colorClasses = {
     blue: 'bg-blue-900/20 border-blue-500/30',
     green: 'bg-green-900/20 border-green-500/30',
     red: 'bg-red-900/20 border-red-500/30',
-    yellow: 'bg-yellow-900/20 border-yellow-500/30'
+    yellow: 'bg-yellow-900/20 border-yellow-500/30',
   };
 
   const trendIcons = {
     up: '↑',
     down: '↓',
-    stable: '→'
+    stable: '→',
   };
 
   return (
-    <div className={`p-4 rounded-lg border ${colorClasses[color]} transition-all duration-200 hover:border-opacity-50`}>
+    <div
+      className={`p-4 rounded-lg border ${colorClasses[color]} transition-all duration-200 hover:border-opacity-50`}
+    >
       <div className="flex justify-between items-start">
         <div className="text-sm text-gray-400">{title}</div>
         {trend && (
-          <span className={`text-${color}-400`}>
-            {trendIcons[trend]}
-          </span>
+          <span className={`text-${color}-400`}>{trendIcons[trend]}</span>
         )}
       </div>
       <div className="mt-2 flex items-baseline">
         <div className="text-2xl font-semibold">
           {type === 'number' ? Number(value).toLocaleString() : value}
         </div>
-        {unit && (
-          <span className="ml-1 text-sm text-gray-400">
-            {unit}
-          </span>
-        )}
+        {unit && <span className="ml-1 text-sm text-gray-400">{unit}</span>}
       </div>
     </div>
   );
@@ -83,15 +79,15 @@ const MetricCard: React.FC<MetricCardProps> = ({
 // ProcessingMetrics Component
 interface ProcessingMetricsProps {
   data: GpacNodeData;
-  direction?: 'input' | 'output';  // Nouveau prop pour différencier entrée/sortie
+  type: 'input' | 'output';
 }
 
-const ProcessingMetrics: React.FC<ProcessingMetricsProps> = ({ 
+const ProcessingMetrics: React.FC<ProcessingMetricsProps> = ({
   data,
-  direction
+  type,
 }) => {
-  const pidCount = direction === 'input' ? data.nb_ipid : data.nb_opid;
-  const pidType = direction === 'input' ? 'Input' : 'Output';
+  const pidCount = type === 'input' ? data.nb_ipid : data.nb_opid;
+  const pidType = type === 'input' ? 'Input' : 'Output';
 
   return (
     <div className="space-y-2">
@@ -114,35 +110,48 @@ interface FilterMonitorContentProps {
 }
 const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
   ({ data, onUpdate }) => {
-    const realtimeMetrics = useSelector(state => 
-      selectRealTimeMetrics(state, data.idx.toString())
+    const realtimeMetrics = useSelector((state) =>
+      selectRealTimeMetrics(state, data.idx.toString()),
     );
-    const processingRate = useSelector(state => 
-      selectProcessingRate(state, data.idx.toString())
+    const processingRate = useSelector((state) =>
+      selectProcessingRate(state, data.idx.toString()),
     );
     // State to store history data for charts
     const [historyData, setHistoryData] = useState<
       { time: number; bytes_done: number }[]
     >([]);
 
+    // Debounce state updates
+    const updateTimeout = useRef<NodeJS.Timeout | null>(null);
+
     useEffect(() => {
-      const now = Date.now();
-      setHistoryData((prevData) => {
-        const newData = [...prevData, { time: now, bytes_done: data.bytes_done }];
-        if (newData.length > 50) {
-          newData.shift(); // Keep only the latest 50 data points
-        }
-        return newData;
-      });
+      if (updateTimeout.current) {
+        clearTimeout(updateTimeout.current);
+      }
+      updateTimeout.current = setTimeout(() => {
+        const now = Date.now();
+        setHistoryData((prevData) => {
+          const newData = [
+            ...prevData,
+            { time: now, bytes_done: data.bytes_done },
+          ];
+          if (newData.length > 50) {
+            newData.shift(); // Keep only the latest 50 data points
+          }
+          return newData;
+        });
+      }, 500);
     }, [data.bytes_done]);
 
-return (
+    return (
       <div className="space-y-6">
         {/* Status Header */}
         <div className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg">
           <div>
             <h3 className="font-medium text-lg flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${getStatusColor(data.status)}`} />
+              <div
+                className={`w-2 h-2 rounded-full ${getStatusColor(data.status)}`}
+              />
               {data.name}
             </h3>
             <p className="text-sm text-gray-400">{data.type}</p>
@@ -154,39 +163,22 @@ return (
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 gap-4">
-        <MetricCard
-          title="Processing Rate"
-          value={processingRate.toFixed(2)}
-          unit="MB/s"
-          color="green"
-          trend={processingRate > 0 ? 'up' : 'stable'}
-        />
-        <MetricCard
-          title="Buffer Usage"
-          value={realtimeMetrics?.bufferStatus.current || 0}
-          total={realtimeMetrics?.bufferStatus.total || 0}
-          unit="bytes"
-          color="blue"
-        />
-      </div>
-
-        {/* Charts Section */}
-        <div className="space-y-4">
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium mb-4">Processing Metrics</h4>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              width={300}
-              height={200}
-              data={historyData}
-              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-            >
-                 </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <MetricCard
+            title="Processing Rate"
+            value={processingRate.toFixed(2)}
+            unit="MB/s"
+            color="green"
+            trend={processingRate > 0 ? 'up' : 'stable'}
+          />
+          <MetricCard
+            title="Buffer Usage"
+            value={realtimeMetrics?.bufferStatus.current || 0}
+            total={realtimeMetrics?.bufferStatus.total || 0}
+            unit="bytes"
+            color="blue"
+          />
         </div>
+
 
         {/* PID Information */}
         <div className="grid grid-cols-2 gap-4">
@@ -199,17 +191,20 @@ return (
             <ProcessingMetrics data={data} type="output" />
           </div>
         </div>
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <BufferMonitoring data={data} />
+        </div>
       </div>
     );
-  }
-);            
+  },
+);
 // Main Component MultiFilterMonitor
 const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
   ({ id, title }) => {
     const dispatch = useDispatch();
 
     const selectedFilters = useSelector(
-      (state: RootState) => state.multiFilter.selectedFilters
+      (state: RootState) => state.multiFilter.selectedFilters,
     );
     const isLoading = useSelector((state: RootState) => state.graph.isLoading);
 
@@ -224,7 +219,7 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
           gpacWebSocket.setCurrentFilterId(null);
         }
       },
-      [dispatch]
+      [dispatch],
     );
 
     const handleFilterUpdate = useCallback(
@@ -233,10 +228,10 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
           updateFilterData({
             id: filterId,
             data: newData,
-          })
+          }),
         );
       },
-      [dispatch]
+      [dispatch],
     );
 
     if (isLoading) {
@@ -272,16 +267,19 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
             >
               <div className="p-4 bg-gray-700 flex justify-between items-center">
                 <div>
-                  <h3 className="font-medium text-lg">{filter.nodeData.name}</h3>
-                  <p className="text-sm text-gray-400">{filter.nodeData.type}</p>
+                  <h3 className="font-medium text-lg">
+                    {filter.nodeData.name}
+                  </h3>
+                  <p className="text-sm text-gray-400">
+                    {filter.nodeData.type}
+                  </p>
                 </div>
                 <button
                   onClick={() => handleCloseMonitor(filter.id)}
                   className="p-1 hover:bg-gray-600 rounded text-gray-400 hover:text-white"
                   title="Stop monitoring this filter"
                 >
-                  <span className="sr-only">Close</span>
-                  ×
+                  <span className="sr-only">Close</span>×
                 </button>
               </div>
 
@@ -296,7 +294,7 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
         </div>
       </WidgetWrapper>
     );
-  }
+  },
 );
 
 // Add displayNames for debugging

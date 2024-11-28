@@ -24,7 +24,10 @@ import WidgetWrapper from '../common/WidgetWrapper';
 import { Activity } from 'lucide-react';
 import { WidgetProps } from '../../types/widget';
 import { gpacWebSocket } from '../../services/gpacWebSocket';
-import { setSelectedFilterDetails , setSelectedNode} from '../../store/slices/graphSlice';
+import {
+  setSelectedFilterDetails,
+  setSelectedNode,
+} from '../../store/slices/graphSlice';
 
 import {
   selectNodesForGraphMonitor,
@@ -32,8 +35,10 @@ import {
   selectIsLoading,
   selectError,
 } from '../../store/selectors/graphSelectors';
-import { addSelectedFilter , removeSelectedFilter} from '../../store/slices/multiFilterSlice';
-
+import {
+  addSelectedFilter,
+  removeSelectedFilter,
+} from '../../store/slices/multiFilterSlice';
 
 const flowStyles = {
   background: '#111827',
@@ -53,10 +58,9 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
   const monitoredFilters = useSelector(
-    (state: RootState) => state.multiFilter.selectedFilters
+    (state: RootState) => state.multiFilter.selectedFilters,
   );
   const [connectionError, setConnectionError] = useState<string | null>(null);
-
 
   // React Flow local state
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
@@ -92,48 +96,57 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       return edge;
     });
   }, []);
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    const nodeId = node.id;
-    const nodeData = node.data as GpacNodeData;
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      const nodeId = node.id;
+      const nodeData = node.data as GpacNodeData;
 
-    // 1.Update active filter details
-    dispatch(setSelectedFilterDetails(nodeData));
-    gpacWebSocket.setCurrentFilterId(parseInt(nodeId)); 
-    gpacWebSocket.getFilterDetails(parseInt(nodeId));
+      // 1.Update active filter details
+      dispatch(setSelectedFilterDetails(nodeData));
+      gpacWebSocket.setCurrentFilterId(parseInt(nodeId));
+      gpacWebSocket.getFilterDetails(parseInt(nodeId));
 
-    // 2. Manage multi-monitoring
-    const isAlreadyMonitored = monitoredFilters.some(f => f.id === nodeId);
-    if (!isAlreadyMonitored) {
-      dispatch(addSelectedFilter(nodeData));
-      gpacWebSocket.subscribeToFilter(nodeId);
-    }
+      // 2. Manage multi-monitoring
+      const isAlreadyMonitored = monitoredFilters.some((f) => f.id === nodeId);
+      if (!isAlreadyMonitored) {
+        dispatch(addSelectedFilter(nodeData));
+        gpacWebSocket.subscribeToFilter(nodeId);
+      }
 
-    // 3. Update selected node
-    dispatch(setSelectedNode(nodeId));
-  }, [dispatch, monitoredFilters]);
+      // 3. Update selected node
+      dispatch(setSelectedNode(nodeId));
+    },
+    [dispatch, monitoredFilters],
+  );
 
-  const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
-    const nodeId = node.id;
-    
-    // Delete the filter from the monitored filters
-    dispatch(removeSelectedFilter(nodeId));
-    gpacWebSocket.unsubscribeFromFilter(nodeId);
+  const onNodeDoubleClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      const nodeId = node.id;
 
-    // if active filter is the one being deleted, clear the details
-    const currentId = gpacWebSocket.getCurrentFilterId();
-    if (currentId === parseInt(nodeId)) {
-      dispatch(setSelectedFilterDetails(null));
-      gpacWebSocket.setCurrentFilterId(null);
-    }
-  }, [dispatch]);
+      // Delete the filter from the monitored filters
+      dispatch(removeSelectedFilter(nodeId));
+      gpacWebSocket.unsubscribeFromFilter(nodeId);
 
+      // if active filter is the one being deleted, clear the details
+      const currentId = gpacWebSocket.getCurrentFilterId();
+      if (currentId === parseInt(nodeId)) {
+        dispatch(setSelectedFilterDetails(null));
+        gpacWebSocket.setCurrentFilterId(null);
+      }
+    },
+    [dispatch],
+  );
 
-  const handleNodesChange = useCallback((changes: any[]) => {
-    onNodesChange(changes);
-    // Update references
-    nodesRef.current = localNodes.map(node => (typeof node === 'object' ? { ...node } : node));
-  }, [localNodes, onNodesChange]);
-
+  const handleNodesChange = useCallback(
+    (changes: any[]) => {
+      onNodesChange(changes);
+      // Update references
+      nodesRef.current = localNodes.map((node) =>
+        typeof node === 'object' ? { ...node } : node,
+      );
+    },
+    [localNodes, onNodesChange],
+  );
 
   // Same logic for edges..
   const handleEdgesChange = useCallback(

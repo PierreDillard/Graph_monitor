@@ -2,7 +2,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Node, Edge, MarkerType } from '@xyflow/react';
 import { GpacNodeData } from '@/types/gpac';
 
-
 export interface GraphState {
   filters: GpacNodeData[];
   nodes: Node[];

@@ -85,9 +85,9 @@ const DashboardLayout: React.FC = () => {
     <div className="flex flex-col h-screen bg-gray-950 ">
       <Header />
       <div className="flex flex-1 ">
-      <div className="fixed top-[64px] left-0 h-[calc(100vh-64px)] w-64 z-10">
-        <Sidebar />
-      </div>
+        <div className="fixed top-[64px] left-0 h-[calc(100vh-64px)] w-64 z-10">
+          <Sidebar />
+        </div>
         <main className="flex-1 ml-64 p-6 bg-gray-950 ">
           <ResponsiveGridLayout
             className="layout"

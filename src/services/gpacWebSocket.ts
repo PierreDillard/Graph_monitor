@@ -1,6 +1,7 @@
 import { WebSocketBase } from './WebSocketBase';
 import { isEqual } from 'lodash';
 import { store } from '../store';
+import { GpacNodeData } from '../types';
 import {
   updateFilterData,
   setSelectedFilters,
@@ -13,7 +14,7 @@ import {
   setFilterDetails,
 } from '../store/slices/graphSlice';
 import { DataViewReader } from './DataViewReader';
-
+import throttle from 'lodash/throttle';
 
 export class GpacWebSocket {
   private ws: WebSocketBase;
@@ -90,6 +91,34 @@ export class GpacWebSocket {
 
   private activeSubscriptions: Set<string> = new Set();
 
+  private throttledUpdateRealTimeMetrics = throttle(
+    (payload) => {
+      if (payload.bytesProcessed > 0) {
+        // Filtrer les données inutiles
+        store.dispatch(updateRealTimeMetrics(payload));
+      }
+    },
+    1000, // Adjust the delay as needed (1000ms in this example)
+    { leading: true, trailing: true },
+  );
+
+  private isValidFilterData(filter: any): filter is GpacNodeData {
+    return (
+      filter &&
+      typeof filter === 'object' &&
+      'idx' in filter &&
+      typeof filter.idx === 'number' &&
+      'name' in filter &&
+      typeof filter.name === 'string' &&
+      'type' in filter &&
+      typeof filter.type === 'string' &&
+      'status' in filter &&
+      (filter.status === null || typeof filter.status === 'string') &&
+      'bytes_done' in filter &&
+      typeof filter.bytes_done === 'number'
+    );
+  }
+
   private handleGpacMessage(data: any): void {
     const currentState = store.getState();
 
@@ -115,10 +144,15 @@ export class GpacWebSocket {
           store.dispatch(updateGraphData(data.filters));
         }
         break;
-
       case 'details':
         if (data.filter) {
           const filterId = data.filter.idx.toString();
+
+          // Validate data.filter structure
+          if (!this.isValidFilterData(data.filter)) {
+            console.error('Invalid filter data received:', data.filter);
+            return;
+          }
 
           // Support for single filter
           if (data.filter.idx === this.currentFilterId) {
@@ -133,13 +167,18 @@ export class GpacWebSocket {
                 data: data.filter,
               }),
             );
-            const firstPid = data.filter.ipid[Object.keys(data.filter.ipid)[0]];
-            store.dispatch(updateRealTimeMetrics({
+
+            const firstPid =
+              data.filter.ipid &&
+              data.filter.ipid[Object.keys(data.filter.ipid)[0]];
+
+            // Use throttled dispatch
+            this.throttledUpdateRealTimeMetrics({
               filterId,
               bytes_done: data.filter.bytes_done,
               buffer: firstPid?.buffer,
-              buffer_total: firstPid?.buffer_total
-            }));
+              buffer_total: firstPid?.buffer_total,
+            });
           }
         }
         break;
@@ -258,7 +297,6 @@ export class GpacWebSocket {
     if (!this.ws.isConnected()) return;
 
     try {
-      // Important: Préfixer avec CONI comme dans l'ancien code
       const jsonString = 'CONI' + 'json:' + JSON.stringify(message);
       console.log('Sending message:', jsonString);
       this.ws.send(jsonString);

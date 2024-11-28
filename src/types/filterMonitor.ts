@@ -3,7 +3,6 @@ export interface FilterMetric {
   bytes_done: number;
   packets_sent: number;
   packets_done: number;
-
 }
 
 export interface RealTimeMetrics {

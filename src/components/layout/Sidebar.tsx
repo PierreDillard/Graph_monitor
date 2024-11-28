@@ -8,7 +8,8 @@ import {
   Video,
   Volume2,
   FileText,
-  Share2,Layout
+  Share2,
+  Layout,
 } from 'lucide-react';
 
 const availableWidgets = [
@@ -52,8 +53,8 @@ const availableWidgets = [
     type: WidgetType.MULTI_FILTER,
     title: 'Multi-Filter Monitor',
     icon: Layout, // Vous pouvez choisir une autre icône si vous préférez
-    defaultSize: { w: 12, h: 6 } // Taille par défaut plus grande car il affiche plusieurs filtres
-  }
+    defaultSize: { w: 12, h: 6 }, // Taille par défaut plus grande car il affiche plusieurs filtres
+  },
 ];
 
 const Sidebar: React.FC = () => {
