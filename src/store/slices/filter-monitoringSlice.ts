@@ -124,39 +124,39 @@ const filterMonitoringSlice = createSlice({
     updateRealTimeMetrics(
       state,
       action: PayloadAction<{
-        filterId: string;
-        bytes_done: number;
-        buffer?: number;
-        buffer_total?: number;
+      filterId: string;
+      bytes_done: number;
+      buffer?: number;
+      buffer_total?: number;
       }>,
     ) {
       const { filterId, bytes_done, buffer, buffer_total } = action.payload;
       const now = Date.now();
 
       if (!state.realtimeMetrics[filterId]) {
-        state.realtimeMetrics[filterId] = {
-          previousBytes: 0,
-          currentBytes: bytes_done,
-          lastUpdate: now,
-          bufferStatus: {
-            current: buffer || 0,
-            total: buffer_total || 0,
-          },
-        };
+      state.realtimeMetrics[filterId] = {
+        previousBytes: 0,
+        currentBytes: bytes_done,
+        lastUpdate: now,
+        bufferStatus: {
+        current: buffer || 0,
+        total: buffer_total || 0,
+        },
+      };
       } else {
-        const metrics = state.realtimeMetrics[filterId];
-          // Only update if we have new data
-        if (bytes_done !== metrics.currentBytes) {
-          metrics.previousBytes = metrics.currentBytes;
-          metrics.currentBytes = bytes_done;
-          metrics.lastUpdate = now;
-        }
-        if (typeof buffer === 'number' && typeof buffer_total === 'number') {
-          metrics.bufferStatus = {
-            current: buffer,
-            total: buffer_total,
-          };
+      const metrics = state.realtimeMetrics[filterId];
+        // Only update if we have new data
+      if (bytes_done !== metrics.currentBytes) {
+        metrics.previousBytes = metrics.currentBytes;
+        metrics.currentBytes = bytes_done;
+        metrics.lastUpdate = now;
+      }
+      if (typeof buffer === 'number' && typeof buffer_total === 'number') {
+        metrics.bufferStatus = {
+        current: buffer,
+        total: buffer_total,
         };
+      };
       }
     },
 
@@ -225,6 +225,7 @@ export const selectRealTimeMetrics = (state: RootState, filterId: string) =>
 
 export const selectProcessingRate = (state: RootState, filterId: string) => {
   const metrics = state.filterMonitoring.realtimeMetrics[filterId];
+  console.log('METRICS:', metrics);
   if (!metrics || !metrics.currentBytes) return 0;
 
   const timeDiff = Date.now() - (metrics.lastUpdate || Date.now());

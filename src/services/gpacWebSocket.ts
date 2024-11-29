@@ -1,7 +1,7 @@
 import { WebSocketBase } from './WebSocketBase';
 import { isEqual } from 'lodash';
 import { store } from '../store';
-import { GpacNodeData } from '../types';
+import { GpacNodeData } from '../types/gpac';
 import {
   updateFilterData,
   setSelectedFilters,
@@ -47,7 +47,7 @@ export class GpacWebSocket {
     // Handler JSON
     this.ws.addMessageHandler('{"me', (_, dataView) => {
       try {
-        const text = new TextDecoder().decode(dataView.buffer);
+        const text = new TextDecoder().decode(dataView.buffer as ArrayBuffer);
         console.log('[DEBUG] Direct JSON message:', text);
         const jsonData = JSON.parse(text);
         this.handleGpacMessage(jsonData);
@@ -55,8 +55,7 @@ export class GpacWebSocket {
         console.error('Error parsing direct JSON message:', error);
       }
     });
-
-    // Handler pour les messages CONI
+ 
     this.ws.addMessageHandler('CONI', (_, dataView) => {
       try {
         const reader = new DataViewReader(dataView, 4);
@@ -94,11 +93,11 @@ export class GpacWebSocket {
   private throttledUpdateRealTimeMetrics = throttle(
     (payload) => {
       if (payload.bytesProcessed > 0) {
-        // Filtrer les données inutiles
+        // Filter inusual values 
         store.dispatch(updateRealTimeMetrics(payload));
       }
     },
-    1000, // Adjust the delay as needed (1000ms in this example)
+    1000, 
     { leading: true, trailing: true },
   );
 
@@ -165,6 +164,14 @@ export class GpacWebSocket {
               updateFilterData({
                 id: filterId,
                 data: data.filter,
+              }),
+            );
+            store.dispatch(
+              updateRealTimeMetrics({
+                filterId,
+                bytes_done: data.filter.bytes_done,
+                buffer: data.filter.buffer, 
+                buffer_total: data.filter.buffer_total,
               }),
             );
 
@@ -281,8 +288,8 @@ export class GpacWebSocket {
     this.reconnectAttempts = 0;
 
     // Stop current filter details
-    store.dispatch(setSelectedFilters([])); // Nettoyer les filtres monitorés
-    store.dispatch(setFilterDetails(null)); // Nettoyer le PID Monitor actif
+    store.dispatch(setSelectedFilters([])); 
+    store.dispatch(setFilterDetails(null)); 
 
     // Disconnect WebSocket
     if (this.ws) {

@@ -110,11 +110,11 @@ interface FilterMonitorContentProps {
 }
 const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
   ({ data, onUpdate }) => {
-    const realtimeMetrics = useSelector((state) =>
+    const realtimeMetrics = useSelector((state: RootState) =>
       selectRealTimeMetrics(state, data.idx.toString()),
     );
-    const processingRate = useSelector((state) =>
-      selectProcessingRate(state, data.idx.toString()),
+    const processingRate = useSelector((state: RootState) =>
+      selectProcessingRate(state, data.idx.toString())
     );
     // State to store history data for charts
     const [historyData, setHistoryData] = useState<
@@ -165,7 +165,7 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
         <div className="grid grid-cols-2 gap-4">
           <MetricCard
             title="Processing Rate"
-            value={processingRate.toFixed(2)}
+            value={processingRate ? processingRate.toFixed(2) : '0.00'}
             unit="MB/s"
             color="green"
             trend={processingRate > 0 ? 'up' : 'stable'}
