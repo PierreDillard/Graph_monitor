@@ -8,6 +8,7 @@ export interface FilterMetric {
 export interface RealTimeMetrics {
   previousBytes: number;
   currentBytes: number;
+  previousUpdateTime: number; 
   lastUpdate: number;
   bufferStatus: {
     current: number;

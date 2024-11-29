@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   getStatusColor,
+  formatProcessingRate,
   getDataTrend,
   formatBytes,
   isValidFilterData,
@@ -19,16 +20,16 @@ import {
 import { setFilterDetails } from '../../store/slices/graphSlice';
 import {
   selectRealTimeMetrics,
-  selectProcessingRate,
+  selectProcessingRate
 } from '../../store/slices/filter-monitoringSlice';
 
-// Import Recharts components
-import { LineChart, ResponsiveContainer, Line, XAxis } from 'recharts';
+
 
 // MetricCard Component
 interface MetricCardProps {
   title: string;
   value: number | string;
+  total: number | string;
   unit?: string;
   type?: 'text' | 'number';
   trend?: 'up' | 'down' | 'stable';
@@ -109,7 +110,7 @@ interface FilterMonitorContentProps {
   onUpdate: (newData: any) => void;
 }
 const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
-  ({ data, onUpdate }) => {
+  ({ data }) => {
     const realtimeMetrics = useSelector((state: RootState) =>
       selectRealTimeMetrics(state, data.idx.toString()),
     );
@@ -123,6 +124,10 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
 
     // Debounce state updates
     const updateTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    const processingRateBytesPerSecond = useSelector((state: RootState) => selectProcessingRate(state, data.idx.toString()));
+    const { value: processingRateValue, unit: processingRateUnit } = formatProcessingRate(processingRateBytesPerSecond);
+
 
     useEffect(() => {
       if (updateTimeout.current) {
@@ -165,8 +170,8 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
         <div className="grid grid-cols-2 gap-4">
           <MetricCard
             title="Processing Rate"
-            value={processingRate ? processingRate.toFixed(2) : '0.00'}
-            unit="MB/s"
+            value={processingRateValue ? processingRateValue.toFixed(2) : '0.00'}
+            unit={processingRateUnit}
             color="green"
             trend={processingRate > 0 ? 'up' : 'stable'}
           />
