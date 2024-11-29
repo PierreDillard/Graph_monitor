@@ -149,13 +149,16 @@ const filterMonitoringSlice = createSlice({
         // Only update if we have new data
       if (bytes_done !== metrics.currentBytes) {
         metrics.previousBytes = metrics.currentBytes;
+        metrics.previousUpdateTime = metrics.lastUpdate;
         metrics.currentBytes = bytes_done;
         metrics.lastUpdate = now;
       }
-      metrics.bufferStatus = {
-        current: buffer !== undefined ? buffer : metrics.bufferStatus.current,
-        total: buffer_total !== undefined ? buffer_total : metrics.bufferStatus.total,
-      };
+      if (typeof buffer === 'number' && typeof buffer_total === 'number') {
+        metrics.bufferStatus = {
+          current: buffer,
+          total: buffer_total,
+        };
+      }
     }
   },
 
@@ -225,7 +228,15 @@ export const selectRealTimeMetrics = (state: RootState, filterId: string) =>
 export const selectProcessingRate = (state: RootState, filterId: string) => {
   const metrics = state.filterMonitoring.realtimeMetrics[filterId];
   console.log('METRICS:', metrics);
-  if (!metrics || !metrics.currentBytes || !metrics.previousUpdateTime) return 0;
+  if (
+    !metrics ||
+    metrics.currentBytes === undefined ||
+    metrics.previousBytes === undefined ||
+    metrics.lastUpdate === undefined ||
+    metrics.previousUpdateTime === undefined
+  ) {
+    return 0;
+  }
 
   const timeDiff = (metrics.lastUpdate - metrics.previousUpdateTime) / 1000; // en secondes
   if (timeDiff <= 0) return 0;
@@ -234,7 +245,6 @@ export const selectProcessingRate = (state: RootState, filterId: string) => {
   const rateInBytesPerSecond = bytesDiff / timeDiff;
   return rateInBytesPerSecond > 0 ? rateInBytesPerSecond : 0;
 };
-
 export const {
   addFilterMetric,
   clearFilterHistory,
