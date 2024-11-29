@@ -47,12 +47,12 @@ const initialState: WidgetsState = {
   activeWidgets: [
     {
       id: `pid-${Date.now()}`,
-      type: WidgetType.FILTER,
-      title: 'FILTER Monitor',
+      type: WidgetType.MULTI_FILTER,
+      title: 'Multi-Filter Monitor',
       x: 0,
       y: 8,
-      w: 6,
-      h: 6,
+      w: 8,
+      h: 8,
     },
 
     {

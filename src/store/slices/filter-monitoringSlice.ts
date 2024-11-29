@@ -164,8 +164,8 @@ const filterMonitoringSlice = createSlice({
 
     addActiveFilter: (state, action: PayloadAction<string>) => {
       if (!state.activeFilters.includes(action.payload)) {
-        // Utiliser includes au lieu de has
-        state.activeFilters.push(action.payload); // Utiliser push au lieu de add
+       
+        state.activeFilters.push(action.payload); 
       }
       if (!state.selectedFilterHistory[action.payload]) {
         state.selectedFilterHistory[action.payload] = [];
@@ -174,7 +174,7 @@ const filterMonitoringSlice = createSlice({
     removeActiveFilter: (state, action: PayloadAction<string>) => {
       state.activeFilters = state.activeFilters.filter(
         (id) => id !== action.payload,
-      ); // Utiliser filter au lieu de delete
+      ); 
       delete state.selectedFilterHistory[action.payload];
     },
 
