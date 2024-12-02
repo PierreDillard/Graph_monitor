@@ -2,9 +2,7 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   getStatusColor,
   formatProcessingRate,
-  getDataTrend,
-  formatBytes,
-  isValidFilterData,
+
 } from '../../utils/filterMonitorUtils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
@@ -18,6 +16,7 @@ import {
   updateFilterData,
 } from '../../store/slices/multiFilterSlice';
 import { setFilterDetails } from '../../store/slices/graphSlice';
+import AdvancedMetrics from '../common/metrics/AdvancedMetrics';
 import {
   selectRealTimeMetrics,
   selectProcessingRate
@@ -111,12 +110,7 @@ interface FilterMonitorContentProps {
 }
 const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
   ({ data }) => {
-    const realtimeMetrics = useSelector((state: RootState) =>
-      selectRealTimeMetrics(state, data.idx.toString()),
-    );
-    const processingRate = useSelector((state: RootState) =>
-      selectProcessingRate(state, data.idx.toString())
-    );
+ 
     // State to store history data for charts
     const [historyData, setHistoryData] = useState<
       { time: number; bytes_done: number }[]
@@ -125,8 +119,8 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
     // Debounce state updates
     const updateTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const processingRateBytesPerSecond = useSelector((state: RootState) => selectProcessingRate(state, data.idx.toString()));
-    const { value: processingRateValue, unit: processingRateUnit } = formatProcessingRate(processingRateBytesPerSecond);
+
+
 
 
     useEffect(() => {
@@ -160,29 +154,15 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
               {data.name}
             </h3>
             <p className="text-sm text-gray-400">{data.type}</p>
+            <p className="text-sm text-gray-400">{data.codec}</p>
+            <AdvancedMetrics data={data} />
           </div>
           <div className="text-sm px-3 py-1 rounded-full bg-gray-700">
             ID: {data.idx}
           </div>
         </div>
 
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <MetricCard
-            title="Processing Rate"
-            value={processingRateValue ? processingRateValue.toFixed(2) : '0.00'}
-            unit={processingRateUnit}
-            color="green"
-            trend={processingRate > 0 ? 'up' : 'stable'}
-          />
-          <MetricCard
-            title="Buffer Usage"
-            value={realtimeMetrics?.bufferStatus.current || 0}
-            total={realtimeMetrics?.bufferStatus.total || 0}
-            unit="bytes"
-            color="blue"
-          />
-        </div>
+
 
 
         {/* PID Information */}
@@ -288,7 +268,7 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
                 </button>
               </div>
 
-              <div className="p-4">
+              <div className="p-4 bg-black">
                 <FilterMonitorContent
                   data={filter.nodeData}
                   onUpdate={(newData) => handleFilterUpdate(filter.id, newData)}

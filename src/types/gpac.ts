@@ -23,23 +23,39 @@ export interface PIDData {
   codec?: string;
   width?: number;
   height?: number;
-  fps?: string;
+  FPS?: string;
   samplerate?: number;
   channels?: number;
   format?: string;
 }
+export interface TimeFraction {
+  n: number;
+  d: number;
+}
+export interface PIDPropertyValue {
+  type?: string;
+  val?: number | string | TimeFraction;
+}
 
-export interface GpacNodeData extends FilterMetadata {
+export interface GpacNodeData {
   name: string;
   type: string;
+  tasks: number;
   itag: string | null;
   ID: string | null;
   nb_ipid: number;
   nb_opid: number;
   status: string;
+  codec?: string;
+  streamtype?: string;
   bytes_done: number;
-  pck_sent: number;
+  errors: number;
+  pck_ifce_sent: number;
+  time: number;
   pck_done: number;
+  pck_sent: number;
+  class?: string;
+  last_ts_sent?: TimeFraction;
   idx: number;
   gpac_args: string[];
   ipid: Record<string, PIDData>;

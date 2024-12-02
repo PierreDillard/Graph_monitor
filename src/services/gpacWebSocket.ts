@@ -128,7 +128,7 @@ export class GpacWebSocket {
 
     switch (data.message) {
       case 'filters':
-        console.log('[DEBUG] Received filters message:', data.filters);
+
         store.dispatch(setLoading(false));
         if (!isEqual(currentState.graph.filters, data.filters)) {
           store.dispatch(updateGraphData(data.filters));
@@ -138,13 +138,14 @@ export class GpacWebSocket {
         break;
 
       case 'update':
-        console.log('[DEBUG] Received update message:', data.filters);
+      
         if (Array.isArray(data.filters)) {
           store.dispatch(updateGraphData(data.filters));
         }
         break;
       case 'details':
         if (data.filter) {
+        
           const filterId = data.filter.idx.toString();
 
           // Validate data.filter structure
@@ -187,6 +188,8 @@ export class GpacWebSocket {
               buffer_total: firstPid?.buffer_total,
             });
           }
+           
+ 
         }
         break;
 

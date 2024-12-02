@@ -119,7 +119,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     [dispatch, monitoredFilters],
   );
 
-  const onNodeDoubleClick = useCallback(
+/*   const onNodeDoubleClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       const nodeId = node.id;
 
@@ -135,7 +135,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       }
     },
     [dispatch],
-  );
+  ); */
 
   const handleNodesChange = useCallback(
     (changes: any[]) => {

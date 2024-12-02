@@ -51,8 +51,8 @@ const initialState: WidgetsState = {
       title: 'Multi-Filter Monitor',
       x: 0,
       y: 8,
-      w: 8,
-      h: 8,
+      w: 10,
+      h: 6,
     },
 
     {

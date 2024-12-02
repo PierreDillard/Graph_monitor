@@ -227,7 +227,25 @@ export const selectRealTimeMetrics = (state: RootState, filterId: string) =>
 
 export const selectProcessingRate = (state: RootState, filterId: string) => {
   const metrics = state.filterMonitoring.realtimeMetrics[filterId];
-  console.log('METRICS:', metrics);
+  // Récupérer le filtre actuel pour accéder au status
+  const filter = state.graph.filters.find(f => f.idx.toString() === filterId);
+
+  // Si nous avons un statut avec FPS, utilisons-le prioritairement
+  if (filter?.status) {
+    // Parser le FPS du status
+    const fpsMatch = filter.status.match(/(\d+\.?\d*)\s*FPS/);
+    const resMatch = filter.status.match(/(\d+)x(\d+)/);
+    
+    if (fpsMatch && resMatch) {
+      const fps = parseFloat(fpsMatch[1]);
+      const [, width, height] = resMatch;
+      // En supposant un format nv12 (12 bits par pixel)
+      const bytesPerFrame = parseInt(width) * parseInt(height) * 1.5;
+      return fps * bytesPerFrame;
+    }
+  }
+
+  // Fallback sur la méthode actuelle si pas de FPS dans le status
   if (
     !metrics ||
     metrics.currentBytes === undefined ||
@@ -238,12 +256,58 @@ export const selectProcessingRate = (state: RootState, filterId: string) => {
     return 0;
   }
 
-  const timeDiff = (metrics.lastUpdate - metrics.previousUpdateTime) / 1000; // en secondes
+  const timeDiff = (metrics.lastUpdate - metrics.previousUpdateTime) / 1000;
   if (timeDiff <= 0) return 0;
 
   const bytesDiff = metrics.currentBytes - metrics.previousBytes;
   const rateInBytesPerSecond = bytesDiff / timeDiff;
   return rateInBytesPerSecond > 0 ? rateInBytesPerSecond : 0;
+};
+// Dans filter-monitoringSlice.ts 
+
+// Fonction utilitaire pour parser les buffers du status
+const parseBufferFromStatus = (status: string | null): { current: number, total: number } | null => {
+  if (!status) return null;
+  
+  // Parse des patterns comme "buffer 33 / 100 ms"
+  const bufferMatch = status.match(/buffer\s+(\d+)\s*\/\s*(\d+)\s*ms/);
+  if (bufferMatch) {
+    return {
+      current: parseInt(bufferMatch[1], 10),
+      total: parseInt(bufferMatch[2], 10)
+    };
+  }
+  return null;
+};
+
+// Nouveau sélecteur pour les buffers
+export const selectBufferMetrics = (state: RootState, filterId: string) => {
+  const filter = state.graph.filters.find(f => f.idx.toString() === filterId);
+  
+  // Si on a un status, on essaie d'abord d'en extraire les infos de buffer
+  if (filter?.status) {
+    const bufferInfo = parseBufferFromStatus(filter.status);
+    if (bufferInfo) {
+      return {
+        current: bufferInfo.current,
+        total: bufferInfo.total,
+        percentage: (bufferInfo.current / bufferInfo.total) * 100
+      };
+    }
+  }
+
+  // Fallback sur les métriques stockées dans le store
+  const metrics = state.filterMonitoring.realtimeMetrics[filterId];
+  if (metrics?.bufferStatus) {
+    return {
+      current: metrics.bufferStatus.current,
+      total: metrics.bufferStatus.total,
+      percentage: metrics.bufferStatus.total > 0 ? 
+        (metrics.bufferStatus.current / metrics.bufferStatus.total) * 100 : 0
+    };
+  }
+
+  return null;
 };
 export const {
   addFilterMetric,

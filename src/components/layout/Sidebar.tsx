@@ -96,7 +96,7 @@ const Sidebar: React.FC = () => {
           <button
             key={widget.type}
             onClick={() => handleAddWidget(widget.type, widget.defaultSize)}
-            className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
+            className="w-full flex items-center gap-3 p-3 rounded-sm bg-gray-700 hover:bg-gray-600 transition-colors"
           >
             <widget.icon className="w-5 h-5" />
             <span>{widget.title}</span>
