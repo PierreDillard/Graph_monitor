@@ -12,6 +12,7 @@ export interface GraphState {
   selectedNodeId: string | null;
   lastUpdate: number;
   selectedFilterDetails: GpacNodeData | null;
+  layoutDirection: 'DOWN' | 'RIGHT';
 }
 
 const initialState: GraphState = {
@@ -24,6 +25,7 @@ const initialState: GraphState = {
   selectedNodeId: null,
   lastUpdate: Date.now(),
   selectedFilterDetails: null,
+  layoutDirection: 'RIGHT',
 };
 
 type FilterType = 'video' | 'audio' | 'text' | 'image' | 'other';
@@ -202,6 +204,9 @@ const graphSlice = createSlice({
         };
       },
     },
+    setLayoutDirection: (state, action: PayloadAction<'DOWN' | 'RIGHT'>) => {
+      state.layoutDirection = action.payload;
+    },
 
     updateLayout(
       state,
@@ -244,6 +249,7 @@ export const {
   setSelectedNode,
   setFilterDetails,
   clearFilterDetails,
+  setLayoutDirection,
   setSelectedFilterDetails,
   selectSelectedFilterDetails,
 } = graphSlice.actions;

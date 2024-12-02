@@ -28,13 +28,15 @@ import {
   setSelectedFilterDetails,
   setSelectedNode,
 } from '../../store/slices/graphSlice';
-
+import { useLayoutEngine } from '../graph/layout/useLayoutEngine';
 import {
   selectNodesForGraphMonitor,
   selectEdges,
   selectIsLoading,
   selectError,
 } from '../../store/selectors/graphSelectors';
+import { LayoutDirection } from '../../types/graphLayout';
+import { GraphLayoutManager } from '../graph/layout/GraphLayoutManager';
 import {
   addSelectedFilter,
   removeSelectedFilter,
@@ -57,6 +59,20 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const edges = useSelector(selectEdges);
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
+
+  
+  const { applyLayout, isLayouting } = useLayoutEngine();
+  const [layoutDirection, setLayoutDirection] = useState<LayoutDirection>('DOWN');
+
+  const handleLayoutChange = useCallback((direction: LayoutDirection) => {
+    setLayoutDirection(direction);
+    applyLayout(direction);
+  }, [applyLayout]);
+
+  const handleRecalculateLayout = useCallback(() => {
+    applyLayout(layoutDirection);
+  }, [applyLayout, layoutDirection]);
+
   const monitoredFilters = useSelector(
     (state: RootState) => state.multiFilter.selectedFilters,
   );
@@ -223,6 +239,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   if (connectionError) {
     return (
       <WidgetWrapper id={id} title={title}>
+             <GraphLayoutManager onLayoutChange={handleLayoutChange}>
         <div className="flex flex-col items-center justify-center h-full p-4">
           <div className="text-red-500 mb-4">Connection Error</div>
           <div className="text-gray-400 text-center">{connectionError}</div>
@@ -236,6 +253,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
             Retry Connection
           </button>
         </div>
+        </GraphLayoutManager>
       </WidgetWrapper>
     );
   }

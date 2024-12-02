@@ -8,7 +8,12 @@ import {
   Settings,
   Download,
   Upload,
+  ArrowDown,
+  RotateCcw,
+  ArrowRight,
 } from 'lucide-react';
+import { setLayoutDirection } from '../../store/layoutSlice';
+import { useDispatch } from 'react-redux';
 
 interface HeaderProps {
   onSaveLayout?: () => void;
@@ -17,7 +22,15 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
   const [isMonitoring, setIsMonitoring] = React.useState(false);
-
+  const dispatch = useDispatch();
+  const onLayoutDirectionChange = (direction: 'DOWN' | 'RIGHT') => {
+    dispatch(setLayoutDirection(direction));
+    applyLayout(direction);
+  };
+  
+  const recalculateLayout = () => {
+    applyLayout(currentDirection);
+  };
   const toggleMonitoring = () => {
     setIsMonitoring(!isMonitoring);
     // TODO: Add logic to start or stop monitoring
@@ -28,6 +41,33 @@ const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
       <div className="h-full max-w-screen-2xl mx-auto flex items-center justify-between">
         {/* Logo et titre */}
         <div className="flex items-center space-x-4">
+        <div className="flex items-center bg-gray-700 rounded-lg p-1 space-x-2">
+            <button
+              onClick={() => onLayoutDirectionChange('DOWN')}
+              className={`flex items-center gap-2 p-2 rounded ${
+                layoutDirection === 'DOWN' ? 'bg-blue-600' : 'hover:bg-gray-600'
+              }`}
+              title="Vertical Layout"
+            >
+              <ArrowDown className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onLayoutDirectionChange('RIGHT')}
+              className={`flex items-center gap-2 p-2 rounded ${
+                layoutDirection === 'RIGHT' ? 'bg-blue-600' : 'hover:bg-gray-600'
+              }`}
+              title="Horizontal Layout"
+            >
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => recalculateLayout()}
+              className="p-2 rounded hover:bg-gray-600"
+              title="Recalculate Layout"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          </div>
           <h1 className="text-xl font-semibold text-white">GPAC Monitor</h1>
           <span className="text-sm text-gray-400"> </span>
           <div className="h-6 w-px bg-gray-700" /> {/* Séparateur vertical */}

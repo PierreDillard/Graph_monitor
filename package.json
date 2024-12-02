@@ -21,6 +21,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",
     "@xyflow/react": "^12.3.4",
+    "elkjs": "^0.9.3",
     "lodash.debounce": "^4.0.8",
     "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.294.0",
