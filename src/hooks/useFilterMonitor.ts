@@ -26,7 +26,7 @@ export const useFilterMonitor = () => {
 
   const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fonction pour calculer les métriques du buffer en évitant la division par zéro
+
   const calculateBufferMetrics = useCallback(
     (buffer: number, total: number) => {
       const percentage = total ? (buffer / total) * 100 : 0;
@@ -39,9 +39,7 @@ export const useFilterMonitor = () => {
       };
     },
     [],
-  );
 
-  // Fonction pour mettre à jour les données du PID
   const updatePIDData = useCallback(() => {
     if (!selectedNode || !selectedPID) return;
 
@@ -85,32 +83,29 @@ export const useFilterMonitor = () => {
     calculateBufferMetrics,
   ]);
 
-  // Fonction pour gérer la sélection d'un PID
   const handlePIDSelect = useCallback(
     (pidName: string, type: PIDType) => {
       console.log('je suis clicqué!!!');
       dispatch(selectPID({ pidName, type }));
-      // La gestion de l'intervalle est centralisée dans le useEffect
+  
     },
     [dispatch],
   );
 
-  // Gestion centralisée de l'intervalle
   useEffect(() => {
-    // Nettoyage de l'intervalle existant
+  
     if (updateIntervalRef.current) {
       clearInterval(updateIntervalRef.current);
       updateIntervalRef.current = null;
     }
 
     if (selectedPID && selectedNode) {
-      // Démarrage d'un nouvel intervalle
+
       updateIntervalRef.current = setInterval(updatePIDData, 500);
-      // Mise à jour initiale
-      updatePIDData();
+  
     }
 
-    // Nettoyage à la démontage ou au changement de PID/nœud
+  
     return () => {
       if (updateIntervalRef.current) {
         clearInterval(updateIntervalRef.current);
