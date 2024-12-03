@@ -28,6 +28,14 @@ export interface WidgetsState {
 export const selectActiveWidgets = (state: RootState) =>
   state.widgets.activeWidgets;
 export const selectWidgetConfigs = (state: RootState) => state.widgets.configs;
+export const selectWidgetConfig = createSelector(
+  [(state: RootState) => state.widgets.configs, (_, id: string) => id],
+  (configs, id) => configs[id] ?? {
+    isMaximized: false,
+    isMinimized: false,
+    settings: {},
+  }
+);
 
 export const selectWidgetById = createSelector(
   [

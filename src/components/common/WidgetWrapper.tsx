@@ -7,8 +7,8 @@ import {
   maximizeWidget,
   restoreWidget,
 } from '../../store/slices/widgetsSlice';
+import { selectWidgetConfig } from '../../store/slices/widgetsSlice';
 
-import type { RootState } from '../../store';
 
 interface WidgetWrapperProps {
   id: string;
@@ -38,14 +38,7 @@ const WidgetWrapper = ({
   const dispatch = useDispatch();
 
   // Memoized widget config
-  const config = useSelector(
-    (state: RootState) =>
-      state.widgets.configs[id] ?? {
-        isMaximized: false,
-        isMinimized: false,
-        settings: {},
-      },
-  );
+  const config = useSelector(state => selectWidgetConfig(state, id));
 
   const { isMaximized, isMinimized } = config;
 
