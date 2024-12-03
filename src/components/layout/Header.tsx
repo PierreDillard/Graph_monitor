@@ -1,7 +1,14 @@
 // src/components/layout/Header.tsx
 import React from 'react';
-import { Play, Pause, Save, Layout, Settings, Download, Upload } from 'lucide-react';
-
+import {
+  Play,
+  Pause,
+  Save,
+  Layout,
+  Settings,
+  Download,
+  Upload,
+} from 'lucide-react';
 
 interface HeaderProps {
   onSaveLayout?: () => void;
@@ -10,10 +17,10 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
   const [isMonitoring, setIsMonitoring] = React.useState(false);
-  
+
   const toggleMonitoring = () => {
     setIsMonitoring(!isMonitoring);
-    // Ici, vous pouvez ajouter la logique pour démarrer/arrêter le monitoring GPAC
+    // TODO: Add logic to start or stop monitoring
   };
 
   return (
@@ -22,8 +29,8 @@ const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
         {/* Logo et titre */}
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-semibold text-white">GPAC Monitor</h1>
+          <span className="text-sm text-gray-400"> </span>
           <div className="h-6 w-px bg-gray-700" /> {/* Séparateur vertical */}
-          <span className="text-sm text-gray-400">Dashboard</span>
         </div>
 
         {/* Actions principales */}
@@ -33,9 +40,10 @@ const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
             <button
               onClick={toggleMonitoring}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                ${isMonitoring 
-                  ? 'bg-red-600 text-white hover:bg-red-700' 
-                  : 'bg-green-600 text-white hover:bg-green-700'
+                ${
+                  isMonitoring
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-green-600 text-white hover:bg-green-700'
                 }`}
             >
               {isMonitoring ? (

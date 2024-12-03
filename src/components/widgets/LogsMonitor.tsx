@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Info, AlertCircle } from 'lucide-react';
 import WidgetWrapper from '../common/WidgetWrapper';
@@ -17,7 +16,9 @@ interface LogEntry {
 
 const LogsMonitor: React.FC<LogsMonitorProps> = ({ id, title }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [filter, setFilter] = useState<'all' | 'info' | 'warning' | 'error'>('all');
+  const [filter, setFilter] = useState<'all' | 'info' | 'warning' | 'error'>(
+    'all',
+  );
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -36,30 +37,37 @@ const LogsMonitor: React.FC<LogsMonitorProps> = ({ id, title }) => {
       'Failed to connect to remote stream',
       'Buffer overflow warning in audio stream',
       'Network latency increased above threshold',
-      'Stream reconnected successfully'
+      'Stream reconnected successfully',
     ];
 
     const interval = setInterval(() => {
-      const randomLog = sampleLogs[Math.floor(Math.random() * sampleLogs.length)];
-      const levels: Array<'info' | 'warning' | 'error'> = ['info', 'warning', 'error'];
+      const randomLog =
+        sampleLogs[Math.floor(Math.random() * sampleLogs.length)];
+      const levels: Array<'info' | 'warning' | 'error'> = [
+        'info',
+        'warning',
+        'error',
+      ];
       const randomLevel = levels[Math.floor(Math.random() * levels.length)];
 
-      setLogs(prev => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          timestamp: new Date(),
-          level: randomLevel,
-          message: randomLog
-        }
-      ].slice(-100)); 
+      setLogs((prev) =>
+        [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            timestamp: new Date(),
+            level: randomLevel,
+            message: randomLog,
+          },
+        ].slice(-100),
+      );
     }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const filteredLogs = logs.filter(log => 
-    filter === 'all' ? true : log.level === filter
+  const filteredLogs = logs.filter((log) =>
+    filter === 'all' ? true : log.level === filter,
   );
 
   const getLevelIcon = (level: 'info' | 'warning' | 'error') => {
@@ -125,7 +133,7 @@ const LogsMonitor: React.FC<LogsMonitorProps> = ({ id, title }) => {
 
         {/* Logs */}
         <div className="flex-1 overflow-y-auto bg-gray-900 rounded p-4 font-mono text-sm">
-          {filteredLogs.map(log => (
+          {filteredLogs.map((log) => (
             <div
               key={log.id}
               className="flex items-start gap-2 mb-2 hover:bg-gray-800 p-1 rounded"
