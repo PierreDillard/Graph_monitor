@@ -39,6 +39,7 @@ import {
   addSelectedFilter,
   removeSelectedFilter,
 } from '../../store/slices/multiFilterSlice';
+import { useGraphLayout } from '../../hooks/useGraphLayout';
 
 const flowStyles = {
   background: '#111827',
@@ -47,6 +48,7 @@ const flowStyles = {
 };
 
 const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
+  const { applyLayout, isCalculating } = useGraphLayout();
   const dispatch = useDispatch();
   const nodesRef = useRef<Node[]>([]);
   const edgesRef = useRef<Edge[]>([]);
@@ -96,6 +98,8 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
       return edge;
     });
   }, []);
+
+  // Handlers
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       const nodeId = node.id;
@@ -119,6 +123,84 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     [dispatch, monitoredFilters],
   );
 
+  interface LayoutState {
+    isCustomLayout: boolean;
+    currentLayout: 'default' | 'horizontal' | 'vertical';
+    originalPositions: Record<string, { x: number; y: number }>;
+  }
+
+  const [layoutState, setLayoutState] = useState<LayoutState>({
+    isCustomLayout: false,
+  currentLayout: 'default',
+  originalPositions: {}
+  });
+
+  const handleAutoLayout = useCallback(async () => {
+    console.log('[Layout] Current layout state:', layoutState);
+  
+    if (!nodes.length) {
+      console.warn('[Layout] No nodes available');
+      return;
+    }
+  
+    // Toggle between layouts
+    const nextLayout = layoutState.currentLayout === 'default' ? 'horizontal' : 'default';
+    
+    if (nextLayout === 'default' && layoutState.originalPositions) {
+      console.log('[Layout] Restoring original layout');
+      const resetNodes = nodes.map(node => ({
+        ...node,
+        position: layoutState.originalPositions[node.id] || node.position
+      }));
+      setLocalNodes(resetNodes);
+      setLayoutState(prev => ({
+        ...prev,
+        currentLayout: 'default',
+        isCustomLayout: false
+      }));
+      return;
+    }
+  
+    // Store current positions before applying new layout
+    const currentPositions = nodes.reduce<Record<string, { x: number; y: number }>>(
+      (acc, node) => ({
+        ...acc,
+        [node.id]: { ...node.position }
+      }), 
+      {}
+    );
+  
+    try {
+      const layoutNodes = nodes.map(node => ({
+        id: node.id,
+        width: 180,
+        height: 40
+      }));
+  
+      const newLayout = await applyLayout(layoutNodes, edges);
+      console.log('[Layout] New layout calculated:', newLayout);
+  
+      if (newLayout) {
+        const updatedNodes = nodes.map(node => {
+          const layoutNode = newLayout.find(n => n.id === node.id);
+          return layoutNode ? {
+            ...node,
+            position: layoutNode.position
+          } : node;
+        });
+  
+        setLocalNodes(updatedNodes);
+        setLayoutState(prev => ({
+          ...prev,
+          currentLayout: nextLayout,
+          isCustomLayout: true,
+          originalPositions: currentPositions
+        }));
+      }
+    } catch (error) {
+      console.error('[Layout] Layout calculation failed:', error);
+    }
+  }, [nodes, edges, applyLayout, layoutState, setLocalNodes]);
 /*   const onNodeDoubleClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       const nodeId = node.id;
@@ -165,6 +247,49 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     () => updateEdgesWithState(edges),
     [edges, updateEdgesWithState],
   );
+
+
+
+// Layout control
+const LayoutControl: React.FC = () => (
+  <div className="absolute top-4 right-4 z-10 flex gap-2">
+    <button 
+      onClick={handleAutoLayout}
+      disabled={isCalculating}
+      className={`
+        px-4 py-2 
+        rounded-lg
+        font-medium
+        transition-colors
+        flex items-center gap-2
+        ${layoutState.currentLayout !== 'default' 
+          ? 'bg-blue-600 hover:bg-blue-700' 
+          : 'bg-gray-700 hover:bg-gray-600'}
+        disabled:opacity-50 disabled:cursor-not-allowed
+      `}
+    >
+      {isCalculating ? (
+        <>
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+          <span>Calculating...</span>
+        </>
+      ) : (
+        <>
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d={layoutState.currentLayout === 'default' 
+                     ? "M8 13h8M8 17h8M8 9h8" 
+                     : "M4 6h16M4 12h16M4 18h16"} />
+          </svg>
+          <span>
+            {layoutState.currentLayout === 'default' ? 'Apply Layout' : 'Reset Layout'}
+          </span>
+        </>
+      )}
+    </button>
+  </div>
+);
+  
   // update data
   useEffect(() => {
     if (updatedNodes.length > 0 || updatedEdges.length > 0) {
@@ -235,6 +360,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
           >
             Retry Connection
           </button>
+
         </div>
       </WidgetWrapper>
     );
@@ -243,6 +369,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   return (
     <WidgetWrapper id={id} title={title}>
       <div style={flowStyles}>
+      <LayoutControl />
         <ReactFlow
           nodes={localNodes}
           edges={localEdges}
@@ -280,7 +407,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
             className="bg-gray-800 border border-gray-700"
           />
 
-          {/* Légende */}
+          {/* Legend */}
           <div
             className="absolute bottom-4 left-4 bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-700 z-50"
             style={{
@@ -292,7 +419,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
           >
             <div className="relative z-50">
               <h4 className="text-sm font-medium mb-2 text-gray-200">
-                Légende
+                Legend
               </h4>
               <div className="space-y-2 text-sm text-gray-300">
                 <div className="flex items-center gap-2">
