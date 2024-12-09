@@ -42,7 +42,7 @@ export class GpacWebSocket {
     this.ws.addDisconnectHandler(() => {
       console.log('Disconnected from GPAC WebSocket');
       this.handleDisconnect();
-    });
+    })
 
     // Handler JSON
     this.ws.addMessageHandler('{"me', (_, dataView) => {
@@ -249,6 +249,9 @@ export class GpacWebSocket {
       this.isConnecting = false;
       this.handleDisconnect();
     }
+  }
+  public isConnected(): boolean {
+    return this.ws.isConnected();
   }
 
   private handleDisconnect(): void {
