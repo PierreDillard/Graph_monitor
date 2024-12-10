@@ -14,7 +14,7 @@ import { updateWidgetPosition } from '../../store/slices/widgetsSlice';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import MultiFilterMonitor from '../widgets/MultiFilterMonitor';
-import GraphMonitor from '../widgets/GraphMonitor';
+import GraphMonitor from '../widgets/graph/GraphMonitor';
 import AudioMonitor from '../widgets/AudioMonitor';
 import VideoMonitor from '../widgets/VideoMonitor';
 import LogsMonitor from '../widgets/LogsMonitor';

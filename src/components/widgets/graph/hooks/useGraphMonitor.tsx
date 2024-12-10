@@ -1,41 +1,30 @@
 
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
-import { RootState } from '../../store';
-import WidgetWrapper from '../common/WidgetWrapper';
-import { WidgetProps } from '../../types/widget';
-import { gpacWebSocket } from '../../services/gpacWebSocket';
+import { RootState } from '../../../../store';
+import { gpacWebSocket } from '../../../../services/gpacWebSocket';
 import {
   setSelectedFilterDetails,
   setSelectedNode,
-} from '../../store/slices/graphSlice';
+} from '../../../../store/slices/graphSlice';
 import {
   selectNodesForGraphMonitor,
   selectEdges,
   selectIsLoading,
   selectError,
-} from '../../store/selectors/graphSelectors';
+} from '../../../../store/selectors/graphSelectors';
 import {
   addSelectedFilter,
-} from '../../store/slices/multiFilterSlice';
-import LoadingState from '../common/LoadingState';
-import ConnectionErrorState from '../common/ConnectionErrorState';
-import GraphFlow from './GraphFlow';
+} from '../../../../store/slices/multiFilterSlice';
 
-const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
+const useGraphMonitor = () => {
   const dispatch = useDispatch();
   const nodesRef = useRef<Node[]>([]);
   const edgesRef = useRef<Edge[]>([]);
   const renderCount = useRef(0);
 
-  // Redux selectors
+  // Sélecteurs Redux
   const nodes = useSelector(selectNodesForGraphMonitor);
   const edges = useSelector(selectEdges);
   const isLoading = useSelector(selectIsLoading);
@@ -43,14 +32,14 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const monitoredFilters = useSelector(
     (state: RootState) => state.multiFilter.selectedFilters,
   );
+  
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  // React Flow local state
+  // États locaux de React Flow
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
-  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState([]);
 
-
-  // Memoization of node updates
+  // Mémoïsation des mises à jour des nœuds
   const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
     return newNodes.map((node) => {
       const existingNode = nodesRef.current.find((n) => n.id === node.id);
@@ -66,7 +55,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     });
   }, []);
 
-    // Memoization of edge updates
+  // Mémoïsation des mises à jour des arêtes
   const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
     return newEdges.map((edge) => {
       const existingEdge = edgesRef.current.find((e) => e.id === edge.id);
@@ -132,39 +121,40 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     [edges, updateEdgesWithState],
   );
 
-  // Update the datas 
+  // Mettre à jour les données locales
   useEffect(() => {
     if (updatedNodes.length > 0 || updatedEdges.length > 0) {
       setLocalNodes(updatedNodes);
       setLocalEdges(updatedEdges);
 
-      // References updates
+      // Mise à jour des références
       nodesRef.current = updatedNodes;
       edgesRef.current = updatedEdges;
 
       renderCount.current++;
-      console.log(`[GraphMonitor] Render #${renderCount.current}`, {
+      console.log(`[useGraphMonitor] Render #${renderCount.current}`, {
         nodesCount: nodes.length,
         edgesCount: edges.length,
       });
     }
-  }, [updatedNodes, updatedEdges]);
+  }, [updatedNodes, updatedEdges, setLocalNodes, setLocalEdges, nodes.length, edges.length]);
 
-  // WebSocket connexion
+  // Connexion WebSocket
   useEffect(() => {
-    console.log('GraphMonitor: Montage et connexion WebSocket');
+    console.log('useGraphMonitor: Montage et connexion WebSocket');
 
     const connectionTimer = setTimeout(() => {
       gpacWebSocket.connect();
     }, 1000);
 
     return () => {
-      console.log('GraphMonitor: Démontage et nettoyage');
+      console.log('useGraphMonitor: Démontage et nettoyage');
       clearTimeout(connectionTimer);
       gpacWebSocket.disconnect();
     };
   }, []);
 
+  // Gestion des erreurs de chargement
   useEffect(() => {
     console.log('État de chargement modifié :', isLoading);
   }, [isLoading]);
@@ -176,39 +166,22 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     }
   }, [error]);
 
-  if (isLoading) {
-    return (
-      <LoadingState id={id} title={title} message="Connexion à GPAC..." />
-    );
-  }
+  // Fonction de retry en cas d'erreur
+  const retryConnection = useCallback(() => {
+    setConnectionError(null);
+    gpacWebSocket.connect();
+  }, []);
 
-  if (connectionError) {
-    return (
-      <ConnectionErrorState
-        id={id}
-        title={title}
-        errorMessage={connectionError}
-        onRetry={() => {
-          setConnectionError(null);
-          gpacWebSocket.connect();
-        }}
-      />
-    );
-  }
+  return {
+    isLoading,
+    connectionError,
+    retryConnection,
+    localNodes,
+    localEdges,
+    handleNodesChange,
+    handleEdgesChange,
+    onNodeClick,
+  };
+};
 
-  return (
-    <WidgetWrapper id={id} title={title}>
-      <GraphFlow
-        nodes={localNodes}
-        edges={localEdges}
-        onNodesChange={handleNodesChange}
-        onEdgesChange={handleEdgesChange}
-        onNodeClick={onNodeClick}
-      />
-    </WidgetWrapper>
-  );
-});
-
-GraphMonitor.displayName = 'GraphMonitor';
-
-export default GraphMonitor;
+export default useGraphMonitor;

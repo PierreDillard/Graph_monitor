@@ -10,7 +10,7 @@ import {
   Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import Legend from '../common/Legend';
+import Legend from '../../../common/Legend';
 
 interface GraphFlowProps {
   nodes: Node[];
