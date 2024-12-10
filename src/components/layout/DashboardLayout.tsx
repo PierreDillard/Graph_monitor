@@ -16,7 +16,7 @@ import Sidebar from './Sidebar';
 import MultiFilterMonitor from '../widgets/MultiFilterMonitor';
 import GraphMonitor from '../widgets/graph/GraphMonitor';
 import AudioMonitor from '../widgets/AudioMonitor';
-import VideoMonitor from '../widgets/VideoMonitor';
+import VideoMonitor from '../widgets/video/VideoMonitor';
 import LogsMonitor from '../widgets/LogsMonitor';
 import FilterMonitor from '../widgets/FilterMonitor';
 import MetricsMonitor from '../widgets/MetricsMonitor';
