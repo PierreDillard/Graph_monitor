@@ -17,10 +17,7 @@ import {
 } from '../../store/slices/multiFilterSlice';
 import { setFilterDetails } from '../../store/slices/graphSlice';
 import AdvancedMetrics from '../common/metrics/AdvancedMetrics';
-import {
-  selectRealTimeMetrics,
-  selectProcessingRate
-} from '../../store/slices/filter-monitoringSlice';
+import FilterCard from './monitoring/filter/FilterCard';
 
 
 
@@ -246,35 +243,11 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
       <WidgetWrapper id={id} title={title}>
         <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {selectedFilters.map((filter) => (
-            <div
-              key={filter.id}
-              className="bg-gray-800 rounded-lg overflow-hidden shadow-lg"
-            >
-              <div className="p-4 bg-gray-700 flex justify-between items-center">
-                <div>
-                  <h3 className="font-medium text-lg">
-                    {filter.nodeData.name}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    {filter.nodeData.type}
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleCloseMonitor(filter.id)}
-                  className="p-1 hover:bg-gray-600 rounded text-gray-400 hover:text-white"
-                  title="Stop monitoring this filter"
-                >
-                  <span className="sr-only">Close</span>×
-                </button>
-              </div>
-
-              <div className="p-4 bg-black">
-                <FilterMonitorContent
-                  data={filter.nodeData}
-                  onUpdate={(newData) => handleFilterUpdate(filter.id, newData)}
-                />
-              </div>
-            </div>
+          <FilterCard
+          key={filter.id}
+          filter={filter}
+          onClose={handleCloseMonitor}
+        />
           ))}
         </div>
       </WidgetWrapper>
