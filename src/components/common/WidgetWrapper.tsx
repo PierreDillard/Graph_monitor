@@ -74,7 +74,7 @@ const WidgetWrapper = ({
   //Memoized container classes
   const containerClasses = React.useMemo(() => {
     return [
-      'flex flex-col bg-gray-800 overflow-hidden rounded-sm',
+      'flex flex-col bg-gray-800 overflow-hidden rounded-lg',
       isMaximized ? 'fixed inset-0 z-50' : '',
       isMinimized ? 'h-12' : 'h-full',
       className,
