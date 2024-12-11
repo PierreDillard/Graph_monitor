@@ -5,8 +5,9 @@ import {
   removeWidget,
   minimizeWidget,
   maximizeWidget,
-  restoreWidget,
-} from '../../store/slices/widgetsSlice';
+  restoreWidget} from '../../store/slices/widgetsSlice';
+
+import { GraphContext } from '../../context/GraphContext';
 
 import type { RootState } from '../../store';
 
@@ -83,6 +84,7 @@ const WidgetWrapper = ({
   }, [isMaximized, isMinimized, className]);
 
   return (
+
     <div className={containerClasses}>
       <div className={`${headerStyles.base} cursor-move drag-indicator`}>
         <div className={headerStyles.title}>
@@ -164,6 +166,7 @@ const WidgetWrapper = ({
         <div className="flex-1 overflow-auto no-drag">{children}</div>
       )}
     </div>
+    
   );
 };
 

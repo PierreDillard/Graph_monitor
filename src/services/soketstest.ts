@@ -212,14 +212,10 @@ export class GpacWebSocket extends EventEmitter {
     this.emit('filterUnsubscribed', idx);
   }
 
-  public connect(address?: string): void {
+  public connect(): void {
     if (this.isConnecting) return;
 
-    if (address) {
-      this.address = address;
-    }
-
-    console.log(`Attempting to connect to GPAC at ${this.address}...`);
+    console.log('Attempting to connect to GPAC...');
     this.isConnecting = true;
     this.emit('loading', true);
 
@@ -231,10 +227,6 @@ export class GpacWebSocket extends EventEmitter {
       this.handleDisconnect();
       this.emit('error', 'Failed to connect to GPAC');
     }
-  }
-
-  public isConnected(): boolean {
-    return this.ws.isConnected();
   }
 
   private handleDisconnect(): void {
@@ -298,30 +290,6 @@ export class GpacWebSocket extends EventEmitter {
       console.error('Error sending message:', error);
     }
   }
-
-  public getFilterDetails(idx: number): void {
-    if (this.currentFilterId !== null && this.currentFilterId !== idx) {
-      this.sendMessage({
-        message: 'stop_details',
-        idx: this.currentFilterId,
-      });
-    }
-
-    this.currentFilterId = idx;
-
-    this.sendMessage({
-      message: 'get_details',
-      idx: idx,
-    });
-  }
-
-  public stopFilterDetails(idx: number): void {
-    this.sendMessage({
-      message: 'stop_details',
-      idx: idx,
-    });
-  }
 }
 
-
-
+export const gpacWebSocket = new GpacWebSocket();

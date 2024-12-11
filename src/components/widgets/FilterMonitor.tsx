@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useContext, useState } from 'react';
 import {
   LineChart,
   Line,
@@ -10,7 +9,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { RootState } from '../../store';
 import { WidgetProps } from '../../types/widget';
 import {
   MetricCardProps,
@@ -18,7 +16,7 @@ import {
   FilterMetric,
 } from '../../types/filterMonitor';
 import WidgetWrapper from '../common/WidgetWrapper';
-import { addFilterMetric } from '../../store/slices/filter-monitoringSlice';
+import { GraphContext } from '../../context/GraphContext';
 import { formatBytes } from '../../utils/filterMonitorUtils';
 
 const MetricCard: React.FC<MetricCardProps> = ({
@@ -97,7 +95,7 @@ const ProcessingChart: React.FC<ProcessingChartProps> = ({
               yAxisId="bytes"
               orientation="left"
               stroke="#3b82f6"
-              tickFormatter={(value) => formatBytes(value, 0)}
+              tickFormatter={(value) => formatBytes(value)}
             />
             <YAxis yAxisId="packets" orientation="right" stroke="#10b981" />
             <Tooltip content={<CustomTooltip />} />
@@ -137,33 +135,33 @@ const ProcessingChart: React.FC<ProcessingChartProps> = ({
 };
 
 const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
-  const dispatch = useDispatch();
-  const selectedFilter = useSelector(
-    (state: RootState) => state.graph.selectedFilterDetails,
-  );
-  const filterHistory = useSelector((state: RootState) =>
-    selectedFilter
-      ? state.filterMonitoring.selectedFilterHistory[selectedFilter.idx]
-      : [],
-  );
+  const { graph } = useContext(GraphContext);
+const [ selectedFilter, setSelectedFilter ] = useState<any | null>(null);
+const [ filterHistory, setFilterHistory ] = useState<FilterMetric[]>([]);
 
-  useEffect(() => {
-    if (selectedFilter) {
-      const metric: FilterMetric = {
-        timestamp: Date.now(),
-        bytes_done: Number(selectedFilter.bytes_done) || 0,
-        packets_sent: Number(selectedFilter.pck_sent) || 0,
-        packets_done: Number(selectedFilter.pck_done) || 0,
-      };
+useEffect(() => {
+  if (!graph) return;
 
-      dispatch(
-        addFilterMetric({
-          filterId: selectedFilter.idx.toString(),
-          metric,
-        }),
-      );
-    }
-  }, [selectedFilter, dispatch]);
+  const handleFilterDetails = (filterData: any) => {
+    setSelectedFilter(filterData);
+
+    const metric: FilterMetric = {
+      timestamp: Date.now(),
+      bytes_done: Number(filterData.bytes_done) || 0,
+      packets_sent: Number(filterData.pck_sent) || 0,
+      packets_done: Number(filterData.pck_done) || 0,
+    };
+
+    setFilterHistory((prevHistory) => [...prevHistory, metric].slice(-50));
+  };
+
+  graph.on('filterDetails', handleFilterDetails);
+
+  return () => {
+    graph.removeListener('filterDetails', handleFilterDetails);
+  };
+}, [graph]);
+
 
   if (!selectedFilter) {
     return (

@@ -1,26 +1,17 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef, useContext } from 'react';
 import {
   getStatusColor,
   formatProcessingRate,
 
 } from '../../utils/filterMonitorUtils';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store';
+
+import { GraphContext } from '../../context/GraphContext';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { WidgetProps } from '../../types/widget';
 import { GpacNodeData } from '../../types/gpac';
-import { gpacWebSocket } from '../../services/gpacWebSocket';
 import BufferMonitoring from './monitoring/buffer/BufferMonitoring';
-import {
-  removeSelectedFilter,
-  updateFilterData,
-} from '../../store/slices/multiFilterSlice';
-import { setFilterDetails } from '../../store/slices/graphSlice';
 import AdvancedMetrics from '../common/metrics/AdvancedMetrics';
-import {
-  selectRealTimeMetrics,
-  selectProcessingRate
-} from '../../store/slices/filter-monitoringSlice';
+
 
 
 
@@ -186,38 +177,66 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
 // Main Component MultiFilterMonitor
 const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
   ({ id, title }) => {
-    const dispatch = useDispatch();
+  const { graph } = useContext(GraphContext);
+  const [ isLoading, setIsLoading ] = useState<boolean>(false);
+  const [ error, setError ] = useState<string | null>(null);
+  const [selectedFilters, setSelectedFiltersState] = useState(() => graph?.getSelectedFilters() || []);
 
-    const selectedFilters = useSelector(
-      (state: RootState) => state.multiFilter.selectedFilters,
-    );
-    const isLoading = useSelector((state: RootState) => state.graph.isLoading);
+  
+  useEffect(() => {
+    if (!graph) return;
 
-    const handleCloseMonitor = useCallback(
-      (filterId: string) => {
-        gpacWebSocket.unsubscribeFromFilter(filterId);
-        dispatch(removeSelectedFilter(filterId));
+    const handleLoading = (loading: boolean) => {
+      setIsLoading(loading);
+    };
 
-        // If it was also the active filter of the PID Monitor, clear it
-        if (gpacWebSocket.getCurrentFilterId()?.toString() === filterId) {
-          dispatch(setFilterDetails(null));
-          gpacWebSocket.setCurrentFilterId(null);
-        }
-      },
-      [dispatch],
-    );
+    const handleError = (err: string | null) => {
+      setError(err);
+    };
 
-    const handleFilterUpdate = useCallback(
-      (filterId: string, newData: any) => {
-        dispatch(
-          updateFilterData({
-            id: filterId,
-            data: newData,
-          }),
-        );
-      },
-      [dispatch],
-    );
+    const handleFilterSubscribed = () => {
+      setSelectedFiltersState(graph.getSelectedFilters());
+    };
+
+    const handleFilterUnsubscribed = () => {
+      setSelectedFiltersState(graph.getSelectedFilters());
+    };
+
+    graph.on('loading', handleLoading);
+    graph.on('error', handleError);
+    graph.on('filterSubscribed', handleFilterSubscribed);
+    graph.on('filterUnsubscribed', handleFilterUnsubscribed);
+
+    //Update selected filters state when the component mounts
+    setSelectedFiltersState(graph.getSelectedFilters());
+
+    return () => {
+      graph.removeListener('loading', handleLoading);
+      graph.removeListener('error', handleError);
+      graph.removeListener('filterSubscribed', handleFilterSubscribed);
+      graph.removeListener('filterUnsubscribed', handleFilterUnsubscribed);
+    };
+  }, [graph]);
+
+  const handleCloseMonitor = useCallback(
+    (filterId: string) => {
+      if (!graph) return;
+      // Unsubscribe from the filter
+      graph.removeSelectedFilter(filterId);
+      //filters list will be updated via the filterUnsubscribed event
+    },
+    [graph],
+  );
+
+  const handleFilterUpdate = useCallback(
+    (filterId: string, newData: GpacNodeData) => {
+      if (!graph) return;
+      graph.updateFilterData(filterId, newData);
+      // Si vous voulez rafraîchir l'affichage, vous pouvez setSelectedFiltersState à nouveau,
+      // ou vous reposer sur l'événement filterDataUpdate si vous l'implémentez.
+    },
+    [graph],
+  );
 
     if (isLoading) {
       return (

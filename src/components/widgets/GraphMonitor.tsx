@@ -1,4 +1,3 @@
-
 import React, {
   useCallback,
   useEffect,
@@ -6,51 +5,66 @@ import React, {
   useState,
   useMemo,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import Graph from '../../services/Graph'
+
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
-import { RootState } from '../../store';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { WidgetProps } from '../../types/widget';
-import { gpacWebSocket } from '../../services/gpacWebSocket';
-import {
-  setSelectedFilterDetails,
-  setSelectedNode,
-} from '../../store/slices/graphSlice';
-import {
-  selectNodesForGraphMonitor,
-  selectEdges,
-  selectIsLoading,
-  selectError,
-} from '../../store/selectors/graphSelectors';
-import {
-  addSelectedFilter,
-} from '../../store/slices/multiFilterSlice';
+
 import LoadingState from '../common/LoadingState';
 import ConnectionErrorState from '../common/ConnectionErrorState';
 import GraphFlow from './GraphFlow';
 
+/**
+ * GraphMonitor component is a React functional component that monitors and displays a graph.
+ * It uses the React Flow library to render nodes and edges and manages the state of the graph
+ * through various hooks and callbacks.
+ *
+ * @component
+ * @param {WidgetProps} props - The properties passed to the component.
+ * @param {string} props.id - The unique identifier for the widget.
+ * @param {string} props.title - The title of the widget.
+ *
+ * @returns {JSX.Element} The rendered GraphMonitor component.
+ *
+ * @example
+ * <GraphMonitor id="graph-monitor-1" title="Graph Monitor" />
+ *
+ * @remarks
+ * This component uses the `Graph` class to manage the graph data and WebSocket connection.
+ * It handles various events emitted by the `Graph` class to update the state of nodes and edges.
+ *
+ * @internal
+ * The component uses several internal state variables and refs to manage the graph's state:
+ * - `graphRef`: A ref to the `Graph` instance.
+ * - `nodesRef`: A ref to store the current state of nodes.
+ * - `edgesRef`: A ref to store the current state of edges.
+ * - `renderCount`: A ref to keep track of the number of renders.
+ * - `isLoading`: A state variable to indicate if the graph is loading.
+ * - `connectionError`: A state variable to store any connection errors.
+ * - `localNodes`: A state variable to store the local state of nodes.
+ * - `localEdges`: A state variable to store the local state of edges.
+ *
+ * The component also defines several callback functions to handle updates to nodes and edges,
+ * as well as to handle node clicks.
+ *
+ * @see {@link Graph}
+ * @see {@link useNodesState}
+ * @see {@link useEdgesState}
+ */
 const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
-  const dispatch = useDispatch();
+  const graphRef = useRef<Graph | null>(null);
   const nodesRef = useRef<Node[]>([]);
   const edgesRef = useRef<Edge[]>([]);
   const renderCount = useRef(0);
 
-  // Redux selectors
-  const nodes = useSelector(selectNodesForGraphMonitor);
-  const edges = useSelector(selectEdges);
-  const isLoading = useSelector(selectIsLoading);
-  const error = useSelector(selectError);
-  const monitoredFilters = useSelector(
-    (state: RootState) => state.multiFilter.selectedFilters,
-  );
+  // Local state for nodes and edges
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-
-  // React Flow local state
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
   const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-
-  // Memoization of node updates
+  // Callbacks to update nodes and edges with positions and state
   const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
     return newNodes.map((node) => {
       const existingNode = nodesRef.current.find((n) => n.id === node.id);
@@ -66,7 +80,6 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     });
   }, []);
 
-    // Memoization of edge updates
   const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
     return newEdges.map((edge) => {
       const existingEdge = edgesRef.current.find((e) => e.id === edge.id);
@@ -81,33 +94,35 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     });
   }, []);
 
+
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       const nodeId = node.id;
       const nodeData = node.data;
 
-      // 1. Mettre à jour les détails du filtre sélectionné
-      dispatch(setSelectedFilterDetails(nodeData));
-      gpacWebSocket.setCurrentFilterId(parseInt(nodeId));
-      gpacWebSocket.getFilterDetails(parseInt(nodeId));
+      // Update the selected node in the graph
+      graphRef.current?.selectNode(nodeId);
 
-      // 2. Gérer le multi-monitoring
-      const isAlreadyMonitored = monitoredFilters.some((f) => f.id === nodeId);
-      if (!isAlreadyMonitored) {
-        dispatch(addSelectedFilter(nodeData));
-        gpacWebSocket.subscribeToFilter(nodeId);
+      // Get the filter details for the selected node
+      const filterId = parseInt(nodeId, 10);
+      graphRef.current?.setCurrentFilterId(filterId);
+      graphRef.current?.getFilterDetails(filterId);
+
+      // Add the selected filter to the list of monitored filters
+      const isAlreadyMonitored = graphRef.current
+        ?.getSelectedFilters()
+        .some((f) => f.id === nodeId);
+      if (!isAlreadyMonitored && nodeData?.idx !== undefined) {
+        graphRef.current?.addSelectedFilter(nodeData);
       }
-
-      // 3. Mettre à jour le nœud sélectionné
-      dispatch(setSelectedNode(nodeId));
     },
-    [dispatch, monitoredFilters],
+    [],
   );
 
+  // handleNodesChange callback
   const handleNodesChange = useCallback(
     (changes: any[]) => {
       onNodesChange(changes);
-      // Mettre à jour les références
       nodesRef.current = localNodes.map((node) =>
         typeof node === 'object' ? { ...node } : node,
       );
@@ -115,6 +130,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     [localNodes, onNodesChange],
   );
 
+  
   const handleEdgesChange = useCallback(
     (changes: any[]) => {
       onEdgesChange(changes);
@@ -123,63 +139,79 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
     [localEdges, onEdgesChange],
   );
 
-  const updatedNodes = useMemo(
-    () => updateNodesWithPositions(nodes),
-    [nodes, updateNodesWithPositions],
-  );
-  const updatedEdges = useMemo(
-    () => updateEdgesWithState(edges),
-    [edges, updateEdgesWithState],
-  );
-
-  // Update the datas 
+  // Effect to initialize the Graph instance and connect to the WebSocket
   useEffect(() => {
-    if (updatedNodes.length > 0 || updatedEdges.length > 0) {
-      setLocalNodes(updatedNodes);
-      setLocalEdges(updatedEdges);
+    graphRef.current = new Graph({ type: 'websocket', address: 'ws://127.0.0.1:17815/rmt' });
+    const graph = graphRef.current;
 
-      // References updates
-      nodesRef.current = updatedNodes;
-      edgesRef.current = updatedEdges;
-
+    // Événements émis par la classe Graph
+    const handleNodesUpdated = (updatedNodes: Node[]) => {
+      // Update nodes with positions
+      const positionedNodes = updateNodesWithPositions(updatedNodes);
+      setLocalNodes(positionedNodes);
+      nodesRef.current = positionedNodes;
       renderCount.current++;
       console.log(`[GraphMonitor] Render #${renderCount.current}`, {
-        nodesCount: nodes.length,
-        edgesCount: edges.length,
+        nodesCount: positionedNodes.length,
       });
-    }
-  }, [updatedNodes, updatedEdges]);
-
-  // WebSocket connexion
-  useEffect(() => {
-    console.log('GraphMonitor: Montage et connexion WebSocket');
-
-    const connectionTimer = setTimeout(() => {
-      gpacWebSocket.connect();
-    }, 1000);
-
-    return () => {
-      console.log('GraphMonitor: Démontage et nettoyage');
-      clearTimeout(connectionTimer);
-      gpacWebSocket.disconnect();
     };
-  }, []);
 
-  useEffect(() => {
-    console.log('État de chargement modifié :', isLoading);
-  }, [isLoading]);
+    const handleEdgesUpdated = (updatedEdges: Edge[]) => {
+     
+      const updated = updateEdgesWithState(updatedEdges);
+      setLocalEdges(updated);
+      edgesRef.current = updated;
+      console.log(`[GraphMonitor] Updated edges`, { edgesCount: updated.length });
+    };
 
-  useEffect(() => {
-    if (error) {
-      console.error('Erreur du graphique :', error);
-      setConnectionError(error);
-    }
-  }, [error]);
+    const handleLoading = (loading: boolean) => {
+      setIsLoading(loading);
+    };
+
+    const handleError = (error: string | null) => {
+      if (error) {
+        console.error('Erreur du graphique :', error);
+        setConnectionError(error);
+      } else {
+        setConnectionError(null);
+      }
+      setIsLoading(false);
+    };
+
+    const handleSelectedNodeChanged = (nodeId: string | null) => {
+      console.log('Nœud sélectionné changé :', nodeId);
+    };
+
+    const handleFilterDetails = (filterData: any) => {
+      console.log('Détails du filtre reçus :', filterData);
+      // Vous pouvez mettre à jour l'UI en fonction des détails du filtre
+      // Par exemple, afficher un panneau d'info, etc.
+    };
+
+    graph.on('nodesUpdated', handleNodesUpdated);
+    graph.on('edgesUpdated', handleEdgesUpdated);
+    graph.on('loading', handleLoading);
+    graph.on('error', handleError);
+    graph.on('selectedNodeChanged', handleSelectedNodeChanged);
+    graph.on('filterDetails', handleFilterDetails);
+
+    // WEBSOCKET CONNECTION
+    graph.connect();
+
+    // Cleanup function
+    return () => {
+      graph.disconnect();
+      graph.removeListener('nodesUpdated', handleNodesUpdated);
+      graph.removeListener('edgesUpdated', handleEdgesUpdated);
+      graph.removeListener('loading', handleLoading);
+      graph.removeListener('error', handleError);
+      graph.removeListener('selectedNodeChanged', handleSelectedNodeChanged);
+      graph.removeListener('filterDetails', handleFilterDetails);
+    };
+  }, [setLocalNodes, setLocalEdges, updateNodesWithPositions, updateEdgesWithState]);
 
   if (isLoading) {
-    return (
-      <LoadingState id={id} title={title} message="Connexion à GPAC..." />
-    );
+    return <LoadingState id={id} title={title} message="Connexion à GPAC..." />;
   }
 
   if (connectionError) {
@@ -190,7 +222,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
         errorMessage={connectionError}
         onRetry={() => {
           setConnectionError(null);
-          gpacWebSocket.connect();
+          graphRef.current?.connect();
         }}
       />
     );
@@ -212,3 +244,4 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
 GraphMonitor.displayName = 'GraphMonitor';
 
 export default GraphMonitor;
+
