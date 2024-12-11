@@ -7,7 +7,7 @@ import {
   maximizeWidget,
   restoreWidget} from '../../store/slices/widgetsSlice';
 
-import { GraphContext } from '../../context/GraphContext';
+
 
 import type { RootState } from '../../store';
 
