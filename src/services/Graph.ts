@@ -212,6 +212,7 @@ export default class Graph extends EventEmitter {
     this.graphState.nodes = filters.map((f, i) => this.createNodeFromFilter(f, i, []));
     this.graphState.edges = this.createEdgesFromFilters(filters, []);
     this.graphState.lastUpdate = Date.now();
+console.log('**', this.graphState.nodes);
 
     this.emit('nodesUpdated', this.graphState.nodes);
     this.emit('edgesUpdated', this.graphState.edges);

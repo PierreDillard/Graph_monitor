@@ -16,6 +16,9 @@ import { GraphContext } from '../../context/GraphContext';
 const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   const { graph, isConnected, isLoading, error } = React.useContext(GraphContext);
 
+  
+
+
   const nodesRef = useRef<Node[]>([]);
   const edgesRef = useRef<Edge[]>([]);
   const renderCount = useRef(0);
@@ -155,6 +158,7 @@ const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
   }
 
   if (error) {
+    console.log("J'ai pas acces au context !", error);
     return (
       <ConnectionErrorState
         id={id}

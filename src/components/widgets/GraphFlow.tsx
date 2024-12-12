@@ -35,6 +35,7 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
 }) => {
   return (
     <div style={flowStyles}>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -75,6 +76,7 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
         {/* Légende */}
         <Legend />
       </ReactFlow>
+
     </div>
   );
 };
