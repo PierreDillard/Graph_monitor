@@ -3,7 +3,7 @@ export class WebSocketBase {
   private messageHandlers: {
     [key: string]: ((connection: WebSocketBase, dataView: DataView) => void)[];
   } = {};
-
+  private errorHandlers: ((connection: WebSocketBase, error: string) => void)[] = [];
   public isConnected(): boolean {
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
   }
@@ -139,6 +139,11 @@ export class WebSocketBase {
       this.messageHandlers[messageName] = [];
     }
     this.messageHandlers[messageName].push(handler);
+  }
+  public addErrorHandler(
+    handler: (connection: WebSocketBase, error: string) => void,
+  ): void {
+    this.errorHandlers.push(handler);
   }
 
   private callMessageHandlers(messageName: string, dataView: DataView): void {

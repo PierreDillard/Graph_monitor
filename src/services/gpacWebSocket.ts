@@ -45,6 +45,7 @@ export class GpacWebSocket extends EventEmitter {
         this.handleGpacMessage(jsonData);
       } catch (error) {
         console.error('Error parsing direct JSON message:', error);
+        this.emit('error', 'Failed to parse direct JSON message');
       }
     });
 
@@ -58,9 +59,11 @@ export class GpacWebSocket extends EventEmitter {
           const jsonText = text.slice(5);
           const jsonData = JSON.parse(jsonText);
           this.handleGpacMessage(jsonData);
+          
         }
       } catch (error) {
         console.error('Error parsing CONI message:', error);
+        this.emit('error', 'Failed to parse CONI message');
       }
     });
 
@@ -76,9 +79,18 @@ export class GpacWebSocket extends EventEmitter {
         }
       } catch (error) {
         console.error('Error handling default message:', error);
+        this.emit('error', 'Failed to handle default message');
       }
     });
+
+    // Ajout d'un gestionnaire d'erreur global
+    this.ws.addErrorHandler((error: any) => {
+      const errorMessage = typeof error === 'string' ? error : 'Unknown WebSocket error';
+      console.error('[WebSocketBase] Error:', error);
+      this.emit('error', errorMessage);
+    });
   }
+  
 
   private throttledUpdateRealTimeMetrics = throttle(
     (payload: any) => {

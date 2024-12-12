@@ -195,7 +195,11 @@ export default class Graph extends EventEmitter {
   private setError(error: string | null) {
     this.graphState.error = error;
     this.graphState.isLoading = false;
-    this.emit('error', error);
+    if (error) {
+      this.emit('error', error);
+    } else {
+      this.emit('error', 'Unknown error');
+    }
   }
 
   private updateGraphData(filters: GpacNodeData[]) {
