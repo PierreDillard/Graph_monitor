@@ -21,140 +21,96 @@
  *
  * @returns {JSX.Element} The provider component that supplies the Graph instance and connection states to its children.
  */
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import Graph from '../services/Graph';
+
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { GraphContext } from './GraphContext';
+import Graph from '../services/Graph';
 
 interface GraphProviderProps {
   children: React.ReactNode;
 }
 
-interface ConnectionState {
-  isConnected: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
-
 const GraphProvider: React.FC<GraphProviderProps> = ({ children }) => {
-  const graphRef = useRef<Graph | null>(null);
-  const mountedRef = useRef(true);
-  const initializationAttemptedRef = useRef(false);
+  const [graph] = useState(() => new Graph({
+    type: 'websocket',
+    address: 'ws://127.0.0.1:17815/rmt'
+  }));
 
-  const [state, setState] = useState<ConnectionState>({
-    isConnected: false,
-    isLoading: true,
-    error: null
-  });
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Gestionnaire de connexion isolé
-  const handleConnection = useCallback(() => {
-    if (!mountedRef.current || initializationAttemptedRef.current) return;
+  // Connection state management
+  const handleConnected = useCallback(() => {
+    console.log('🟢 GraphProvider: Connected to GPAC');
+    setIsConnected(true);
+    setIsLoading(false);
+    setError(null);
+  }, []);
+
+  const handleDisconnected = useCallback(() => {
+    console.log('🔴 GraphProvider: Disconnected from GPAC');
+    setIsConnected(false);
+    setError('Disconnected from GPAC');
+    setIsLoading(false);
+  }, []);
+
+  const handleError = useCallback((err: string | null) => {
+    console.error('❌ GraphProvider: Connection error:', err);
+    setError(err);
+    setIsConnected(false);
+    setIsLoading(false);
+  }, []);
+
+  const handleLoading = useCallback((loading: boolean) => {
+    console.log(`⏳ GraphProvider: Loading state changed to ${loading}`);
+    setIsLoading(loading);
+  }, []);
+
+  // Context value memoization
+  const contextValue = useMemo(() => ({
+    graph,
+    isConnected,
+    isLoading,
+    error
+  }), [graph, isConnected, isLoading, error]);
+
+  // Event listeners setup
+  useEffect(() => {
+    console.log('🔄 GraphProvider: Setting up event listeners');
     
-    console.log('🚀 [GraphProvider] Starting connection sequence');
-    initializationAttemptedRef.current = true;
+    graph.on('connected', handleConnected);
+    graph.on('disconnected', handleDisconnected);
+    graph.on('error', handleError);
+    graph.on('loading', handleLoading);
 
-    try {
-      if (!graphRef.current) {
-        console.log('📡 [GraphProvider] Creating graph instance');
-        graphRef.current = new Graph({
-          type: 'websocket',
-          address: 'ws://127.0.0.1:17815/rmt'
-        });
+    // Attempt initial connection
+    graph.connect();
 
-        const graph = graphRef.current;
-
-        // Configuration des handlers
-        const handleConnected = () => {
-          if (!mountedRef.current) return;
-          console.log('✅ [GraphProvider] Connection established');
-          setState(prev => ({
-            ...prev,
-            isConnected: true,
-            isLoading: false,
-            error: null
-          }));
-        };
-
-        const handleDisconnected = () => {
-          if (!mountedRef.current) return;
-          console.log('❌ [GraphProvider] Disconnected from GPAC');
-          setState(prev => ({
-            ...prev,
-            isConnected: false,
-            error: 'Disconnected from GPAC'
-          }));
-        };
-
-        graph.on('connected', handleConnected);
-        graph.on('disconnected', handleDisconnected);
-        graph.on('error', err => {
-          if (!mountedRef.current) return;
-          console.error('🔥 [GraphProvider] Error:', err);
-          setState(prev => ({
-            ...prev,
-            error: err ? err.toString() : 'Unknown error',
-            isConnected: false,
-            isLoading: false
-          }));
-        });
-
-        // Connexion initiale
-        console.log('🔌 [GraphProvider] Initiating connection');
-        graph.connect();
-      }
-    } catch (error) {
-      console.error('💥 [GraphProvider] Initialization error:', error);
-      if (mountedRef.current) {
-        setState(prev => ({
-          ...prev,
-          error: error instanceof Error ? error.message : 'Failed to initialize graph',
-          isLoading: false
-        }));
-      }
-    }
-  }, []); // Pas de dépendances pour éviter les re-renders
-
-  // Effet d'initialisation unique
-  useEffect(() => {
-    mountedRef.current = true;
-    console.log('🎯 [GraphProvider] Component mounted');
-
-    // Initier la connexion immédiatement
-    handleConnection();
-
+    // Cleanup
     return () => {
-      console.log('🧹 [GraphProvider] Starting cleanup...');
-      mountedRef.current = false;
-      initializationAttemptedRef.current = false;
-
-      if (graphRef.current) {
-        console.log('📴 [GraphProvider] Disconnecting graph...');
-        graphRef.current.disconnect();
-        graphRef.current.removeAllListeners();
-        graphRef.current = null;
-      }
+      console.log('🧹 GraphProvider: Cleaning up event listeners');
+      graph.disconnect();
+      graph.removeListener('connected', handleConnected);
+      graph.removeListener('disconnected', handleDisconnected);
+      graph.removeListener('error', handleError);
+      graph.removeListener('loading', handleLoading);
     };
-  }, [handleConnection]); // Ajouter handleConnection comme dépendance
+  }, [graph, handleConnected, handleDisconnected, handleError, handleLoading]);
 
-  // Debug logs
+  // Debug logging for state changes
   useEffect(() => {
-    console.log('📊 [GraphProvider] State updated:', {
-      isConnected: state.isConnected,
-      isLoading: state.isLoading,
-      error: state.error,
-      hasGraph: !!graphRef.current
+    console.log('📊 GraphProvider State:', {
+      isConnected,
+      isLoading,
+      error,
+      hasGraph: !!graph
     });
-  }, [state]);
+  }, [isConnected, isLoading, error, graph]);
 
   return (
-    <GraphContext.Provider
-      value={{
-        graph: graphRef.current,
-        isConnected: state.isConnected,
-        isLoading: state.isLoading,
-        error: state.error
-      }}
-    >
+    <GraphContext.Provider value={contextValue}>
       {children}
     </GraphContext.Provider>
   );

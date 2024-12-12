@@ -2,7 +2,7 @@
 import React, {
   useCallback,
   useEffect,
-  useRef,
+  useRef,useContext
 } from 'react';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import WidgetWrapper from '../common/WidgetWrapper';
@@ -13,8 +13,19 @@ import ConnectionErrorState from '../common/ConnectionErrorState';
 import GraphFlow from './GraphFlow';
 import { GraphContext } from '../../context/GraphContext';
 
+
+const useGraphContext = () => {
+  const context = useContext(GraphContext);
+  
+  if (context === undefined) {
+    throw new Error('useGraphContext must be used within a GraphProvider');
+  }
+  
+  return context;
+};
+
 const GraphMonitor: React.FC<WidgetProps> = React.memo(({ id, title }) => {
-  const { graph, isConnected, isLoading, error } = React.useContext(GraphContext);
+  const { graph, isConnected, isLoading, error } = useGraphContext();
 
   
 
