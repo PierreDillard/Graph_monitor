@@ -23,7 +23,7 @@ export interface Widget {
 export interface WidgetComponent {
   id: string;
   title: string;
- /*  config: WidgetConfig; */
+  config: WidgetConfig; 
   children?: ReactNode;
 }
 

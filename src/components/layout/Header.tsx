@@ -1,4 +1,3 @@
-// src/components/layout/Header.tsx
 import React from 'react';
 import {
   Play,
@@ -24,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ onSaveLayout, onLoadLayout }) => {
   };
 
   return (
-    <header className="h-16 bg-gray-800 border-b border-gray-700 px-4">
+    <header className="h-16 bg-gray-900 border-b border-gray-700 px-4">
       <div className="h-full max-w-screen-2xl mx-auto flex items-center justify-between">
         {/* Logo et titre */}
         <div className="flex items-center space-x-4">

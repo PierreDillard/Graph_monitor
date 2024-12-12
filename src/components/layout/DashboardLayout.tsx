@@ -58,6 +58,8 @@ const DashboardLayout: React.FC = () => {
 
   const renderWidget = (widget: Widget) => {
     const Component = WIDGET_COMPONENTS[widget.type];
+    
+    
 
     if (!Component) {
       console.warn(`No component found for widget type: ${widget.type}`);
@@ -82,21 +84,27 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 ">
-      <Header />
-      <div className="flex flex-1 ">
-        <div className="fixed top-[64px] left-0 h-[calc(100vh-64px)] w-64 z-10">
+    <div className="min-h-screen bg-gray-950">
+      {/* Header fixe en haut */}
+      <div className="fixed top-0 left-0 right-0 h-16 z-20">
+        <Header />
+      </div>
+
+      {/* Conteneur pour le contenu scrollable */}
+      <div className="flex pt-16">
+        {/* Sidebar fixe */}
+        <div className="fixed left-0 top-16 bottom-0 w-64 z-10 bg-gray-800">
           <Sidebar />
         </div>
-        <main className="flex-1 ml-64 p-6 bg-gray-950 ">
+
+        {/* Zone principale scrollable avec marge pour le sidebar */}
+        <main className="flex-1 ml-64 p-6 min-h-[calc(100vh-64px)]">
           <ResponsiveGridLayout
             className="layout"
             layouts={layouts}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
             cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
             rowHeight={60}
-            // allowOverlap={true}
-            // compactType={null} 
             onLayoutChange={(currentLayout: Layout[]) => {
               currentLayout.forEach((item: Layout) => {
                 dispatch(

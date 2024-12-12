@@ -2,6 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { addWidget } from '../../store/slices/widgetsSlice';
 import { WidgetType } from '../../types/widget';
+
 import {
   Activity,
   Gauge,
@@ -52,8 +53,8 @@ const availableWidgets = [
   {
     type: WidgetType.MULTI_FILTER,
     title: 'Multi-Filter Monitor',
-    icon: Layout, // Vous pouvez choisir une autre icône si vous préférez
-    defaultSize: { w: 12, h: 6 }, // Taille par défaut plus grande car il affiche plusieurs filtres
+    icon: Layout,
+    defaultSize: { w: 12, h: 6 }, 
   },
 ];
 
@@ -80,7 +81,7 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-64 bg-gray-800 p-6 h-full">
+    <div className="w-64 bg-gray-900 p-6 h-full">
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Dashboard</h2>
         <p className="text-sm text-gray-400">
@@ -96,7 +97,7 @@ const Sidebar: React.FC = () => {
           <button
             key={widget.type}
             onClick={() => handleAddWidget(widget.type, widget.defaultSize)}
-            className="w-full flex items-center gap-3 p-3 rounded-sm bg-gray-700 hover:bg-gray-600 transition-colors"
+            className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
           >
             <widget.icon className="w-5 h-5" />
             <span>{widget.title}</span>
@@ -106,6 +107,7 @@ const Sidebar: React.FC = () => {
 
       <div className="mt-8 space-y-4">
         <h3 className="text-sm font-medium text-gray-400 uppercase">Layouts</h3>
+   
         <button className="w-full p-2 rounded bg-blue-600 hover:bg-blue-500 transition-colors">
           Save Current Layout
         </button>
