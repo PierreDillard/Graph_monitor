@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import { RootState } from '../../../../store';
 import { gpacWebSocket } from '../../../../services/gpacWebSocket';
+import { GpacNodeData } from '../../../../types/gpac';  
 import {
   setSelectedFilterDetails,
   setSelectedNode,
@@ -17,6 +18,7 @@ import {
 import {
   addSelectedFilter,
 } from '../../../../store/slices/multiFilterSlice';
+
 
 const useGraphMonitor = () => {
   const dispatch = useDispatch();
@@ -73,10 +75,11 @@ const useGraphMonitor = () => {
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       const nodeId = node.id;
-      const nodeData = node.data;
+      const nodeData  = node.data; 
+      console.log('**NODE DATA**', nodeData); 
 
       // 1. Mettre à jour les détails du filtre sélectionné
-      dispatch(setSelectedFilterDetails(nodeData));
+      dispatch(setSelectedFilterDetails(nodeData ));
       gpacWebSocket.setCurrentFilterId(parseInt(nodeId));
       gpacWebSocket.getFilterDetails(parseInt(nodeId));
 

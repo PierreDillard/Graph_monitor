@@ -315,6 +315,7 @@ export const {
   setMaxHistoryLength,
   updateMultipleFilters,
   updateRealTimeMetrics,
+  updateFilterBufferStats
 } = filterMonitoringSlice.actions;
 
 export default filterMonitoringSlice.reducer;

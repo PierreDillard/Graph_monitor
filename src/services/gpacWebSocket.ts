@@ -74,7 +74,7 @@ export class GpacWebSocket {
 
     this.ws.addDefaultMessageHandler((_, dataView) => {
       try {
-        const text = new TextDecoder().decode(dataView.buffer);
+        const text = new TextDecoder().decode(dataView.buffer as ArrayBuffer);
         if (text.startsWith('{')) {
           //Probably JSON
           const jsonData = JSON.parse(text);
