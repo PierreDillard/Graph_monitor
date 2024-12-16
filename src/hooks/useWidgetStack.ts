@@ -5,7 +5,10 @@ interface UseWidgetStackProps {
   stackSize?: number;
 }
 
-export const useWidgetStack = ({ initialZ = 10, stackSize = 1000 }: UseWidgetStackProps = {}) => {
+export const useWidgetStack = ({
+  initialZ = 10,
+  stackSize = 1000,
+}: UseWidgetStackProps = {}) => {
   const [zIndex, setZIndex] = useState(initialZ);
 
   const bringToFront = useCallback(() => {
@@ -20,6 +23,6 @@ export const useWidgetStack = ({ initialZ = 10, stackSize = 1000 }: UseWidgetSta
     zIndex,
     bringToFront,
     resetZIndex,
-    style: { zIndex }
+    style: { zIndex },
   };
 };

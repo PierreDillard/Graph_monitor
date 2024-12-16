@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { WidgetProps } from '../../../types/widget';
 import useGraphMonitor from './hooks/useGraphMonitor';
@@ -18,7 +17,6 @@ const GraphMonitor: React.FC<WidgetProps> = ({ id, title, config }) => {
 
   return (
     <GraphMonitorUI
-      
       id={id}
       title={title}
       config={config}

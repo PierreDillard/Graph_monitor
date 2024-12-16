@@ -54,7 +54,7 @@ const availableWidgets = [
     type: WidgetType.MULTI_FILTER,
     title: 'Multi-Filter Monitor',
     icon: Layout,
-    defaultSize: { w: 12, h: 6 }, 
+    defaultSize: { w: 12, h: 6 },
   },
 ];
 
@@ -107,7 +107,7 @@ const Sidebar: React.FC = () => {
 
       <div className="mt-8 space-y-4">
         <h3 className="text-sm font-medium text-gray-400 uppercase">Layouts</h3>
-   
+
         <button className="w-full p-2 rounded bg-blue-600 hover:bg-blue-500 transition-colors">
           Save Current Layout
         </button>

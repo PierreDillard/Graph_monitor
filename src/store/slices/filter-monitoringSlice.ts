@@ -124,48 +124,47 @@ const filterMonitoringSlice = createSlice({
     updateRealTimeMetrics(
       state,
       action: PayloadAction<{
-      filterId: string;
-      bytes_done: number;
-      buffer?: number;
-      buffer_total?: number;
+        filterId: string;
+        bytes_done: number;
+        buffer?: number;
+        buffer_total?: number;
       }>,
     ) {
       const { filterId, bytes_done, buffer, buffer_total } = action.payload;
       const now = Date.now();
 
       if (!state.realtimeMetrics[filterId]) {
-      state.realtimeMetrics[filterId] = {
-        previousBytes: 0,
-        currentBytes: bytes_done,
-        previousUpdateTime: now,
-        lastUpdate: now,
-        bufferStatus: {
-        current: buffer || 0,
-        total: buffer_total || 0,
-        },
-      };
-      } else {
-      const metrics = state.realtimeMetrics[filterId];
-        // Only update if we have new data
-      if (bytes_done !== metrics.currentBytes) {
-        metrics.previousBytes = metrics.currentBytes;
-        metrics.previousUpdateTime = metrics.lastUpdate;
-        metrics.currentBytes = bytes_done;
-        metrics.lastUpdate = now;
-      }
-      if (typeof buffer === 'number' && typeof buffer_total === 'number') {
-        metrics.bufferStatus = {
-          current: buffer,
-          total: buffer_total,
+        state.realtimeMetrics[filterId] = {
+          previousBytes: 0,
+          currentBytes: bytes_done,
+          previousUpdateTime: now,
+          lastUpdate: now,
+          bufferStatus: {
+            current: buffer || 0,
+            total: buffer_total || 0,
+          },
         };
+      } else {
+        const metrics = state.realtimeMetrics[filterId];
+        // Only update if we have new data
+        if (bytes_done !== metrics.currentBytes) {
+          metrics.previousBytes = metrics.currentBytes;
+          metrics.previousUpdateTime = metrics.lastUpdate;
+          metrics.currentBytes = bytes_done;
+          metrics.lastUpdate = now;
+        }
+        if (typeof buffer === 'number' && typeof buffer_total === 'number') {
+          metrics.bufferStatus = {
+            current: buffer,
+            total: buffer_total,
+          };
+        }
       }
-    }
-  },
+    },
 
     addActiveFilter: (state, action: PayloadAction<string>) => {
       if (!state.activeFilters.includes(action.payload)) {
-       
-        state.activeFilters.push(action.payload); 
+        state.activeFilters.push(action.payload);
       }
       if (!state.selectedFilterHistory[action.payload]) {
         state.selectedFilterHistory[action.payload] = [];
@@ -174,7 +173,7 @@ const filterMonitoringSlice = createSlice({
     removeActiveFilter: (state, action: PayloadAction<string>) => {
       state.activeFilters = state.activeFilters.filter(
         (id) => id !== action.payload,
-      ); 
+      );
       delete state.selectedFilterHistory[action.payload];
     },
 
@@ -228,14 +227,14 @@ export const selectRealTimeMetrics = (state: RootState, filterId: string) =>
 export const selectProcessingRate = (state: RootState, filterId: string) => {
   const metrics = state.filterMonitoring.realtimeMetrics[filterId];
   // Récupérer le filtre actuel pour accéder au status
-  const filter = state.graph.filters.find(f => f.idx.toString() === filterId);
+  const filter = state.graph.filters.find((f) => f.idx.toString() === filterId);
 
   // Si nous avons un statut avec FPS, utilisons-le prioritairement
   if (filter?.status) {
     // Parser le FPS du status
     const fpsMatch = filter.status.match(/(\d+\.?\d*)\s*FPS/);
     const resMatch = filter.status.match(/(\d+)x(\d+)/);
-    
+
     if (fpsMatch && resMatch) {
       const fps = parseFloat(fpsMatch[1]);
       const [, width, height] = resMatch;
@@ -263,18 +262,20 @@ export const selectProcessingRate = (state: RootState, filterId: string) => {
   const rateInBytesPerSecond = bytesDiff / timeDiff;
   return rateInBytesPerSecond > 0 ? rateInBytesPerSecond : 0;
 };
-// Dans filter-monitoringSlice.ts 
+// Dans filter-monitoringSlice.ts
 
 // Fonction utilitaire pour parser les buffers du status
-const parseBufferFromStatus = (status: string | null): { current: number, total: number } | null => {
+const parseBufferFromStatus = (
+  status: string | null,
+): { current: number; total: number } | null => {
   if (!status) return null;
-  
+
   // Parse des patterns comme "buffer 33 / 100 ms"
   const bufferMatch = status.match(/buffer\s+(\d+)\s*\/\s*(\d+)\s*ms/);
   if (bufferMatch) {
     return {
       current: parseInt(bufferMatch[1], 10),
-      total: parseInt(bufferMatch[2], 10)
+      total: parseInt(bufferMatch[2], 10),
     };
   }
   return null;
@@ -282,8 +283,8 @@ const parseBufferFromStatus = (status: string | null): { current: number, total:
 
 // Nouveau sélecteur pour les buffers
 export const selectBufferMetrics = (state: RootState, filterId: string) => {
-  const filter = state.graph.filters.find(f => f.idx.toString() === filterId);
-  
+  const filter = state.graph.filters.find((f) => f.idx.toString() === filterId);
+
   // Si on a un status, on essaie d'abord d'en extraire les infos de buffer
   if (filter?.status) {
     const bufferInfo = parseBufferFromStatus(filter.status);
@@ -291,7 +292,7 @@ export const selectBufferMetrics = (state: RootState, filterId: string) => {
       return {
         current: bufferInfo.current,
         total: bufferInfo.total,
-        percentage: (bufferInfo.current / bufferInfo.total) * 100
+        percentage: (bufferInfo.current / bufferInfo.total) * 100,
       };
     }
   }
@@ -302,8 +303,10 @@ export const selectBufferMetrics = (state: RootState, filterId: string) => {
     return {
       current: metrics.bufferStatus.current,
       total: metrics.bufferStatus.total,
-      percentage: metrics.bufferStatus.total > 0 ? 
-        (metrics.bufferStatus.current / metrics.bufferStatus.total) * 100 : 0
+      percentage:
+        metrics.bufferStatus.total > 0
+          ? (metrics.bufferStatus.current / metrics.bufferStatus.total) * 100
+          : 0,
     };
   }
 

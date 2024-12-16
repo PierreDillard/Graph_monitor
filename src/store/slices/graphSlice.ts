@@ -232,7 +232,7 @@ const graphSlice = createSlice({
     },
     setSelectedFilterDetails: (state, action: PayloadAction<GpacNodeData>) => {
       state.selectedFilterDetails = action.payload;
-      console.log('DETAILS DU FILTRE SÉLECTIONNÉ :', action.payload); 
+      console.log('DETAILS DU FILTRE SÉLECTIONNÉ :', action.payload);
     },
   },
 });

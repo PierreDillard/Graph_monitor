@@ -1,9 +1,8 @@
-
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import { RootState } from '../../../../store';
-import { gpacWebSocket } from '../../../../services/gpacWebSocket';
+import { gpacService } from '../../../../services/gpacService';
 import {
   setSelectedFilterDetails,
   setSelectedNode,
@@ -14,9 +13,7 @@ import {
   selectIsLoading,
   selectError,
 } from '../../../../store/selectors/graphSelectors';
-import {
-  addSelectedFilter,
-} from '../../../../store/slices/multiFilterSlice';
+import { addSelectedFilter } from '../../../../store/slices/multiFilterSlice';
 
 const useGraphMonitor = () => {
   const dispatch = useDispatch();
@@ -32,7 +29,7 @@ const useGraphMonitor = () => {
   const monitoredFilters = useSelector(
     (state: RootState) => state.multiFilter.selectedFilters,
   );
-  
+
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   // États locaux de React Flow
@@ -77,14 +74,14 @@ const useGraphMonitor = () => {
 
       // 1. Mettre à jour les détails du filtre sélectionné
       dispatch(setSelectedFilterDetails(nodeData));
-      gpacWebSocket.setCurrentFilterId(parseInt(nodeId));
-      gpacWebSocket.getFilterDetails(parseInt(nodeId));
+      gpacService.setCurrentFilterId(parseInt(nodeId));
+      gpacService.getFilterDetails(parseInt(nodeId));
 
       // 2. Gérer le multi-monitoring
       const isAlreadyMonitored = monitoredFilters.some((f) => f.id === nodeId);
       if (!isAlreadyMonitored) {
         dispatch(addSelectedFilter(nodeData));
-        gpacWebSocket.subscribeToFilter(nodeId);
+        gpacService.subscribeToFilter(nodeId);
       }
 
       // 3. Mettre à jour le nœud sélectionné
@@ -137,20 +134,27 @@ const useGraphMonitor = () => {
         edgesCount: edges.length,
       });
     }
-  }, [updatedNodes, updatedEdges, setLocalNodes, setLocalEdges, nodes.length, edges.length]);
+  }, [
+    updatedNodes,
+    updatedEdges,
+    setLocalNodes,
+    setLocalEdges,
+    nodes.length,
+    edges.length,
+  ]);
 
   // Connexion WebSocket
   useEffect(() => {
     console.log('useGraphMonitor: Montage et connexion WebSocket');
 
     const connectionTimer = setTimeout(() => {
-      gpacWebSocket.connect();
+      gpacService.connect();
     }, 1000);
 
     return () => {
       console.log('useGraphMonitor: Démontage et nettoyage');
       clearTimeout(connectionTimer);
-      gpacWebSocket.disconnect();
+      gpacService.disconnect();
     };
   }, []);
 
@@ -169,7 +173,7 @@ const useGraphMonitor = () => {
   // Fonction de retry en cas d'erreur
   const retryConnection = useCallback(() => {
     setConnectionError(null);
-    gpacWebSocket.connect();
+    gpacService.connect();
   }, []);
 
   return {

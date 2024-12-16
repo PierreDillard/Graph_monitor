@@ -16,7 +16,7 @@ import {
 import { DataViewReader } from './DataViewReader';
 import throttle from 'lodash/throttle';
 
-export class GpacWebSocket {
+export class GpacService {
   private ws: WebSocketBase;
   private reconnectAttempts = 0;
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
@@ -55,7 +55,7 @@ export class GpacWebSocket {
         console.error('Error parsing direct JSON message:', error);
       }
     });
- 
+
     this.ws.addMessageHandler('CONI', (_, dataView) => {
       try {
         const reader = new DataViewReader(dataView, 4);
@@ -93,11 +93,11 @@ export class GpacWebSocket {
   private throttledUpdateRealTimeMetrics = throttle(
     (payload) => {
       if (payload.bytesProcessed > 0) {
-        // Filter inusual values 
+        // Filter inusual values
         store.dispatch(updateRealTimeMetrics(payload));
       }
     },
-    1000, 
+    1000,
     { leading: true, trailing: true },
   );
 
@@ -128,7 +128,6 @@ export class GpacWebSocket {
 
     switch (data.message) {
       case 'filters':
-
         store.dispatch(setLoading(false));
         if (!isEqual(currentState.graph.filters, data.filters)) {
           store.dispatch(updateGraphData(data.filters));
@@ -138,14 +137,12 @@ export class GpacWebSocket {
         break;
 
       case 'update':
-      
         if (Array.isArray(data.filters)) {
           store.dispatch(updateGraphData(data.filters));
         }
         break;
       case 'details':
         if (data.filter) {
-        
           const filterId = data.filter.idx.toString();
 
           // Validate data.filter structure
@@ -171,7 +168,7 @@ export class GpacWebSocket {
               updateRealTimeMetrics({
                 filterId,
                 bytes_done: data.filter.bytes_done,
-                buffer: data.filter.buffer, 
+                buffer: data.filter.buffer,
                 buffer_total: data.filter.buffer_total,
               }),
             );
@@ -188,8 +185,6 @@ export class GpacWebSocket {
               buffer_total: firstPid?.buffer_total,
             });
           }
-           
- 
         }
         break;
 
@@ -291,8 +286,8 @@ export class GpacWebSocket {
     this.reconnectAttempts = 0;
 
     // Stop current filter details
-    store.dispatch(setSelectedFilters([])); 
-    store.dispatch(setFilterDetails(null)); 
+    store.dispatch(setSelectedFilters([]));
+    store.dispatch(setFilterDetails(null));
 
     // Disconnect WebSocket
     if (this.ws) {
@@ -342,4 +337,4 @@ export class GpacWebSocket {
   }
 }
 
-export const gpacWebSocket = new GpacWebSocket();
+export const gpacService = new GpacService();

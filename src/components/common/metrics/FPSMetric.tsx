@@ -14,7 +14,7 @@ const FPSMetric: React.FC<FPSMetricProps> = ({ fps, className = '' }) => {
   if (!fps?.val) return null;
   if (!fps?.val?.n || !fps?.val?.d) return null;
   const fpsValue = fps.val.n / fps.val.d;
-  
+
   let statusColor = 'text-green-400';
   if (fpsValue < 24) statusColor = 'text-red-400';
   else if (fpsValue < 30) statusColor = 'text-yellow-400';

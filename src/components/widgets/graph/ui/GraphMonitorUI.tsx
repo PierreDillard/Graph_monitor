@@ -31,9 +31,7 @@ const GraphMonitorUI: React.FC<GraphMonitorUIProps> = ({
   onNodeClick,
 }) => {
   if (isLoading) {
-    return (
-      <LoadingState id={id} title={title} message="Connexion à GPAC..." />
-    );
+    return <LoadingState id={id} title={title} message="Connexion à GPAC..." />;
   }
 
   if (connectionError) {

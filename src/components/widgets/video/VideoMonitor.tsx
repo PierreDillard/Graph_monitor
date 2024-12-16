@@ -4,9 +4,13 @@ import { WidgetProps } from '../../../types/widget';
 import WidgetWrapper from '../../common/WidgetWrapper';
 import { RootState } from '../../../store';
 import { GpacNodeData } from '../../../types/gpac';
-import { extractResolution, extractCodec, calculateBitrate, extractFPS } from './utils/videoUtils';
+import {
+  extractResolution,
+  extractCodec,
+  calculateBitrate,
+  extractFPS,
+} from './utils/videoUtils';
 import { VideoStats } from '../video/type/videoTypes';
-
 
 const VideoMonitor: React.FC<WidgetProps> = ({ id, title }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -17,12 +21,12 @@ const VideoMonitor: React.FC<WidgetProps> = ({ id, title }) => {
     fps: 60,
     buffer: {
       current: 500,
-      total: 1000
-    }
+      total: 1000,
+    },
   });
 
-  const selectedNode = useSelector((state: RootState) => 
-    state.graph.selectedFilterDetails
+  const selectedNode = useSelector(
+    (state: RootState) => state.graph.selectedFilterDetails,
   );
 
   useEffect(() => {
@@ -40,12 +44,11 @@ const VideoMonitor: React.FC<WidgetProps> = ({ id, title }) => {
       fps: extractFPS(node),
       buffer: {
         current: node.ipid?.video?.buffer || 0,
-        total: node.ipid?.video?.buffer_total || 0
-      }
+        total: node.ipid?.video?.buffer_total || 0,
+      },
     };
     setStats(newStats);
   };
-
 
   return (
     <WidgetWrapper id={id} title={title}>

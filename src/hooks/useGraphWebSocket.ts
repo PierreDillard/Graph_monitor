@@ -1,9 +1,14 @@
-
 import { useEffect, useState } from 'react';
-import { gpacWebSocket } from '../services/gpacWebSocket';
+import { gpacWebSocket } from '../services/gpacService';
 import { useDispatch } from 'react-redux';
-import { setSelectedFilterDetails, setSelectedNode } from '../store/slices/graphSlice';
-import { addSelectedFilter, removeSelectedFilter } from '../store/slices/multiFilterSlice';
+import {
+  setSelectedFilterDetails,
+  setSelectedNode,
+} from '../store/slices/graphSlice';
+import {
+  addSelectedFilter,
+  removeSelectedFilter,
+} from '../store/slices/multiFilterSlice';
 
 const useGraphWebSocket = (id: string) => {
   const dispatch = useDispatch();

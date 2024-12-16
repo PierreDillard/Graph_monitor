@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   ReactFlow,
@@ -48,11 +47,7 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
         proOptions={{ hideAttribution: true }}
         selectionKeyCode={null}
       >
-        <Background
-          color="#4b5563"
-          gap={16}
-          variant={BackgroundVariant.Dots}
-        />
+        <Background color="#4b5563" gap={16} variant={BackgroundVariant.Dots} />
         <Controls
           className="bg-gray-800 border-gray-700 fill-gray-400"
           showInteractive={false}

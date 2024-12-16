@@ -2,14 +2,13 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   getStatusColor,
   formatProcessingRate,
-
 } from '../../utils/filterMonitorUtils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { WidgetProps } from '../../types/widget';
 import { GpacNodeData } from '../../types/gpac';
-import { gpacWebSocket } from '../../services/gpacWebSocket';
+import { gpacService } from '../../services/gpacService';
 import BufferMonitoring from './monitoring/buffer/BufferMonitoring';
 import {
   removeSelectedFilter,
@@ -18,8 +17,6 @@ import {
 import { setFilterDetails } from '../../store/slices/graphSlice';
 import AdvancedMetrics from '../common/metrics/AdvancedMetrics';
 import FilterCard from './monitoring/filter/FilterCard';
-
-
 
 // MetricCard Component
 interface MetricCardProps {
@@ -107,7 +104,6 @@ interface FilterMonitorContentProps {
 }
 const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
   ({ data }) => {
- 
     // State to store history data for charts
     const [historyData, setHistoryData] = useState<
       { time: number; bytes_done: number }[]
@@ -115,10 +111,6 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
 
     // Debounce state updates
     const updateTimeout = useRef<NodeJS.Timeout | null>(null);
-
-
-
-
 
     useEffect(() => {
       if (updateTimeout.current) {
@@ -159,9 +151,6 @@ const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
           </div>
         </div>
 
-
-
-
         {/* PID Information */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-gray-800/50 p-4 rounded-lg">
@@ -192,13 +181,13 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
 
     const handleCloseMonitor = useCallback(
       (filterId: string) => {
-        gpacWebSocket.unsubscribeFromFilter(filterId);
+        gpacService.unsubscribeFromFilter(filterId);
         dispatch(removeSelectedFilter(filterId));
 
         // If it was also the active filter of the PID Monitor, clear it
-        if (gpacWebSocket.getCurrentFilterId()?.toString() === filterId) {
+        if (gpacService.getCurrentFilterId()?.toString() === filterId) {
           dispatch(setFilterDetails(null));
-          gpacWebSocket.setCurrentFilterId(null);
+          gpacService.setCurrentFilterId(null);
         }
       },
       [dispatch],
@@ -243,11 +232,11 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
       <WidgetWrapper id={id} title={title}>
         <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {selectedFilters.map((filter) => (
-          <FilterCard
-          key={filter.id}
-          filter={filter}
-          onClose={handleCloseMonitor}
-        />
+            <FilterCard
+              key={filter.id}
+              filter={filter}
+              onClose={handleCloseMonitor}
+            />
           ))}
         </div>
       </WidgetWrapper>

@@ -58,8 +58,6 @@ const DashboardLayout: React.FC = () => {
 
   const renderWidget = (widget: Widget) => {
     const Component = WIDGET_COMPONENTS[widget.type];
-    
-    
 
     if (!Component) {
       console.warn(`No component found for widget type: ${widget.type}`);
