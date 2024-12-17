@@ -152,42 +152,36 @@ const useGraphMonitor = () => {
             edgesRef.current = updatedEdges;
         }
     }, [updatedNodes, updatedEdges, setLocalNodes, setLocalEdges]);
-
     useEffect(() => {
-        const cleanup = communication.registerHandler(messageHandler);
-        
-        const connectionTimer = setTimeout(() => {
-            communication.connect({
-                address: 'ws://127.0.0.1:17815/rmt',
-                maxReconnectAttempts: 5,
-                reconnectDelay: 1000,
-                maxDelay: 10000
-            });
-        }, 1000);
-
-        return () => {
-            cleanup();
-            clearTimeout(connectionTimer);
-            communication.disconnect();
-        };
-    }, [communication, messageHandler]);
-
-    useEffect(() => {
-        if (error) {
-            console.error('[GraphMonitor] Error:', error);
-            setConnectionError(error);
-        }
-    }, [error]);
-
-    const retryConnection = useCallback(() => {
-        setConnectionError(null);
-        communication.connect({
-            address: 'ws://127.0.0.1:17815/rmt',
-            maxReconnectAttempts: 5,
-            reconnectDelay: 1000
-        });
-    }, [communication]);
-
+      const cleanup = gpacService.connect()
+          .then(() => console.log('[useGraphMonitor] Connected to GPAC'))
+          .catch((error) => {
+              console.error('[useGraphMonitor] Connection error:', error);
+              setConnectionError(error.message);
+          });
+  
+      return () => {
+          cleanup.then(() => console.log('[useGraphMonitor] Disconnected from GPAC')).catch((error) => console.error('[useGraphMonitor] Disconnection error:', error)); // Nettoyage de la connexion et des handlers
+      };
+  }, [messageHandler]);
+  
+  useEffect(() => {
+      if (error) {
+          console.error('[GraphMonitor] Error:', error);
+          setConnectionError(error);
+      }
+  }, [error]);
+  
+  const retryConnection = useCallback(() => {
+      setConnectionError(null);
+      gpacService.connect()
+          .then(() => console.log('[useGraphMonitor] Retry connection success'))
+          .catch((error) => {
+              console.error('[useGraphMonitor] Retry connection failed:', error);
+              setConnectionError(error.message);
+          });
+  }, []);
+  
     return {
         isLoading,
         connectionError,

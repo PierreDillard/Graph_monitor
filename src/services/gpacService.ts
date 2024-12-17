@@ -1,7 +1,6 @@
 import { WebSocketBase } from './WebSocketBase';
 import { DataViewReader } from './DataViewReader';
 import { store } from '../store';
-import { GpacNodeData } from '../types/gpac';
 import {
     updateFilterData,
     setSelectedFilters,
@@ -16,6 +15,13 @@ import {
 import { GpacCommunicationAdapter } from './communication/adapters/GpacCommunicationAdapter';
 import { IGpacCommunication, GpacMessage } from './communication/types/IgpacCommunication';
 import { throttle } from 'lodash';
+
+export const DEFAULT_WS_CONFIG = {
+  address: 'ws://127.0.0.1:17815/rmt',
+  maxReconnectAttempts: 5,
+  reconnectDelay: 1000,
+  maxDelay: 10000,
+};
 
 export class GpacService {
     private static instance: GpacService | null = null;
