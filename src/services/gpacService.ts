@@ -22,6 +22,15 @@ export class GpacService {
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private isConnecting = false;
+  private readonly throttledUpdateRealTimeMetrics = throttle(
+    (payload: any) => {
+      if (payload.bytesProcessed > 0) {
+        store.dispatch(updateRealTimeMetrics(payload));
+      }
+    },
+    1000, 
+    { leading: true, trailing: true }
+  );
 
   constructor(private address: string = 'ws://127.0.0.1:17815/rmt') {
     this.ws = new WebSocketBase();
@@ -90,16 +99,6 @@ export class GpacService {
 
   private activeSubscriptions: Set<string> = new Set();
 
-  private throttledUpdateRealTimeMetrics = throttle(
-    (payload) => {
-      if (payload.bytesProcessed > 0) {
-        // Filter inusual values
-        store.dispatch(updateRealTimeMetrics(payload));
-      }
-    },
-    1000,
-    { leading: true, trailing: true },
-  );
 
   private isValidFilterData(filter: any): filter is GpacNodeData {
     return (

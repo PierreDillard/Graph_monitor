@@ -5,7 +5,9 @@ import LoadingState from '../../../common/LoadingState';
 import ConnectionErrorState from '../../../common/ConnectionErrorState';
 import GraphFlow from './GraphFlow';
 import { WidgetProps } from '../../../../types/widget';
-import { Node, Edge } from '@xyflow/react';
+import { Node , Edge} from '@xyflow/react';
+import CustomEdge from '../customs/CustomEdges';
+
 
 interface GraphMonitorUIProps extends WidgetProps {
   isLoading: boolean;
@@ -13,10 +15,15 @@ interface GraphMonitorUIProps extends WidgetProps {
   retryConnection: () => void;
   nodes: Node[];
   edges: Edge[];
+
   onNodesChange: (changes: any[]) => void;
   onEdgesChange: (changes: any[]) => void;
   onNodeClick: (event: React.MouseEvent, node: Node) => void;
 }
+
+const edgeTypes = {
+  customEdge: CustomEdge,
+};
 
 const GraphMonitorUI: React.FC<GraphMonitorUIProps> = ({
   id,
@@ -50,6 +57,7 @@ const GraphMonitorUI: React.FC<GraphMonitorUIProps> = ({
       <GraphFlow
         nodes={nodes}
         edges={edges}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}

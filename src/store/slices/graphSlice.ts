@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Node, Edge, MarkerType } from '@xyflow/react';
+import { Node, Edge} from '@xyflow/react';
+import { createNodeFromFilter, createEdgesFromFilters } from '../../components/widgets/graph/utils/graphOperations';
 import { GpacNodeData } from '@/types/gpac';
+import { sanitizeNodePosition } from '../../components/widgets/graph/utils/graphOperations';
+import { throttle } from 'lodash';
 
 export interface GraphState {
   filters: GpacNodeData[];
@@ -25,150 +28,7 @@ const initialState: GraphState = {
   lastUpdate: Date.now(),
   selectedFilterDetails: null,
 };
-
-type FilterType = 'video' | 'audio' | 'text' | 'image' | 'other';
-
-const determineFilterType = (
-  filterName: string,
-  filterType: string,
-): FilterType => {
-  const name = filterName.toLowerCase();
-  const type = filterType.toLowerCase();
-
-  if (
-    name.includes('video') ||
-    type.includes('vout') ||
-    type.includes('vflip') ||
-    type.includes('nvdec')
-  ) {
-    return 'video';
-  }
-  if (
-    name.includes('audio') ||
-    type.includes('aout') ||
-    type.includes('aenc')
-  ) {
-    return 'audio';
-  }
-  if (name.includes('text') || name.includes('subt') || type.includes('text')) {
-    return 'text';
-  }
-  if (name.includes('image') || type.includes('img')) {
-    return 'image';
-  }
-  return 'other';
-};
-
-const getFilterColor = (filterType: FilterType): string => {
-  const colors = {
-    video: '#3b82f6',
-    audio: '#10b981',
-    text: '#f59e0b',
-    image: '#8b5cf6',
-    other: '#6b7280',
-  };
-  return colors[filterType];
-};
-
-function createNodeFromFilter(
-  filter: GpacNodeData,
-  index: number,
-  existingNodes: Node[],
-): Node {
-  const existingNode = existingNodes.find(
-    (n) => n.id === filter.idx.toString(),
-  );
-  const filterType = determineFilterType(filter.name, filter.type);
-
-  return {
-    id: filter.idx.toString(),
-    type: 'default',
-    data: {
-      label: filter.name,
-      filterType,
-      ...filter,
-    },
-    position: existingNode?.position || {
-      x: 150 + (index % 3) * 300,
-      y: 100 + Math.floor(index / 3) * 200,
-    },
-    className: `transition-all duration-200 ${
-      existingNode?.selected
-        ? 'ring-2 ring-offset-2 ring-blue-500 shadow-lg scale-105'
-        : ''
-    }`,
-    selected: existingNode?.selected,
-    style: {
-      background:
-        filter.nb_ipid === 0
-          ? '#4ade80'
-          : filter.nb_opid === 0
-            ? '#ef4444'
-            : getFilterColor(filterType),
-      color: 'white',
-      padding: '10px',
-      borderRadius: '8px',
-      border: '1px solid #4b5563',
-      width: 180,
-    },
-  };
-}
-
-function createEdgesFromFilters(
-  filters: GpacNodeData[],
-  existingEdges: Edge[],
-): Edge[] {
-  const newEdges: Edge[] = [];
-
-  filters.forEach((filter) => {
-    if (filter.ipid) {
-      Object.entries(filter.ipid).forEach(([pidName, pid]: [string, any]) => {
-        if (pid.source_idx !== undefined) {
-          const edgeId = `${pid.source_idx}-${filter.idx}-${pidName}`;
-          const existingEdge = existingEdges.find((e) => e.id === edgeId);
-
-          const filterType = determineFilterType(filter.name, filter.type);
-          const filterColor = getFilterColor(filterType);
-
-          // Calculate buffer percentage
-          const bufferPercentage =
-            pid.buffer_total > 0
-              ? Math.round((pid.buffer / pid.buffer_total) * 100)
-              : 0;
-
-          newEdges.push({
-            id: edgeId,
-            source: pid.source_idx.toString(),
-            target: filter.idx.toString(),
-            type: 'simplebezier',
-            label: `${pidName} (${bufferPercentage}%)`,
-            data: {
-              filterType,
-              bufferPercentage,
-              pidName,
-            },
-            animated: true,
-            style: {
-              stroke: filterColor,
-              strokeWidth: 2,
-              opacity: 0.8,
-            },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: filterColor,
-            },
-            selected: existingEdge?.selected,
-          });
-        }
-      });
-    }
-  });
-
-  return newEdges;
-}
-
-const THROTTLE_INTERVAL = 100;
-
+const  THROTTLE_INTERVAL= 150;
 const graphSlice = createSlice({
   name: 'graph',
   initialState,
@@ -182,25 +42,34 @@ const graphSlice = createSlice({
     },
     updateGraphData: {
       reducer(state, action: PayloadAction<GpacNodeData[]>) {
-        // Nettoyer l'état complet
+        // Nettoyer l'état co
         state.filters = [];
         state.nodes = [];
         state.edges = [];
 
         // Mettre à jour avec les nouvelles données
         state.filters = action.payload;
-        state.nodes = action.payload.map((f, i) =>
-          createNodeFromFilter(f, i, []),
+        state.nodes = action.payload.map((filter, index) => {
+          const node = createNodeFromFilter(filter, index, []);
+        return {
+          ...node,
+          position: sanitizeNodePosition(node.position),
+        };
+      }
         );
-        state.edges = createEdgesFromFilters(action.payload, []);
+        const sanitizedEdges = createEdgesFromFilters(
+          action.payload,
+          [],
+          state.nodes // Passage des nodes sanitizés pour référence
+        );
+        state.edges = sanitizedEdges;
+        
         state.lastUpdate = Date.now();
       },
-      prepare(data: GpacNodeData[]) {
-        return {
-          payload: data,
-          meta: { throttle: THROTTLE_INTERVAL },
-        };
-      },
+      prepare: throttle((data: GpacNodeData[]) => ({
+        payload: data,
+        meta: { throttle: THROTTLE_INTERVAL }
+      }), THROTTLE_INTERVAL)
     },
 
     updateLayout(
@@ -210,7 +79,12 @@ const graphSlice = createSlice({
       // Update only the positions of existing nodes
       state.nodes = state.nodes.map((node) => {
         const updatedNode = action.payload.nodes.find((n) => n.id === node.id);
-        return updatedNode ? { ...node, position: updatedNode.position } : node;
+        if (!updatedNode) return node;
+    
+        return {
+          ...node,
+          position: sanitizeNodePosition(updatedNode.position)
+        };
       });
       state.edges = action.payload.edges;
     },

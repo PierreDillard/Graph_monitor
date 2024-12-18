@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo} from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -6,18 +6,31 @@ import {
   Background,
   BackgroundVariant,
   Node,
-  Edge,
+  Edge as XyEdge,
+  Position,
+  NodeChange,
+  EdgeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import Legend from '../../../common/Legend';
+import CustomEdge from '../customs/CustomEdges';
+
+interface Edge extends XyEdge {
+  sourcePosition?: Position;
+  targetPosition?: Position;
+}
 
 interface GraphFlowProps {
   nodes: Node[];
   edges: Edge[];
-  onNodesChange: any;
-  onEdgesChange: any;
+  onNodesChange: (changes: NodeChange[]) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
   onNodeClick: (event: React.MouseEvent, node: Node) => void;
 }
+const edgeTypes = {
+  customEdge: CustomEdge,
+};
+
 
 const flowStyles = {
   background: '#111827',
@@ -32,11 +45,22 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
   onEdgesChange,
   onNodeClick,
 }) => {
+
+  console.log('nodes', nodes);
+  const validatedEdges = useMemo(() => 
+    edges.map(edge => ({
+      ...edge,
+      sourcePosition: edge.sourcePosition || Position.Right,
+      targetPosition: edge.targetPosition || Position.Left,
+    })),
+    [edges]
+  );
   return (
     <div style={flowStyles}>
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={validatedEdges}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}

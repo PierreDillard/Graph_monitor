@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { GpacNodeData } from '../../../../types/gpac'; // Adjust the import path as necessary
 import { useDispatch, useSelector } from 'react-redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
+import { isEqual, throttle } from 'lodash';
+
+import { useGraphData } from './useGraphData';
 import { RootState } from '../../../../store';
 import { gpacService } from '../../../../services/gpacService';
 import {
@@ -8,169 +12,149 @@ import {
   setSelectedNode,
 } from '../../../../store/slices/graphSlice';
 import {
-  selectNodesForGraphMonitor,
-  selectEdges,
+
   selectIsLoading,
   selectError,
 } from '../../../../store/selectors/graphSelectors';
 import { addSelectedFilter } from '../../../../store/slices/multiFilterSlice';
 
+
+const THROTTLE_DELAY = 100;
+
+
 const useGraphMonitor = () => {
   const dispatch = useDispatch();
+  
+  // Persistent references to nodes and edges
   const nodesRef = useRef<Node[]>([]);
   const edgesRef = useRef<Edge[]>([]);
   const renderCount = useRef(0);
+  const frameRequestRef = useRef<number>();
 
-  // Sélecteurs Redux
-  const nodes = useSelector(selectNodesForGraphMonitor);
-  const edges = useSelector(selectEdges);
+  // Redux selectors
+  const filters = useSelector((state: RootState) => state.graph.filters);
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
   const monitoredFilters = useSelector(
-    (state: RootState) => state.multiFilter.selectedFilters,
+    (state: RootState) => state.multiFilter.selectedFilters
   );
 
+  // local state for connection error
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  // États locaux de React Flow
+  // React FLow State with optimized handlers
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
-  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState([]);
+  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  // Mémoïsation des mises à jour des nœuds
-  const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
-    return newNodes.map((node) => {
-      const existingNode = nodesRef.current.find((n) => n.id === node.id);
-      if (existingNode) {
-        return {
-          ...node,
-          position: existingNode.position,
-          selected: existingNode.selected,
-          dragging: existingNode.dragging,
-        };
-      }
-      return node;
-    });
-  }, []);
+  // Graph data generation
+  const { nodes: updatedNodes, edges: updatedEdges } = useGraphData({
+    filters,
+    existingNodes: nodesRef.current,
+    existingEdges: edgesRef.current,
+  });
 
-  // Mémoïsation des mises à jour des arêtes
-  const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
-    return newEdges.map((edge) => {
-      const existingEdge = edgesRef.current.find((e) => e.id === edge.id);
-      if (existingEdge) {
-        return {
-          ...edge,
-          selected: existingEdge.selected,
-          animated: existingEdge.animated,
-        };
-      }
-      return edge;
-    });
-  }, []);
-
+  // click Handler
   const onNodeClick = useCallback(
-    (event: React.MouseEvent, node: Node) => {
+    throttle((event: React.MouseEvent, node: Node) => {
       const nodeId = node.id;
-      const nodeData = node.data;
+      const nodeData = node.data as unknown as GpacNodeData;
 
-      // 1. Mettre à jour les détails du filtre sélectionné
       dispatch(setSelectedFilterDetails(nodeData));
       gpacService.setCurrentFilterId(parseInt(nodeId));
       gpacService.getFilterDetails(parseInt(nodeId));
 
-      // 2. Gérer le multi-monitoring
-      const isAlreadyMonitored = monitoredFilters.some((f) => f.id === nodeId);
+      const isAlreadyMonitored = monitoredFilters.some(f => f.id === nodeId);
       if (!isAlreadyMonitored) {
         dispatch(addSelectedFilter(nodeData));
         gpacService.subscribeToFilter(nodeId);
       }
 
-      // 3. Mettre à jour le nœud sélectionné
       dispatch(setSelectedNode(nodeId));
-    },
-    [dispatch, monitoredFilters],
+    }, THROTTLE_DELAY),
+    [dispatch, monitoredFilters]
   );
 
-  const handleNodesChange = useCallback(
-    (changes: any[]) => {
+  // Node change handler
+  const handleNodesChange = useCallback((changes: any[]) => {
+    if (frameRequestRef.current) {
+      cancelAnimationFrame(frameRequestRef.current);
+    }
+
+    frameRequestRef.current = requestAnimationFrame(() => {
       onNodesChange(changes);
-      // Mettre à jour les références
-      nodesRef.current = localNodes.map((node) =>
-        typeof node === 'object' ? { ...node } : node,
-      );
-    },
-    [localNodes, onNodesChange],
-  );
+      nodesRef.current = changes.reduce((acc, change) => {
+        if (change.type === 'position' && change.dragging) {
+            const nodeIndex: number = acc.findIndex((n: Node) => n.id === change.id);
+          if (nodeIndex !== -1) {
+            acc[nodeIndex] = { 
+              ...acc[nodeIndex], 
+              position: change.position 
+            };
+          }
+        }
+        return acc;
+      }, [...nodesRef.current]);
+    });
+  }, [onNodesChange]);
 
+  //Edges change handler
   const handleEdgesChange = useCallback(
-    (changes: any[]) => {
+    throttle((changes: any[]) => {
       onEdgesChange(changes);
-      edgesRef.current = localEdges.map((edge) => ({ ...edge }));
-    },
-    [localEdges, onEdgesChange],
+      edgesRef.current = localEdges.map(edge => ({
+        ...edge,
+        type: edge.type || 'customEdge',
+      }));
+    }, THROTTLE_DELAY),
+    [localEdges, onEdgesChange]
   );
 
-  const updatedNodes = useMemo(
-    () => updateNodesWithPositions(nodes),
-    [nodes, updateNodesWithPositions],
-  );
-  const updatedEdges = useMemo(
-    () => updateEdgesWithState(edges),
-    [edges, updateEdgesWithState],
-  );
-
-  // Mettre à jour les données locales
+  // Sync local state with updated nodes and edges
   useEffect(() => {
-    if (updatedNodes.length > 0 || updatedEdges.length > 0) {
+    const hasChanges = 
+      !isEqual(updatedNodes, nodesRef.current) || 
+      !isEqual(updatedEdges, edgesRef.current);
+
+    if (hasChanges) {
       setLocalNodes(updatedNodes);
       setLocalEdges(updatedEdges);
-
-      // Mise à jour des références
       nodesRef.current = updatedNodes;
       edgesRef.current = updatedEdges;
 
       renderCount.current++;
-      console.log(`[useGraphMonitor] Render #${renderCount.current}`, {
-        nodesCount: nodes.length,
-        edgesCount: edges.length,
-      });
+
+        console.log(`[GraphMonitor] Render #${renderCount.current}`, {
+          nodesCount: updatedNodes.length,
+          edgesCount: updatedEdges.length
+        });
+      
     }
-  }, [
-    updatedNodes,
-    updatedEdges,
-    setLocalNodes,
-    setLocalEdges,
-    nodes.length,
-    edges.length,
-  ]);
+  }, [updatedNodes, updatedEdges, setLocalNodes, setLocalEdges]);
 
-  // Connexion WebSocket
+  //  WebSocket
   useEffect(() => {
-    console.log('useGraphMonitor: Montage et connexion WebSocket');
-
     const connectionTimer = setTimeout(() => {
       gpacService.connect();
     }, 1000);
 
     return () => {
-      console.log('useGraphMonitor: Démontage et nettoyage');
       clearTimeout(connectionTimer);
+      if (frameRequestRef.current) {
+        cancelAnimationFrame(frameRequestRef.current);
+      }
       gpacService.disconnect();
     };
   }, []);
 
-  // Gestion des erreurs de chargement
-  useEffect(() => {
-    console.log('État de chargement modifié :', isLoading);
-  }, [isLoading]);
-
+  //error handling
   useEffect(() => {
     if (error) {
-      console.error('Erreur du graphique :', error);
+      console.error('[GraphMonitor] Error:', error);
       setConnectionError(error);
     }
   }, [error]);
 
-  // Fonction de retry en cas d'erreur
+  // Retry connection
   const retryConnection = useCallback(() => {
     setConnectionError(null);
     gpacService.connect();

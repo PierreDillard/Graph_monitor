@@ -16,6 +16,7 @@ export interface FilterMetadata {
   MaxFrameSize?: number;
 }
 
+
 export interface PIDData {
   buffer: number;
   buffer_total: number;
@@ -75,7 +76,7 @@ export interface EdgeData extends Record<string, unknown> {
   pidName: string;
 }
 
-export type GpacEdge = Edge<EdgeData>;
+export type GpacEdge = Edge<EdgeData> | Edge;
 
 export interface GpacEdgeProps extends EdgeProps<EdgeData> {
   data: EdgeData;
