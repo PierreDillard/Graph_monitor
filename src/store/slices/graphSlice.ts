@@ -42,12 +42,11 @@ const graphSlice = createSlice({
     },
     updateGraphData: {
       reducer(state, action: PayloadAction<GpacNodeData[]>) {
-        // Nettoyer l'état co
+    
         state.filters = [];
         state.nodes = [];
         state.edges = [];
 
-        // Mettre à jour avec les nouvelles données
         state.filters = action.payload;
         state.nodes = action.payload.map((filter, index) => {
           const node = createNodeFromFilter(filter, index, []);
@@ -60,7 +59,7 @@ const graphSlice = createSlice({
         const sanitizedEdges = createEdgesFromFilters(
           action.payload,
           [],
-          state.nodes // Passage des nodes sanitizés pour référence
+          state.nodes 
         );
         state.edges = sanitizedEdges;
         

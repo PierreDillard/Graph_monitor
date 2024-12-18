@@ -110,7 +110,7 @@ filters: GpacNodeData[], existingEdges: Edge[], nodes?: unknown,
         const targetId = String(filter.idx);
         const edgeId = `${sourceId}-${targetId}-${pidName}`;
         
-        // Validation et conversion des coordonnées
+  
         const coordinates = computeEdgeCoordinates({
           source: sourceId,
           target: targetId,
@@ -167,7 +167,7 @@ export  const sanitizeNodePosition = (pos: unknown): { x: number, y: number } =>
 
  export function calculateDefaultPosition(index: number): { x: number, y: number } {
     return {
-      x: 150 + (index * 300), // Espacement horizontal
+      x: 150 + (index * 300),
       y: 100 + (Math.floor(index / 3) * 200) // Distribution verticale
     };
   }
