@@ -14,6 +14,12 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        gray: {
+          750: '#2D3748', 
+        },
+  
+      },
       spacing: {
         'widget-sm': '300px',
         'widget-md': '400px',
@@ -25,11 +31,11 @@ export default {
       maxHeight: {
         'widget': '800px',
       },
-      // Ajout des styles pour le curseur de déplacement
+ 
       cursor: {
         'move': 'move',
       },
-      // Ajout des styles pour l'indicateur de drag
+    
       animation: {
         'drag-indicator': 'dragPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },

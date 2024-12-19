@@ -1,6 +1,7 @@
 import React from 'react';
 import { GpacNodeData } from '../../../../types/gpac';
 import { formatBytes } from '../../../../utils/filterMonitorUtils';
+import { Accordion, AccordionItem } from '../../../ui/accordion';
 
 const BufferStatus: React.FC<{
   name: string;
@@ -53,58 +54,64 @@ const getStatusColor = (usage: number): string => {
 };
 
 // BufferMonitoring Component for displaying all buffers
+
 const BufferMonitoring: React.FC<{
   data: GpacNodeData;
 }> = React.memo(({ data }) => {
   return (
     <div className="space-y-4">
-      {/* Input Buffers */}
+      {/* Input Buffers Accordion */}
       {data.nb_ipid > 0 && (
-        <div>
-          <h4 className="text-sm font-medium mb-2 text-gray-400">
-            Input Buffers
-          </h4>
-          <div className="space-y-2">
-            {Object.entries(data.ipid || {}).map(
-              ([name, pid]: [string, any]) => (
-                <BufferStatus
-                  key={name}
-                  name={name}
-                  buffer={pid.buffer}
-                  bufferTotal={pid.buffer_total}
-                  type="input"
-                />
-              ),
-            )}
-          </div>
-        </div>
+        <Accordion>
+          <AccordionItem 
+            value="input-buffers"
+            title="Input Buffers"
+          >
+            <div className="space-y-2">
+              {Object.entries(data.ipid || {}).map(
+                ([name, pid]: [string, any]) => (
+                  <BufferStatus
+                    key={name}
+                    name={name}
+                    buffer={pid.buffer}
+                    bufferTotal={pid.buffer_total}
+                    type="input"
+                  />
+                ),
+              )}
+            </div>
+          </AccordionItem>
+        </Accordion>
       )}
 
-      {/* Output Buffers */}
+      {/* Output Buffers Accordion */}
       {data.nb_opid > 0 && (
-        <div>
-          <h4 className="text-sm font-medium mb-2 mt-4 text-gray-400">
-            Output Buffers
-          </h4>
-          <div className="space-y-2">
-            {Object.entries(data.opid || {}).map(
-              ([name, pid]: [string, any]) => (
-                <BufferStatus
-                  key={name}
-                  name={name}
-                  buffer={pid.buffer}
-                  bufferTotal={pid.buffer_total}
-                  type="output"
-                />
-              ),
-            )}
-          </div>
-        </div>
+        <Accordion>
+          <AccordionItem 
+            value="output-buffers"
+            title="Output Buffers"
+          >
+            <div className="space-y-2">
+              {Object.entries(data.opid || {}).map(
+                ([name, pid]: [string, any]) => (
+                  <BufferStatus
+                    key={name}
+                    name={name}
+                    buffer={pid.buffer}
+                    bufferTotal={pid.buffer_total}
+                    type="output"
+                  />
+                ),
+              )}
+            </div>
+          </AccordionItem>
+        </Accordion>
       )}
     </div>
   );
 });
 
+// Les displayNames restent inchangés
 BufferStatus.displayName = 'BufferStatus';
 BufferMonitoring.displayName = 'BufferMonitoring';
 

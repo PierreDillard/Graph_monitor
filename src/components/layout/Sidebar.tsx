@@ -90,14 +90,14 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-gray-400 uppercase">
+        <h3 className="text-sm font-medium text-gray-400 uppercase ">
           Available Widgets
         </h3>
         {availableWidgets.map((widget) => (
           <button
             key={widget.type}
             onClick={() => handleAddWidget(widget.type, widget.defaultSize)}
-            className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
+            className="w-full flex items-center gap-3 p-3 rounded-lg  hover:bg-gray-600 transition-colors  bg-gradient-to-br from-gray-800 to-gray-900  hover:bg-gradient-to-br hover:from-gray-750:50 hover:to-gray-800              "
           >
             <widget.icon className="w-5 h-5" />
             <span>{widget.title}</span>
