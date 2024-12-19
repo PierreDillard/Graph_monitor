@@ -36,3 +36,8 @@ export interface ProcessingChartProps {
   history: FilterMetric[];
   className?: string;
 }
+export interface PIDMetricsCardProps {
+  inputCount: number;
+  outputCount: number;
+  name: string;
+}

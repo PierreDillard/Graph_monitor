@@ -27,7 +27,7 @@ const AdvancedMetrics: React.FC<AdvancedMetricsProps> = React.memo(
         {/* Grille principale des métriques */}
         <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
           {/* Codec Information */}
-          <div className="bg-gray-800/50 p-4 rounded-lg backdrop-blur-sm border border-gray-700/50">
+          <div className="bg-black p-4 rounded-lg backdrop-blur-sm border border-gray-700/50">
             <div className="flex items-center gap-2 mb-3">
               <Package className="w-4 h-4 text-blue-400" />
               <h4 className="text-sm font-medium text-gray-300">
@@ -51,7 +51,7 @@ const AdvancedMetrics: React.FC<AdvancedMetricsProps> = React.memo(
           </div>
 
           {/* Processing Stats */}
-          <div className="bg-gray-800/50 p-4 rounded-lg backdrop-blur-sm w-full border border-gray-700/50">
+          <div className="bg-black p-4 rounded-lg backdrop-blur-sm w-full border border-gray-700/50">
             <div className="flex items-center gap-2 mb-3">
               <Cpu className="w-4 h-4 text-purple-400" />
               <h4 className="text-sm font-medium text-gray-300">
@@ -77,7 +77,7 @@ const AdvancedMetrics: React.FC<AdvancedMetricsProps> = React.memo(
 
         {/* FPS Metrics */}
         {firstPidWithFPS?.FPS && (
-          <div className="bg-gray-800/50 p-4 rounded-lg backdrop-blur-sm border border-gray-700/50">
+          <div className="bg-black p-4 rounded-lg backdrop-blur-sm border border-gray-700/50">
             <div className="flex items-center gap-2 mb-3">
               <Activity className="w-4 h-4 text-yellow-400" />
               <h4 className="text-sm font-medium text-gray-300">Performance</h4>
@@ -88,25 +88,25 @@ const AdvancedMetrics: React.FC<AdvancedMetricsProps> = React.memo(
 
         {/* Statistiques supplémentaires */}
         <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
-          <div className="bg-gray-800/50 p-3 rounded-lg text-center">
+          <div className="bg-black p-3 rounded-lg text-center">
             <div className="text-xs text-gray-400 mb-1">Packets Sent</div>
             <div className="font-medium text-orange-400">
               {data.pck_sent?.toLocaleString()}
             </div>
           </div>
-          <div className="bg-gray-800/50 p-3 rounded-lg text-center">
+          <div className="bg-black p-3 rounded-lg text-center">
             <div className="text-xs text-gray-400 mb-1">Tasks</div>
             <div className="font-medium text-teal-400">
               {data.tasks?.toLocaleString() ?? 0}
             </div>
           </div>
-          <div className="bg-gray-800/50 p-3 rounded-lg text-center">
+          <div className="bg-black p-3 rounded-lg text-center">
             <div className="text-xs text-gray-400 mb-1">Errors</div>
             <div className="font-medium text-red-400">
               {data.errors?.toLocaleString() ?? 0}
             </div>
           </div>
-          <div className="bg-gray-800/50 p-3 rounded-lg text-center">
+          <div className="bg-black p-3 rounded-lg text-center">
             <div className="text-xs text-gray-400 mb-1">Interface Packets</div>
             <div className="font-medium text-indigo-400">
               {data.pck_ifce_sent?.toLocaleString() ?? 0}

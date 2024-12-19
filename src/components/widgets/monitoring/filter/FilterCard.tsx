@@ -2,6 +2,7 @@ import React from 'react';
 import { GpacNodeData } from '../../../../types/gpac';
 import BufferMonitoring from '../buffer/BufferMonitoring';
 import AdvancedMetrics from '../../../common/metrics/AdvancedMetrics';
+import { PIDMetricsCard } from './PIDMetricsCard';
 
 interface FilterCardProps {
   filter: {
@@ -19,7 +20,7 @@ interface FilterCardProps {
 const FilterCard: React.FC<FilterCardProps> = React.memo(
   ({ filter, onClose }) => {
     return (
-      <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-[600px]">
+      <div className="bg-gray-900 rounded-lg overflow-hidden shadow-lg flex flex-col h-[600px]">
         {/* En-tête fixe */}
         <header className="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
           <div className="flex-1">
@@ -55,12 +56,15 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-4 p-4">
             {/* Section des métriques avancées */}
-            <section className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+            <section className="bg-gray-900 rounded-lg p-4 border border-gray-700/50">
+              <PIDMetricsCard data={filter.nodeData} />
+            </section>
+            <section className="bg-gray-900 rounded-lg p-4 border border-gray-700/50">
               <AdvancedMetrics data={filter.nodeData} />
             </section>
 
             {/* Section de monitoring des buffers */}
-            <section className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+            <section className="bg-gray-900 rounded-lg p-4 border border-gray-700/50">
               <BufferMonitoring data={filter.nodeData} />
             </section>
           </div>

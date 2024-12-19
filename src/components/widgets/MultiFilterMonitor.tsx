@@ -1,22 +1,19 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
-import {
-  getStatusColor,
-  formatProcessingRate,
-} from '../../utils/filterMonitorUtils';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { WidgetProps } from '../../types/widget';
 import { GpacNodeData } from '../../types/gpac';
 import { gpacService } from '../../services/gpacService';
-import BufferMonitoring from './monitoring/buffer/BufferMonitoring';
+
 import {
   removeSelectedFilter,
   updateFilterData,
 } from '../../store/slices/multiFilterSlice';
 import { setFilterDetails } from '../../store/slices/graphSlice';
-import AdvancedMetrics from '../common/metrics/AdvancedMetrics';
+
 import FilterCard from './monitoring/filter/FilterCard';
+
 
 // MetricCard Component
 interface MetricCardProps {
@@ -97,78 +94,8 @@ const ProcessingMetrics: React.FC<ProcessingMetricsProps> = ({
   );
 };
 
-// FilterMonitorContent Component
-interface FilterMonitorContentProps {
-  data: GpacNodeData;
-  onUpdate: (newData: any) => void;
-}
-const FilterMonitorContent: React.FC<FilterMonitorContentProps> = React.memo(
-  ({ data }) => {
-    // State to store history data for charts
-    const [historyData, setHistoryData] = useState<
-      { time: number; bytes_done: number }[]
-    >([]);
 
-    // Debounce state updates
-    const updateTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    useEffect(() => {
-      if (updateTimeout.current) {
-        clearTimeout(updateTimeout.current);
-      }
-      updateTimeout.current = setTimeout(() => {
-        const now = Date.now();
-        setHistoryData((prevData) => {
-          const newData = [
-            ...prevData,
-            { time: now, bytes_done: data.bytes_done },
-          ];
-          if (newData.length > 50) {
-            newData.shift(); // Keep only the latest 50 data points
-          }
-          return newData;
-        });
-      }, 500);
-    }, [data.bytes_done]);
-
-    return (
-      <div className="space-y-6">
-        {/* Status Header */}
-        <div className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg">
-          <div>
-            <h3 className="font-medium text-lg flex items-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${getStatusColor(data.status)}`}
-              />
-              {data.name}
-            </h3>
-            <p className="text-sm text-gray-400">{data.type}</p>
-            <p className="text-sm text-gray-400">{data.codec}</p>
-            <AdvancedMetrics data={data} />
-          </div>
-          <div className="text-sm px-3 py-1 rounded-full bg-gray-700">
-            ID: {data.idx}
-          </div>
-        </div>
-
-        {/* PID Information */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium mb-2">Input PIDs</h4>
-            <ProcessingMetrics data={data} type="input" />
-          </div>
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium mb-2">Output PIDs</h4>
-            <ProcessingMetrics data={data} type="output" />
-          </div>
-        </div>
-        <div className="bg-gray-800/50 p-4 rounded-lg">
-          <BufferMonitoring data={data} />
-        </div>
-      </div>
-    );
-  },
-);
 // Main Component MultiFilterMonitor
 const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
   ({ id, title }) => {
@@ -193,17 +120,7 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
       [dispatch],
     );
 
-    const handleFilterUpdate = useCallback(
-      (filterId: string, newData: any) => {
-        dispatch(
-          updateFilterData({
-            id: filterId,
-            data: newData,
-          }),
-        );
-      },
-      [dispatch],
-    );
+ 
 
     if (isLoading) {
       return (
@@ -232,6 +149,7 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
       <WidgetWrapper id={id} title={title}>
         <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {selectedFilters.map((filter) => (
+            
             <FilterCard
               key={filter.id}
               filter={filter}
@@ -246,7 +164,7 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
 
 // Add displayNames for debugging
 MultiFilterMonitor.displayName = 'MultiFilterMonitor';
-FilterMonitorContent.displayName = 'FilterMonitorContent';
+/* FilterMonitorContent.displayName = 'FilterMonitorContent'; */
 MetricCard.displayName = 'MetricCard';
 ProcessingMetrics.displayName = 'ProcessingMetrics';
 

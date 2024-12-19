@@ -20,7 +20,7 @@ const FPSMetric: React.FC<FPSMetricProps> = ({ fps, className = '' }) => {
   else if (fpsValue < 30) statusColor = 'text-yellow-400';
 
   return (
-    <div className={`bg-gray-800 p-4 rounded-lg ${className}`}>
+    <div className={`bg-black p-4 rounded-lg ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-gray-400" />

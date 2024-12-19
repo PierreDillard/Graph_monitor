@@ -23,7 +23,7 @@ const BufferStatus: React.FC<{
   const normalizedUsage = Math.min(100, Math.max(0, usage));
 
   return (
-    <div className="flex items-center justify-between p-2 bg-gray-800/50 rounded">
+    <div className="flex items-center justify-between p-2 bg-black rounded">
       <div className="flex items-center gap-2">
         <div
           className={`w-2 h-2 rounded-full ${getStatusColor(normalizedUsage)}`}
