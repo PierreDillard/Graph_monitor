@@ -23,18 +23,19 @@ import {
     selectError,
 } from '../../../../store/selectors/graphSelectors';
 import { addSelectedFilter } from '../../../../store/slices/multiFilterSlice';
+import { GpacNodeData } from '../../../../types/gpac';
 
 const useGraphMonitor = () => {
-    // Références et états existants préservés
+    // Refs
     const dispatch = useDispatch();
     const nodesRef = useRef<Node[]>([]);
     const edgesRef = useRef<Edge[]>([]);
     const renderCount = useRef(0);
     const [connectionError, setConnectionError] = useState<string | null>(null);
     const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
-    const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState([]);
+    const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-    // Sélecteurs Redux existants
+    // Redux selectors 
     const nodes = useSelector(selectNodesForGraphMonitor);
     const edges = useSelector(selectEdges);
     const isLoading = useSelector(selectIsLoading);
@@ -43,13 +44,13 @@ const useGraphMonitor = () => {
         (state: RootState) => state.multiFilter.selectedFilters,
     );
 
-    // Intégration de la nouvelle communication
+    // Communication and services
     const service = useMemo(() => gpacService as GpacService, []);
     const communication = useMemo(() => {
         return service.getCommunicationAdapter();
     }, [service]);
 
-    // Fonctions utilitaires existantes préservées
+    // Utils
     const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
         return newNodes.map((node) => {
             const existingNode = nodesRef.current.find((n) => n.id === node.id);
@@ -79,7 +80,7 @@ const useGraphMonitor = () => {
         });
     }, []);
 
-    // Handler de message WebSocket intégré à l'architecture
+    // Messages handlers
     const messageHandler = useMemo<IGpacMessageHandler>(() => ({
         onMessage(message: GpacMessage) {
             console.log(`[GraphMonitor] Message received #${++renderCount.current}`, message);
@@ -94,16 +95,26 @@ const useGraphMonitor = () => {
         }
     }), [dispatch]);
 
-    // Gestionnaires d'événements existants préservés
+    // Events handlers
     const handleNodesChange = useCallback(
-        (changes: any[]) => {
-            onNodesChange(changes);
-            nodesRef.current = localNodes.map((node) =>
-                typeof node === 'object' ? { ...node } : node,
-            );
-        },
-        [localNodes, onNodesChange],
-    );
+      (changes: any[]) => {
+          onNodesChange(changes);
+  
+          // Update local nodes with new positions
+          setLocalNodes((prevNodes) => 
+              prevNodes.map((node) => {
+                  const change = changes.find((c) => c.id === node.id);
+                  return change && change.position
+                      ? { ...node, position: change.position }
+                      : node;
+              })
+          );
+  
+          nodesRef.current = localNodes;
+      },
+      [onNodesChange, localNodes],
+  );
+
 
     const handleEdgesChange = useCallback(
         (changes: any[]) => {
@@ -118,13 +129,13 @@ const useGraphMonitor = () => {
             const nodeId = node.id;
             const nodeData = node.data;
 
-            dispatch(setSelectedFilterDetails(nodeData));
+            dispatch(setSelectedFilterDetails(nodeData as unknown as GpacNodeData));
             service.setCurrentFilterId(parseInt(nodeId));
             service.getFilterDetails(parseInt(nodeId));
 
             const isAlreadyMonitored = monitoredFilters.some((f) => f.id === nodeId);
             if (!isAlreadyMonitored) {
-                dispatch(addSelectedFilter(nodeData));
+                dispatch(addSelectedFilter(nodeData as unknown as GpacNodeData));
                 service.subscribeToFilter(nodeId);
             }
 
@@ -174,7 +185,12 @@ const useGraphMonitor = () => {
   
   const retryConnection = useCallback(() => {
       setConnectionError(null);
-      gpacService.connect()
+      communication.connect({
+        address: 'ws://127.0.0.1:17815/rmt',
+        maxReconnectAttempts: 5,
+        reconnectDelay: 1000,
+        maxDelay: 10000,
+    })
           .then(() => console.log('[useGraphMonitor] Retry connection success'))
           .catch((error) => {
               console.error('[useGraphMonitor] Retry connection failed:', error);
