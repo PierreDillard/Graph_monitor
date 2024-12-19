@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -50,7 +50,7 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
         <Background color="#4b5563" gap={16} variant={BackgroundVariant.Dots} />
         <Controls
           className="bg-gray-800 border-gray-700 fill-gray-400"
-          showInteractive={false}
+          showInteractive={true}
         />
         <MiniMap
           nodeColor={(n) => {
@@ -74,4 +74,4 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
   );
 };
 
-export default GraphFlow;
+export default memo(GraphFlow);

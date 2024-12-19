@@ -9,11 +9,12 @@ const GraphMonitor: React.FC<WidgetProps> = ({ id, title, config }) => {
     connectionError,
     retryConnection,
     localNodes,
-    localEdges,
+    localEdges  ,
     handleNodesChange,
     handleEdgesChange,
     onNodeClick,
   } = useGraphMonitor();
+
 
   return (
     <GraphMonitorUI
@@ -24,7 +25,7 @@ const GraphMonitor: React.FC<WidgetProps> = ({ id, title, config }) => {
       connectionError={connectionError}
       retryConnection={retryConnection}
       nodes={localNodes}
-      edges={localEdges.flat()}
+      edges={localEdges}
       onNodesChange={handleNodesChange}
       onEdgesChange={handleEdgesChange}
       onNodeClick={onNodeClick}

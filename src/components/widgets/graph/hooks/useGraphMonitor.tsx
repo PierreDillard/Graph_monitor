@@ -25,6 +25,7 @@ import {
 import { addSelectedFilter } from '../../../../store/slices/multiFilterSlice';
 import { GpacNodeData } from '../../../../types/gpac';
 
+
 const useGraphMonitor = () => {
     // Refs
     const dispatch = useDispatch();
@@ -43,6 +44,41 @@ const useGraphMonitor = () => {
     const monitoredFilters = useSelector(
         (state: RootState) => state.multiFilter.selectedFilters,
     );
+        // Utils
+        const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
+            return newNodes.map((node) => {
+                const existingNode = nodesRef.current.find((n) => n.id === node.id);
+                if (existingNode) {
+                    return {
+                        ...node,
+                        position: existingNode.position,
+                        selected: existingNode.selected,
+                        dragging: existingNode.dragging,
+                    };
+                }
+                return node;
+            });
+        }, []);
+    
+        const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
+            return newEdges.map((edge) => {
+                const existingEdge = edgesRef.current.find((e) => e.id === edge.id);
+                if (existingEdge) {
+                 
+    
+              
+                    return {
+                        ...edge,
+                        selected: existingEdge.selected,
+                        animated: existingEdge.animated,
+                       /*  label: `${edge.data?.pidName} ` */
+                    };
+                }
+                return edge;
+            });
+        }, []);
+    
+
 
     // Communication and services
     const service = useMemo(() => gpacService as GpacService, []);
@@ -50,35 +86,6 @@ const useGraphMonitor = () => {
         return service.getCommunicationAdapter();
     }, [service]);
 
-    // Utils
-    const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
-        return newNodes.map((node) => {
-            const existingNode = nodesRef.current.find((n) => n.id === node.id);
-            if (existingNode) {
-                return {
-                    ...node,
-                    position: existingNode.position,
-                    selected: existingNode.selected,
-                    dragging: existingNode.dragging,
-                };
-            }
-            return node;
-        });
-    }, []);
-
-    const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
-        return newEdges.map((edge) => {
-            const existingEdge = edgesRef.current.find((e) => e.id === edge.id);
-            if (existingEdge) {
-                return {
-                    ...edge,
-                    selected: existingEdge.selected,
-                    animated: existingEdge.animated,
-                };
-            }
-            return edge;
-        });
-    }, []);
 
     // Messages handlers
     const messageHandler = useMemo<IGpacMessageHandler>(() => ({

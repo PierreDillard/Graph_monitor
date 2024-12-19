@@ -38,7 +38,7 @@ export class GpacCommunicationAdapter implements IGpacCommunication {
             message: message.type,
             ...message
         };
-        return 'CONIjson:' + JSON.stringify(gpacMessage);
+        return 'json:' + JSON.stringify(gpacMessage);
     }
 
     public async connect(config: IGpacCommunicationConfig): Promise<void> {

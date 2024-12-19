@@ -103,27 +103,35 @@ const getFilterColor = (filterType: FilterType): string => {
         Object.entries(filter.ipid).forEach(([pidName, pid]: [string, any]) => {
           if (pid.source_idx !== undefined) {
             const edgeId = `${pid.source_idx}-${filter.idx}-${pidName}`;
+ 
             const existingEdge = existingEdges.find((e) => e.id === edgeId);
   
             const filterType = determineFilterType(filter.name, filter.type);
             const filterColor = getFilterColor(filterType);
   
-            // Calculate buffer percentage
-            const bufferPercentage =
-              pid.buffer_total > 0
-                ? Math.round((pid.buffer / pid.buffer_total) * 100)
-                : 0;
+      
   
             newEdges.push({
               id: edgeId,
               source: pid.source_idx.toString(),
               target: filter.idx.toString(),
               type: 'simplebezier',
-              label: `${pidName} (${bufferPercentage}%)`,
+     /*          labelStyle: {
+          
+                fontFamily: 'sans-serif',
+                fontSize: '12px',
+                minWidth: '80px',
+                color: 'black',
+                textAlign: 'center',
+                padding: '4px 8px',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                borderRadius: '4px',
+                display: 'inline-block'
+            },
+              label: `${pidName}`, */
               data: {
                 filterType,
-                bufferPercentage,
-                pidName,
+             
               },
               animated: true,
               style: {
