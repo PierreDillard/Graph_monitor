@@ -17,7 +17,7 @@ export const PIDMetricsCard: React.FC<PIDMetricsCardProps> = ({ data }) => {
         >
           <div className="grid grid-cols-2 gap-4 bg-black   rounded-lg p-2">
             <div className="flex flex-col bg-black rounded_lg p-3">
-              <span className="text-xs text-gray-400 mb-1">Input PIDs</span>
+              <span className="text-xs text-gray-400 mb-1">IPID</span>
               <div className="flex items-baseline">
                 <span className="text-2xl font-semibold text-blue-400">
                   {data.nb_ipid}
@@ -31,7 +31,7 @@ export const PIDMetricsCard: React.FC<PIDMetricsCardProps> = ({ data }) => {
             </div>
             
             <div className="flex flex-col bg-black  p-3 rounded-lg">     
-              <span className="text-xs text-gray-400 mb-1">Output PIDs</span>
+              <span className="text-xs text-gray-400 mb-1">OPID</span>
               <div className="flex items-baseline">
                 <span className="text-2xl font-semibold text-green-400">
                   {data.nb_opid}

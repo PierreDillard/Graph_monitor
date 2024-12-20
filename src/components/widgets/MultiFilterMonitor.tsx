@@ -147,15 +147,28 @@ const MultiFilterMonitor: React.FC<WidgetProps> = React.memo(
 
     return (
       <WidgetWrapper id={id} title={title}>
-        <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {selectedFilters.map((filter) => (
-            
-            <FilterCard
-              key={filter.id}
-              filter={filter}
-              onClose={handleCloseMonitor}
-            />
-          ))}
+        <div className="h-full flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-auto p-4">
+            <div 
+              className="grid gap-6 auto-rows-[600px] grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3" 
+              style={{ 
+                minHeight: 'min-content',
+                height: '100%'
+              }}
+            >
+              {selectedFilters.map((filter) => (
+                <div 
+                  key={filter.id} 
+                  className="h-full"
+                >
+                  <FilterCard
+                    filter={filter}
+                    onClose={handleCloseMonitor}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </WidgetWrapper>
     );

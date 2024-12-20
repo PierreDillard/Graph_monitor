@@ -61,7 +61,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
   const isExpanded = expandedItems.has(value);
 
   return (
-    <div className="border border-gray-700 rounded-lg bg-gray-800/50">
+    <div className=" rounded-lg bg-gray-800/50">
       <button
         onClick={() => toggleExpanded(value)}
         className="w-full flex items-center justify-between p-4 text-sm font-medium text-gray-200 hover:bg-gray-700/50 transition-colors rounded-lg"

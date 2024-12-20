@@ -21,8 +21,8 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
   ({ filter, onClose }) => {
     return (
       <div className="bg-gray-900 rounded-lg overflow-hidden shadow-lg flex flex-col h-[600px]">
-        {/* En-tête fixe */}
-        <header className="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
+        {/* header */}
+        <header className="p-4 bg-gray-700 flex justify-between items-center ">
           <div className="flex-1">
             <h3 className="font-medium text-lg flex items-center gap-2">
               <div
