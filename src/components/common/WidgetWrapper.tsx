@@ -123,6 +123,9 @@ const WidgetWrapper = ({
       )}>
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium">{title}</h3>
+          <div>
+      
+          </div>
         </div>
 
         <div className="flex items-center gap-2 no-drag">

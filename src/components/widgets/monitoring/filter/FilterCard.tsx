@@ -3,6 +3,7 @@ import { GpacNodeData } from '../../../../types/gpac';
 import BufferMonitoring from '../buffer/BufferMonitoring';
 import AdvancedMetrics from '../../../common/metrics/AdvancedMetrics';
 import { PIDMetricsCard } from './PIDMetricsCard';
+import FilterArgumentsDialog from '../../../filters/FilterArgumentsDialog';
 
 interface FilterCardProps {
   filter: {
@@ -22,8 +23,12 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
     return (
       <div className="bg-gray-900 rounded-lg overflow-hidden shadow-lg flex flex-col h-[600px]">
         {/* header */}
-        <header className="p-4 bg-gray-700 flex justify-between items-center ">
+        <header className="p-4 bg-gray-700 flex justify-center items-center ">
           <div className="flex-1">
+            <div className='flex'>
+            <span className='mr-6'>
+              <FilterArgumentsDialog filter={filter.nodeData} />
+            </span>
             <h3 className="font-medium text-lg flex items-center gap-2">
               <div
                 className={`w-2 h-2 rounded-full ${
@@ -36,6 +41,10 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
               />
               {filter.nodeData.name}
             </h3>
+        
+
+            </div>
+        
             <div className="flex items-center gap-4 text-sm text-gray-400">
               <span>{filter.nodeData.type}</span>
               <span className="text-xs px-2 py-0.5 bg-gray-600 rounded-full">
@@ -52,10 +61,10 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
           </button>
         </header>
 
-        {/* Zone de contenu scrollable */}
+
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-4 p-4">
-            {/* Section des métriques avancées */}
+       
             <section className="bg-gray-900 rounded-lg p-4 border border-gray-700/50">
               <PIDMetricsCard data={filter.nodeData} />
             </section>
@@ -63,7 +72,7 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
               <AdvancedMetrics data={filter.nodeData} />
             </section>
 
-            {/* Section de monitoring des buffers */}
+            {/*  buffers */}
             <section className="bg-gray-900 rounded-lg p-4 border border-gray-700/50">
               <BufferMonitoring data={filter.nodeData} />
             </section>
