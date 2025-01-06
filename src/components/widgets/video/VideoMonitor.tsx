@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { WidgetProps } from '../../../types/widget';
 import WidgetWrapper from '../../common/WidgetWrapper';
 import { RootState } from '../../../store';
-import { GpacNodeData } from '../../../types/gpac';
+import { GpacNodeData } from '../../../types/gpac/model';
 import {
   extractResolution,
   extractCodec,

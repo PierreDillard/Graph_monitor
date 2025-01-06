@@ -7,7 +7,7 @@ import {
 } from '../../utils/bufferAnalytics';
 import { RootState } from '../index';
 import { BufferMetrics } from '../../types/bufferMetrics';
-import { GpacNodeData } from '../../types/gpac';
+import { GpacNodeData } from '../../types/gpac/model';
 import { determineTrend } from '../../utils/filterMonitorUtils';
 
 export interface FilterMonitoringState {

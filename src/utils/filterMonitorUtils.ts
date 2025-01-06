@@ -1,4 +1,4 @@
-import { GpacNodeData } from '../types/gpac';
+import { GpacNodeData } from '../types/gpac/model';
 import { TrendDirection } from '../types/bufferMetrics';
 
 // Types

@@ -1,14 +1,14 @@
 import React from 'react';
-import { GpacNodeData } from '../../../../types/gpac';
-import { formatBytes } from '../../../../utils/filterMonitorUtils';
-import { Accordion, AccordionItem } from '../../../ui/accordion';
+import { GpacNodeData } from '../../../../../types/gpac/model';
+import { formatBytes } from '../../../../../utils/filterMonitorUtils';
+import { Accordion, AccordionItem } from '../../../../ui/accordion';
 
 const BufferStatus: React.FC<{
   name: string;
   buffer: number;
   bufferTotal: number;
   type: 'input' | 'output';
-}> = React.memo(({ name, buffer, bufferTotal, type }) => {
+}> = React.memo(({ name, buffer, bufferTotal }) => {
   const isDynamic = bufferTotal === -1;
   // validation for buffer values
   const validBuffer = Number.isFinite(buffer) ? buffer : 0;

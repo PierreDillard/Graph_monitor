@@ -9,7 +9,9 @@ import {
   DialogDescription,
   DialogFooter
 } from '../ui/dialog';
-import { GpacNodeData } from '../../types/gpac';
+import { GpacNodeData } from '../../types/gpac/model';
+import { FilterArgumentInput } from '../ui/FilterArgumentInput';
+import { useFilterArguments } from './hooks/useFilterArguments';
 import { cn } from '../../utils/cn';
 
 interface FilterArgumentsDialogProps {
@@ -17,6 +19,34 @@ interface FilterArgumentsDialogProps {
 }
 
 const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter }) => {
+
+  const renderArgumentInput = (arg: any) => {
+    const type = arg.type || typeof arg.value;
+    
+    return (
+      <FilterArgumentInput
+        argument={{
+          name: arg.name,
+          type: type,
+          desc: arg.desc,
+          default: arg.default,
+          level: arg.level || 'normal'
+        }}
+        value={arg.value}
+        onChange={(newValue) => {
+          const { setLocalValue } = useFilterArguments(filter.idx.toString(), arg.name);
+          setLocalValue(newValue);
+        }}
+        rules={{
+          disabled: false, 
+          min: arg.min,
+          max: arg.max,
+          step: arg.step
+        }}
+      />
+    );
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -79,7 +109,9 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter })
                       {arg.value !== undefined ? String(arg.value) : 'default'}
                     </div>
                   </div>
-                  {/*Controls to modify the arguments  */}
+                  <div className="mt-2">
+                    {renderArgumentInput(arg)}
+                  </div>
                 </div>
               </div>
             ))}

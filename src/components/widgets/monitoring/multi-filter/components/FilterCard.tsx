@@ -1,9 +1,9 @@
 import React from 'react';
-import { GpacNodeData } from '../../../../types/gpac';
-import BufferMonitoring from '../buffer/BufferMonitoring';
-import AdvancedMetrics from '../../../common/metrics/AdvancedMetrics';
+import { GpacNodeData } from '../../../../../types/gpac/model';
+import BufferMonitoring from './BufferMonitoring';
+import AdvancedMetrics from '../../../../common/metrics/AdvancedMetrics';
 import { PIDMetricsCard } from './PIDMetricsCard';
-import FilterArgumentsDialog from '../../../filters/FilterArgumentsDialog';
+import FilterArgumentsDialog from '../../../../filters/FilterArgumentsDialog';
 
 interface FilterCardProps {
   filter: {

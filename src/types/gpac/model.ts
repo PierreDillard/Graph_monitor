@@ -37,7 +37,7 @@ export interface PIDPropertyValue {
   val?: number | string | TimeFraction;
 }
 
-export interface GpacNodeData {
+export interface GpacNodeData extends Record<string, unknown> {
   name: string;
   type: string;
   tasks: number;
@@ -57,7 +57,7 @@ export interface GpacNodeData {
   class?: string;
   last_ts_sent?: TimeFraction;
   idx: number;
-  gpac_args: string[];
+  gpac_args?: GpacArgument[];
   ipid: Record<string, PIDData>;
   opid: Record<string, PIDData>;
 }
@@ -80,3 +80,19 @@ export type GpacEdge = Edge<EdgeData>;
 export interface GpacEdgeProps extends EdgeProps<EdgeData> {
   data: EdgeData;
 }
+export interface GpacArgument {
+
+  name: string;
+
+  desc?: string;
+
+  value?: any;
+
+}
+
+
+
+
+
+
+

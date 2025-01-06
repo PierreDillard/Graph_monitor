@@ -1,6 +1,6 @@
 import React from 'react';
-import { GpacNodeData } from '../../../../types/gpac';
-import { Accordion, AccordionItem } from '../../../ui/accordion';
+import { GpacNodeData } from '../../../../../types/gpac/model';
+import { Accordion, AccordionItem } from '../../../../ui/accordion';
 
 
 interface PIDMetricsCardProps {

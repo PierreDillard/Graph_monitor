@@ -1,5 +1,5 @@
 import { Node, Edge } from '@xyflow/react';
-import { GpacNodeData, PIDData, FilterType } from '../types/gpac';
+import { GpacNodeData, PIDData, FilterType } from '../types/gpac/model';
 
 export class Graph {
   private filters: GpacNodeData[] = [];

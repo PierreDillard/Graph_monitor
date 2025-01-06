@@ -1,4 +1,4 @@
-import { GpacNodeData } from '../../../../types/gpac';
+import { GpacNodeData } from '../../../../types/gpac/model';
 
 // Utility functions for extracting video information
 export const extractResolution = (node: GpacNodeData): string => {

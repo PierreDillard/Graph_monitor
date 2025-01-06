@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Node, Edge } from '@xyflow/react';
 import { throttle } from 'lodash';
-import { GpacNodeData } from '@/types/gpac';
+import { GpacNodeData } from '@/types/gpac/model';
 import { createNodeFromFilter, createEdgesFromFilters } from '../../components/widgets/graph/utils/GraphOperations';
 
 export interface GraphState {

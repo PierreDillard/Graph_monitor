@@ -13,7 +13,7 @@ import { RootState } from '../../store';
 import { updateWidgetPosition } from '../../store/slices/widgetsSlice';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import MultiFilterMonitor from '../widgets/MultiFilterMonitor';
+import MultiFilterMonitor from '../widgets/monitoring/multi-filter/MultiFilterMonitor';
 import GraphMonitor from '../widgets/graph/GraphMonitor';
 import AudioMonitor from '../widgets/AudioMonitor';
 import VideoMonitor from '../widgets/video/VideoMonitor';
@@ -88,15 +88,15 @@ const DashboardLayout: React.FC = () => {
         <Header />
       </div>
 
-      {/* Conteneur pour le contenu scrollable */}
+  
       <div className="flex pt-16">
         {/* Sidebar fixe */}
         <div className="fixed left-0 top-16 bottom-0 w-64 z-10 bg-gray-800">
           <Sidebar />
         </div>
 
-        {/* Zone principale scrollable avec marge pour le sidebar */}
-        <main className="flex-1 ml-64 p-6 min-h-[calc(100vh-64px)]">
+ 
+        <main className="flex-1 ml-64 p-6]">
           <ResponsiveGridLayout
             className="layout"
             layouts={layouts}

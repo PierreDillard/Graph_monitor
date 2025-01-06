@@ -23,7 +23,7 @@ import {
     selectError,
 } from '../../../../store/selectors/graphSelectors';
 import { addSelectedFilter } from '../../../../store/slices/multiFilterSlice';
-import { GpacNodeData } from '../../../../types/gpac';
+import { GpacNodeData } from '../../../../types/gpac/model';
 
 
 const useGraphMonitor = () => {
