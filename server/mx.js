@@ -449,6 +449,8 @@ function gpac_filter_to_object(f, full=false) {
 		jspid["buffer_total"] = f.opid_props(d, "buffer_total");
 		jsf['opid'][pidname] = jspid;
 	}
+	console.log("***JSF**", JSON.stringify(jsf, null, 2));
+
 
 	return jsf;
 

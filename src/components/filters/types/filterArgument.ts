@@ -1,4 +1,5 @@
 import { GPACTypes } from '../../../types/gpac/index'; 
+import { GpacNodeData } from '../../../types/gpac/index';
 
 interface ArgumentRule {
     disabled?: boolean;
@@ -56,3 +57,22 @@ interface ArgumentRule {
       return String(value) as InputValue<T>;
     }
   };
+
+  export interface GpacArgument {
+    name: string;
+    type: keyof GPACTypes;
+    value?: GPACTypes[keyof GPACTypes];
+    desc?: string;
+    default?: GPACTypes[keyof GPACTypes];
+    update?: boolean;
+    update_sync?: boolean;
+    hint?: 'normal' | 'advanced' | 'expert';
+  }
+  
+  // Types pour le dialogue
+  export interface FilterArgumentDialogProps {
+    filter: GpacNodeData;
+    onArgumentUpdate: (key: string, value: GPACTypes[keyof GPACTypes] | null) => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+  }

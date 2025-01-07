@@ -32,6 +32,21 @@ afmt: string;
 cprm: string;
 cftc: string;
 cmxc: string;
+
+
+
+    }
+
+
+    export interface GpacArgument {
+      name: string;
+      type: keyof GPACTypes;
+      value?: GPACTypes[keyof GPACTypes];
+      desc: string;
+      default: string;
+      update: boolean;
+      update_sync: boolean;
+      hint: 'normal' | 'advanced' | 'expert';
     }
 // Utils for validating GPAC  complexes types  
     export const gpacValidators = {
@@ -49,3 +64,4 @@ cmxc: string;
                  value.every(n => typeof n === 'number');
         }
       };
+
