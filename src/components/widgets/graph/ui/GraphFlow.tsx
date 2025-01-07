@@ -43,6 +43,12 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
         fitView
         minZoom={0.1}
         maxZoom={4}
+        defaultEdgeOptions={{
+          type: 'smoothstep', 
+          animated: true,
+          style: { stroke: '#4b5563', strokeWidth: 2 }
+        }}
+      
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={{ hideAttribution: true }}
         selectionKeyCode={null}

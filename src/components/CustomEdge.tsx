@@ -26,13 +26,13 @@ const CustomEdge = memo(({
   data,
   ...props
 }: CustomEdgeProps) => {
-
+  const path = `M${sourceX} ${sourceY} C ${sourceX + Math.abs(targetX - sourceX) / 2} ${sourceY}, ${sourceX + Math.abs(targetX - sourceX) / 2} ${targetY}, ${targetX} ${targetY}`;
   if (!data?.labelData) return null;
 
   return (
     <>
       <BaseEdge
-        path={`M ${sourceX},${sourceY} L ${targetX},${targetY}`}
+        path={path}
         style={style}
         markerEnd={markerEnd}
         {...props}
@@ -46,7 +46,7 @@ const CustomEdge = memo(({
           }}
           className="nodrag nopan bg-gray-900/75 px-2 py-1 rounded text-xs"
         >
-          {data.labelData.text}
+        
         </div>
       </EdgeLabelRenderer>
     </>

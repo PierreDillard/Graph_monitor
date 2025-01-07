@@ -1,5 +1,5 @@
 import { FilterType, GpacNodeData } from '../../../../types/gpac/model';
-import { Node, Edge, MarkerType } from '@xyflow/react';
+import { Node, Edge, MarkerType, Handle, Position} from '@xyflow/react';
 
 
 
@@ -65,6 +65,8 @@ const getFilterColor = (filterType: FilterType): string => {
         filterType,
         ...filter,
       },
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
       position: existingNode?.position || {
         x: 150 + index * 300, 
         y: 100,
@@ -74,6 +76,7 @@ const getFilterColor = (filterType: FilterType): string => {
           ? 'ring-2 ring-offset-2 ring-blue-500 shadow-lg scale-105'
           : ''
       }`,
+      
       selected: existingNode?.selected,
       style: {
         background:
@@ -139,6 +142,7 @@ const getFilterColor = (filterType: FilterType): string => {
                 strokeWidth: 2,
                 opacity: 0.8,
               },
+           
               markerEnd: {
                 type: MarkerType.ArrowClosed,
                 color: filterColor,
