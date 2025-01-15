@@ -1,19 +1,38 @@
+import { useEffect, useState } from 'react';
+import { useDebounce, useFirstMountState } from 'react-use';
+import { Info } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CustomTooltip } from '../ui/tooltip';
-import { Info } from 'lucide-react';
 import { GPACTypes } from '../../types/gpac/arguments';
-import {
-  FilterArgumentInputProps,
-  convertArgumentValue,
-  InputValue,
-} from '../filters/types/filterArgument';
-
 import {
   BooleanInput,
   NumberInput,
   StringInput,
   FractionInput,
 } from '../input/index';
+import { GPACArgumentType } from '../../types/gpac/arguments';
+import { InputValue } from '../../types/gpac/arguments';
+import { convertArgumentValue } from '../../utils/filtersArguments';
+
+
+interface FilterArgumentBase {
+  name: string;
+  desc?: string;
+  level?: 'normal' | 'advanced' | 'expert';
+  default?: any;
+  enums?: string[];
+}
+
+interface FilterArgumentInputProps<T extends keyof GPACTypes = keyof GPACTypes> {
+  argument: FilterArgumentBase & {
+    type: T;
+  };
+  value?: InputValue<T>;
+  onChange: (value: InputValue<T> | null) => void;
+  rules?: Record<string, any>;
+  standalone?: boolean;
+}
+
 
 export const FilterArgumentInput = <T extends keyof GPACTypes>({
   argument,
@@ -22,23 +41,49 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
   rules,
   standalone = false,
 }: FilterArgumentInputProps<T>) => {
-  const { name, desc, level, type } = argument;
 
-  const handleChange = (newValue: any) => {
-    const convertedValue = convertArgumentValue(newValue, type);
-    onChange(convertedValue);
+  const [localValue, setLocalValue] = useState<InputValue<T> | undefined>(value);
+  const firstRender = useFirstMountState();
+
+
+  useDebounce(
+    () => {
+      if (firstRender || localValue === value) return;
+      const convertedValue = convertArgumentValue(localValue, argument.type);
+      onChange(convertedValue);
+    },
+    1000,
+    [localValue]
+  );
+
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+
+  const handleLocalChange = (newValue: any) => {
+    setLocalValue(newValue);
   };
 
-  const renderInput = () => {
-    const inputValue = value as InputValue<T> | undefined;
 
-    switch (argument.type as string) {
+  const renderInput = () => {
+    const inputProps = {
+      value: localValue,
+      onChange: handleLocalChange,
+      rules: {
+        ...rules,
+        disabled: rules?.disabled,
+      },
+      argument,
+    };
+
+
+    switch (argument.type as GPACArgumentType) {
       case 'bool':
         return (
           <BooleanInput
-            value={inputValue as boolean | undefined}
-            onChange={handleChange}
-            rules={rules}
+            {...(inputProps as FilterArgumentInputProps<'bool'>)}
           />
         );
 
@@ -50,9 +95,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       case 'dbl':
         return (
           <NumberInput
-            value={inputValue as number | undefined}
-            onChange={handleChange}
-            rules={rules}
+            {...(inputProps as FilterArgumentInputProps<'uint'>)}
           />
         );
 
@@ -60,9 +103,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       case 'lfrac':
         return (
           <FractionInput
-            value={inputValue as string | undefined}
-            onChange={handleChange}
-            rules={rules}
+            {...(inputProps as FilterArgumentInputProps<'frac'>)}
           />
         );
 
@@ -70,22 +111,21 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       case 'uintl':
       case 'sintl':
       case '4ccl':
-        // For list types, convert the array to a string
-        //
+      
         return (
           <StringInput
-            value={Array.isArray(inputValue) ? inputValue.join(',') : undefined}
-            onChange={(val) => handleChange(val?.split(','))}
-            rules={rules}
+            {...(inputProps as FilterArgumentInputProps<'str'>)}
+            value={Array.isArray(localValue) ? localValue.join(',') : undefined}
+            onChange={(val) => 
+              handleLocalChange(val ? val.split(',').filter(Boolean) : null)
+            }
           />
         );
 
       default:
         return (
           <StringInput
-            value={inputValue as string | undefined}
-            onChange={handleChange}
-            rules={rules}
+            {...(inputProps as FilterArgumentInputProps<'str'>)}
           />
         );
     }
@@ -93,29 +133,35 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
 
   if (standalone) return renderInput();
 
+
   return (
     <div
       className={cn(
         'flex items-center p-4 gap-4',
-        level === 'advanced' && 'border-l-4 border-yellow-500',
-        level === 'expert' && 'border-l-4 border-red-500',
+        'transition-all duration-200',
+      
       )}
     >
+      {/* Section titre et description */}
       <div className="flex-1 flex items-center gap-2">
-        <span className="font-medium">{name}</span>
-        {desc && (
+        <span className="font-medium text-sm">{argument.name}</span>
+        {argument.desc && (
           <CustomTooltip
-            content={desc}
+            content={argument.desc}
             side="top"
             maxWidth="10rem"
             maxHeight="auto"
           >
-            <Info className="w-4 h-4 text-gray-400 cursor-help" />
+            <Info className="w-4 h-4 text-gray-400 cursor-help 
+                           hover:text-gray-300 transition-colors" />
           </CustomTooltip>
         )}
       </div>
+
 
       <div className="flex-1">{renderInput()}</div>
     </div>
   );
 };
+
+

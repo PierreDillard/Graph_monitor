@@ -1,6 +1,7 @@
 export interface GPACTypes {
 // Numerics
 sint: number;
+luint: number;
 uint: number;
 lsint: number;
 flt: number;
@@ -49,3 +50,64 @@ cmxc: string;
                  value.every(n => typeof n === 'number');
         }
       };
+
+
+export type ArgumentType = 
+| "frac" | "lfrac"  // fraction
+| "uint" | "sint" | "lsint" | "luint" | "flt" | "dbl"  //  numeric
+| "str" | "cstr" | "4cc" | "pfmt" | "afmt" | "cprm" | "ctfc" | "cmxc"  //  string
+| "bool";  //  boolean
+
+export interface FilterArgumentBase {
+name: string;
+description?: string;
+level?: "normal" | "advanced" | "expert";
+default?: any;
+enums?: string[];
+}
+
+export interface FilterArgumentInputProps<T extends ArgumentType = ArgumentType> {
+argument: FilterArgumentBase & {
+  type: T;
+};
+value?: any;
+onChange: (value: any | null) => void;
+rules?: Record<string, any>;
+standalone?: boolean;
+}
+
+export type InputValue<T> = T extends 'bool'
+? boolean
+: T extends 'uint' | 'sint' | 'luint' | 'lsint' | 'flt' | 'dbl'
+? number
+: T extends 'frac' | 'lfrac'
+? string
+: string | string[];
+
+export type GPACArgumentType = 
+
+  | 'bool'
+
+  | 'uint' 
+  | 'sint' 
+  | 'luint' 
+  | 'lsint' 
+  | 'flt' 
+  | 'dbl'
+  
+  | 'frac'
+  | 'lfrac'
+
+  | 'str'
+  | 'cstr'
+  | 'strl'
+  
+  | 'uintl'
+  | 'sintl'
+  | '4ccl'
+  
+  | '4cc'
+  | 'pfmt'
+  | 'afmt'
+  | 'cprm'
+  | 'ctfc';
