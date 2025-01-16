@@ -3,6 +3,7 @@ import { WidgetProps } from '../../../types/widget';
 import useGraphMonitor from './hooks/useGraphMonitor';
 import GraphMonitorUI from '../graph/ui/GraphMonitorUI';
 
+
 const GraphMonitor: React.FC<WidgetProps> = ({ id, title, config }) => {
   const {
     isLoading,

@@ -12,6 +12,7 @@ import {
 import { GpacNodeData } from '../../types/gpac/model';
 import { FilterArgumentInput } from '../ui/FilterArgumentInput';
 import { useFilterArguments } from './hooks/useFilterArguments';
+import { ArgumentDisplayValue } from './arguments/ArgumentDisplayValue';
 import { cn } from '../../utils/cn';
 
 interface FilterArgumentsDialogProps {
@@ -108,6 +109,10 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter })
                     <div className="text-sm font-mono bg-gray-900/50 px-2 py-1 rounded">
                       {arg.value !== undefined ? String(arg.value) : 'default'}
                     </div>
+                    <ArgumentDisplayValue 
+                      value={arg.value}
+                      isEditable={!!arg.update}
+                    />
                   </div>
                   <div className="mt-2">
                     {renderArgumentInput(arg)}

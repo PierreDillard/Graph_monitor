@@ -1,6 +1,7 @@
 import { WebSocketBase } from './WebSocketBase';
 import { DataViewReader } from './DataViewReader';
 import { store } from '../store';
+import { GpacNodeData } from '../types/gpac/index';
 import {
     updateFilterData,
     setSelectedFilters,
@@ -33,6 +34,9 @@ export class GpacService {
     private currentFilterId: number | null = null;
     private activeSubscriptions: Set<string> = new Set();
     private communicationAdapter: GpacCommunicationAdapter | null = null;
+    private notifyError?: (error: Error) => void;
+    private notifyFilterUpdate?: (filter: GpacNodeData) => void;
+    private notifyConnectionStatus?: (connected: boolean) => void;
 
     public onMessage?: (message: any) => void;
     public onError?: (error: Error) => void;
@@ -42,7 +46,30 @@ export class GpacService {
         this.ws = new WebSocketBase();
         this.setupWebSocketHandlers();
     }
+    public setNotificationHandlers({
+        onError,
+        onFilterUpdate,
+        onConnectionStatus,
+      }: {
+        onError?: (error: Error) => void;
+        onFilterUpdate?: (filter: GpacNodeData) => void;
+        onConnectionStatus?: (connected: boolean) => void;
+      }) {
+        this.notifyError = onError;
+        this.notifyFilterUpdate = onFilterUpdate;
+        this.notifyConnectionStatus = onConnectionStatus;
+      }
 
+      private handleServiceError(error: Error): void {
+        this.notifyError?.(error);
+      }
+      private handleServiceMessage(data: any): void {
+        if (data.message === 'filters' || data.message === 'update') {
+          data.filters?.forEach((filter: GpacNodeData) => {
+            this.notifyFilterUpdate?.(filter);
+          });
+        }
+      }
     public static getInstance(): GpacService {
         if (!GpacService.instance) {
             GpacService.instance = new GpacService();
@@ -65,14 +92,15 @@ export class GpacService {
         store.dispatch(setLoading(true));
 
         try {
-            this.ws.connect(this.address);
-        } catch (error) {
-            console.error('[GpacService] Connection error:', error);
-            this.isConnecting = false;
-            this.handleDisconnect();
+            await this.ws.connect(this.address);
+            this.notifyConnectionStatus?.(true);
+          } catch (error) {
+            this.notifyError?.(error as Error);
+            this.notifyConnectionStatus?.(false);
             throw error;
+          }
         }
-    }
+      
 
     public disconnect(): void {
         console.log('[GpacService] Initiating disconnect sequence');
