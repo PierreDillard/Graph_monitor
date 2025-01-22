@@ -4,241 +4,199 @@ import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import { RootState } from '../../../../store';
 import { GpacService, gpacService } from '../../../../services/gpacService';
 import { useToast } from '../../../../hooks/useToast';
+
 import {
-  
-    ConnectionStatus,
-    GpacMessage,
-    GpacCommunicationError,
+  ConnectionStatus,
+  GpacMessage,
+  GpacCommunicationError,
 } from '../../../../services/communication/types/IgpacCommunication';
 import { IGpacMessageHandler } from '../../../../services/communication/types/IGpacMessageHandler';
+
 import {
-    setSelectedFilterDetails,
-    setSelectedNode,
-    setLoading,
-    setError,
+  setSelectedFilterDetails,
+  setSelectedNode,
+  setLoading,
+  setError,
 } from '../../../../store/slices/graphSlice';
-import {
-    selectNodesForGraphMonitor,
-    selectEdges,
-    selectIsLoading,
-    selectError,
-} from '../../../../store/selectors/graphSelectors';
 import { addSelectedFilter } from '../../../../store/slices/multiFilterSlice';
+
+import {
+  selectNodesForGraphMonitor,
+  selectEdges,
+  selectIsLoading,
+  selectError,
+} from '../../../../store/selectors/graphSelectors';
 import { GpacNodeData } from '../../../../types/gpac/model';
 
+import {
+  updateNodesWithPositions,
+  updateEdgesWithState,
+} from './useGraphMonitor.helpers';
+import {
+  createHandleNodesChange,
+  createHandleEdgesChange,
+  createOnNodeClick,
+} from './useGraphMonitor.handlers';
+import {
+  useGraphMonitorConnection,
+  useGraphMonitorErrorEffect,
+} from './useGraphMonitor.effects';
 
 const useGraphMonitor = () => {
-    const { toast } = useToast();
-  
+  const { toast } = useToast();
+  const dispatch = useDispatch();
 
-    // Refs
-    const dispatch = useDispatch();
-    const nodesRef = useRef<Node[]>([]);
-    const edgesRef = useRef<Edge[]>([]);
-    const renderCount = useRef(0);
-    const [connectionError, setConnectionError] = useState<string | null>(null);
-    const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
-    const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  // Refs
+  const nodesRef = useRef<Node[]>([]);
+  const edgesRef = useRef<Edge[]>([]);
+  const renderCount = useRef(0);
 
-    // Redux selectors 
-    const nodes = useSelector(selectNodesForGraphMonitor);
-    const edges = useSelector(selectEdges);
-    const isLoading = useSelector(selectIsLoading);
-    const error = useSelector(selectError);
-    const monitoredFilters = useSelector(
-        (state: RootState) => state.multiFilter.selectedFilters,
-    );
-    useEffect(() => {
-        if (nodes.length > 0 && !isLoading) {
-          toast({
-            title: "Graphe chargé",
-            description: `${nodes.length} nœuds ont été chargés avec succès`,
-            variant: "default",
-          });
-        }
-      }, [nodes.length, isLoading]);
-    
-      useEffect(() => {
-        if (error) {
-          toast({
-            title: "Erreur",
-            description: error,
-            variant: "destructive",
-          });
-        }
-      }, [error]);
+  // Local states
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
+  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-        // Utils
-        const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
-            return newNodes.map((node) => {
-                const existingNode = nodesRef.current.find((n) => n.id === node.id);
-                if (existingNode) {
-                    return {
-                        ...node,
-                        position: existingNode.position,
-                        selected: existingNode.selected,
-                        dragging: existingNode.dragging,
-                    };
-                }
-                return node;
-            });
-        }, []);
-    
-        const updateEdgesWithState = useCallback((newEdges: Edge[]) => {
-            return newEdges.map((edge) => {
-                const existingEdge = edgesRef.current.find((e) => e.id === edge.id);
-                if (existingEdge) {
-                 
-    
-              
-                    return {
-                        ...edge,
-                        selected: existingEdge.selected,
-                        animated: existingEdge.animated,
-                       /*  label: `${edge.data?.pidName} ` */
-                    };
-                }
-                return edge;
-            });
-        }, []);
-    
+  // Redux selectors
+  const nodes = useSelector(selectNodesForGraphMonitor);
+  const edges = useSelector(selectEdges);
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
 
-
-    // Communication and services
-    const service = useMemo(() => gpacService as GpacService, []);
-    const communication = useMemo(() => {
-        return service.getCommunicationAdapter();
-    }, [service]);
-
-
-    // Messages handlers
-    const messageHandler = useMemo<IGpacMessageHandler>(() => ({
-        onMessage(message: GpacMessage) {
-            console.log(`[GraphMonitor] Message received #${++renderCount.current}`, message);
-        },
-        onStatusChange(status: ConnectionStatus) {
-            dispatch(setLoading(status === ConnectionStatus.CONNECTING));
-        },
-        onError(error: GpacCommunicationError) {
-            console.error('[GraphMonitor] Error:', error);
-            setConnectionError(error.message);
-            dispatch(setError(error.message));
-        }
-    }), [dispatch]);
-
-    // Events handlers
-    const handleNodesChange = useCallback(
-      (changes: any[]) => {
-          onNodesChange(changes);
-  
-          // Update local nodes with new positions
-          setLocalNodes((prevNodes) => 
-              prevNodes.map((node) => {
-                  const change = changes.find((c) => c.id === node.id);
-                  return change && change.position
-                      ? { ...node, position: change.position }
-                      : node;
-              })
-          );
-  
-          nodesRef.current = localNodes;
-      },
-      [onNodesChange, localNodes],
+  const monitoredFilters = useSelector(
+    (state: RootState) => state.multiFilter.selectedFilters
   );
 
+  // Services
+  const service = useMemo(() => gpacService as GpacService, []);
+  const communication = useMemo(() => {
+    return service.getCommunicationAdapter();
+  }, [service]);
 
-    const handleEdgesChange = useCallback(
-        (changes: any[]) => {
-            onEdgesChange(changes);
-            edgesRef.current = localEdges.map((edge) => ({ ...edge }));
-        },
-        [localEdges, onEdgesChange],
-    );
+  // Handlers de message
+  const messageHandler = useMemo<IGpacMessageHandler>(
+    () => ({
+      onMessage(message: GpacMessage) {
+        console.log(`[GraphMonitor] Message received #${++renderCount.current}`, message);
+      },
+      onStatusChange(status: ConnectionStatus) {
+        dispatch(setLoading(status === ConnectionStatus.CONNECTING));
+      },
+      onError(gpacError: GpacCommunicationError) {
+        console.error('[GraphMonitor] Error:', gpacError);
+        setConnectionError(gpacError.message);
+        dispatch(setError(gpacError.message));
+      },
+    }),
+    [dispatch]
+  );
 
-    const onNodeClick = useCallback(
-        (event: React.MouseEvent, node: Node) => {
-            const nodeId = node.id;
-            const nodeData = node.data;
+  // Handlers p
+  const handleNodesChange = createHandleNodesChange({
+    onNodesChange,
+    localNodes,
+    setLocalNodes,
+    nodesRef,
+  });
 
-            dispatch(setSelectedFilterDetails(nodeData as unknown as GpacNodeData));
-            service.setCurrentFilterId(parseInt(nodeId));
-            service.getFilterDetails(parseInt(nodeId));
+  const handleEdgesChange = createHandleEdgesChange({
+    onEdgesChange,
+    localEdges,
+    edgesRef,
+  });
 
-            const isAlreadyMonitored = monitoredFilters.some((f) => f.id === nodeId);
-            if (!isAlreadyMonitored) {
-                dispatch(addSelectedFilter(nodeData as unknown as GpacNodeData));
-                service.subscribeToFilter(nodeId);
-            }
+  // Handler pour le clic sur un nœud
+  const onNodeClick = createOnNodeClick({
+    dispatch,
+    monitoredFilters,
+    service,
+    addSelectedFilter,
+    setSelectedNode,
+    setSelectedFilterDetails,
+  });
 
-            dispatch(setSelectedNode(nodeId));
-        },
-        [dispatch, monitoredFilters],
-    );
+  // Mise à jour mémorisée des nœuds et arêtes (positions, états)
+  const updatedNodes = useMemo(
+    () => updateNodesWithPositions(nodes, nodesRef),
+    [nodes, nodesRef]
+  );
 
-    // Memoization des données
-    const updatedNodes = useMemo(
-        () => updateNodesWithPositions(nodes),
-        [nodes, updateNodesWithPositions],
-    );
-    const updatedEdges = useMemo(
-        () => updateEdgesWithState(edges),
-        [edges, updateEdgesWithState],
-    );
+  const updatedEdges = useMemo(
+    () => updateEdgesWithState(edges, edgesRef),
+    [edges, edgesRef]
+  );
 
-    // Effets React existants avec nouvelle intégration
-    useEffect(() => {
-        if (updatedNodes.length > 0 || updatedEdges.length > 0) {
-            setLocalNodes(updatedNodes);
-            setLocalEdges(updatedEdges);
-            nodesRef.current = updatedNodes;
-            edgesRef.current = updatedEdges;
-        }
-    }, [updatedNodes, updatedEdges, setLocalNodes, setLocalEdges]);
-    useEffect(() => {
-      const cleanup = gpacService.connect()
-          .then(() => console.log('[useGraphMonitor] Connected to GPAC'))
-          .catch((error) => {
-              console.error('[useGraphMonitor] Connection error:', error);
-              setConnectionError(error.message);
-          });
-  
-      return () => {
-          cleanup.then(() => console.log('[useGraphMonitor] Disconnected from GPAC')).catch((error) => console.error('[useGraphMonitor] Disconnection error:', error)); // Nettoyage de la connexion et des handlers
-      };
-  }, [messageHandler]);
-  
+  //Connexion
+  useGraphMonitorConnection({
+    service,
+    setConnectionError,
+    messageHandler,
+  });
+
+  // Error
+  useGraphMonitorErrorEffect({
+    error,
+    setConnectionError,
+  });
+
+
   useEffect(() => {
-      if (error) {
-          console.error('[GraphMonitor] Error:', error);
-          setConnectionError(error);
-      }
-  }, [error]);
-  
+    if (nodes.length > 0 && !isLoading) {
+      toast({
+        title: 'Graph loaded',
+        description: `${nodes.length} node have been loaded`,
+        variant: 'default',
+      });
+    }
+  }, [nodes.length, isLoading, toast]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive',
+      });
+    }
+  }, [error, toast]);
+
+
+  useEffect(() => {
+    if (updatedNodes.length > 0 || updatedEdges.length > 0) {
+      setLocalNodes(updatedNodes);
+      setLocalEdges(updatedEdges);
+
+      nodesRef.current = updatedNodes;
+      edgesRef.current = updatedEdges;
+    }
+  }, [updatedNodes, updatedEdges, setLocalNodes, setLocalEdges]);
+
+  // Reconnexion
   const retryConnection = useCallback(() => {
-      setConnectionError(null);
-      communication.connect({
+    setConnectionError(null);
+    communication
+      .connect({
         address: 'ws://127.0.0.1:17815/rmt',
         maxReconnectAttempts: 5,
         reconnectDelay: 1000,
         maxDelay: 10000,
-    })
-          .then(() => console.log('[useGraphMonitor] Retry connection success'))
-          .catch((error) => {
-              console.error('[useGraphMonitor] Retry connection failed:', error);
-              setConnectionError(error.message);
-          });
-  }, []);
-  
-    return {
-        isLoading,
-        connectionError,
-        retryConnection,
-        localNodes,
-        localEdges,
-        handleNodesChange,
-        handleEdgesChange,
-        onNodeClick,
-    };
+      })
+      .then(() => console.log('[useGraphMonitor] Retry connection success'))
+      .catch((err) => {
+        console.error('[useGraphMonitor] Retry connection failed:', err);
+        setConnectionError(err.message);
+      });
+  }, [communication]);
+
+  return {
+    isLoading,
+    connectionError,
+    retryConnection,
+    localNodes,
+    localEdges,
+    handleNodesChange,
+    handleEdgesChange,
+    onNodeClick,
+  };
 };
 
 export default useGraphMonitor;

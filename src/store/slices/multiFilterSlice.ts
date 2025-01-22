@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { GpacNodeData } from '@/types/gpac/model';
 
-interface MonitoredFilter {
+export interface MonitoredFilter {
   id: string;
   nodeData: GpacNodeData;
 }
@@ -22,16 +22,16 @@ const multiFilterSlice = createSlice({
   name: 'multiFilter',
   initialState,
   reducers: {
-    addSelectedFilter(state, action: PayloadAction<GpacNodeData>) {
+    addSelectedFilter(state, action: PayloadAction<MonitoredFilter>) {
       if (state.selectedFilters.length > state.maxMonitors) {
         return;
       }
 
-      const filterId = action.payload.idx.toString();
+      const filterId = action.payload.nodeData.idx.toString();
       if (state.selectedFilters.some((filter) => filter.id === filterId)) {
         return;
       }
-      state.selectedFilters.push({ id: filterId, nodeData: action.payload });
+      state.selectedFilters.push({ id: filterId, nodeData: action.payload.nodeData });
       state.activeSubscriptions.push(filterId);
     },
     removeSelectedFilter: (state, action: PayloadAction<string>) => {

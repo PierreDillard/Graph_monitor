@@ -14,8 +14,8 @@ export class WebSocketBase {
 
     if (isConnected) {
       toastService.show({
-        title: "Connexion WebSocket",
-        description: "La connexion est active",
+        title: " WebSocket connexion",
+        description: "Connexion established",
         variant: "default"
       });
     }
@@ -38,8 +38,8 @@ export class WebSocketBase {
 
       this.socket.onopen = () => {
         toastService.show({
-          title: "Connexion établie",
-          description: `Connecté à ${address}`,
+          title: "Connexion established",
+          description: `Connected at ${address}`,
           variant: "default"
         });
         this.callMessageHandlers(
@@ -91,8 +91,8 @@ export class WebSocketBase {
           `[WebSocket] Connection closed: Code=${event.code}, Clean=${event.wasClean}, Reason=${event.reason || 'No reason provided'}`,
         );
         toastService.show({
-          title: "Connexion fermée",
-          description: event.reason || 'La connexion a été interrompue',
+          title: "Connexion closed",
+          description: event.reason || 'Connexion closed',
           variant: event.wasClean ? "default" : "destructive"
         });
         this.socket = null;
@@ -105,8 +105,8 @@ export class WebSocketBase {
       this.socket.onerror = (error) => {
         console.error('[WebSocket] Connection error:', error);
         toastService.show({
-          title: "Erreur WebSocket",
-          description: "Une erreur est survenue lors de la connexion",
+          title: "WebSocket error",
+          description: "An error occurred",
           variant: "destructive"
         });
       };
