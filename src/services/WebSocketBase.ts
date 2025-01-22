@@ -1,11 +1,26 @@
+import { toastService } from '../hooks/useToast';
+
+
+
 export class WebSocketBase {
+
   private socket: WebSocket | null = null;
   private messageHandlers: {
     [key: string]: ((connection: WebSocketBase, dataView: DataView) => void)[];
   } = {};
 
   public isConnected(): boolean {
-    return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
+    const isConnected = this.socket !== null && this.socket.readyState === WebSocket.OPEN;
+
+    if (isConnected) {
+      toastService.show({
+        title: "Connexion WebSocket",
+        description: "La connexion est active",
+        variant: "default"
+      });
+    }
+    
+    return isConnected;
   }
 
   public connect(address: string): void {
@@ -22,7 +37,11 @@ export class WebSocketBase {
       this.socket.binaryType = 'arraybuffer';
 
       this.socket.onopen = () => {
-        console.log('[WebSocket] Connection established');
+        toastService.show({
+          title: "Connexion établie",
+          description: `Connecté à ${address}`,
+          variant: "default"
+        });
         this.callMessageHandlers(
           '__OnConnect__',
           new DataView(new ArrayBuffer(0)),
@@ -71,6 +90,11 @@ export class WebSocketBase {
         console.log(
           `[WebSocket] Connection closed: Code=${event.code}, Clean=${event.wasClean}, Reason=${event.reason || 'No reason provided'}`,
         );
+        toastService.show({
+          title: "Connexion fermée",
+          description: event.reason || 'La connexion a été interrompue',
+          variant: event.wasClean ? "default" : "destructive"
+        });
         this.socket = null;
         this.callMessageHandlers(
           '__OnDisconnect__',
@@ -80,6 +104,11 @@ export class WebSocketBase {
 
       this.socket.onerror = (error) => {
         console.error('[WebSocket] Connection error:', error);
+        toastService.show({
+          title: "Erreur WebSocket",
+          description: "Une erreur est survenue lors de la connexion",
+          variant: "destructive"
+        });
       };
     } catch (error) {
       console.error('[WebSocket] Error creating connection:', error);

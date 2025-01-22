@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext } from 'react'
-import { useToast } from '@/hooks/useToast'
+import { useToast } from '../hooks/useToast'
 import { Toaster } from '../components/ui/toaster'
 
 type ToastContextType = ReturnType<typeof useToast>

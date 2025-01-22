@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import { RootState } from '../../../../store';
 import { GpacService, gpacService } from '../../../../services/gpacService';
+import { useToast } from '../../../../hooks/useToast';
 import {
   
     ConnectionStatus,
@@ -27,6 +28,9 @@ import { GpacNodeData } from '../../../../types/gpac/model';
 
 
 const useGraphMonitor = () => {
+    const { toast } = useToast();
+  
+
     // Refs
     const dispatch = useDispatch();
     const nodesRef = useRef<Node[]>([]);
@@ -44,6 +48,26 @@ const useGraphMonitor = () => {
     const monitoredFilters = useSelector(
         (state: RootState) => state.multiFilter.selectedFilters,
     );
+    useEffect(() => {
+        if (nodes.length > 0 && !isLoading) {
+          toast({
+            title: "Graphe chargé",
+            description: `${nodes.length} nœuds ont été chargés avec succès`,
+            variant: "default",
+          });
+        }
+      }, [nodes.length, isLoading]);
+    
+      useEffect(() => {
+        if (error) {
+          toast({
+            title: "Erreur",
+            description: error,
+            variant: "destructive",
+          });
+        }
+      }, [error]);
+
         // Utils
         const updateNodesWithPositions = useCallback((newNodes: Node[]) => {
             return newNodes.map((node) => {
