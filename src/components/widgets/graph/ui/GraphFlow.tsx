@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -7,6 +7,8 @@ import {
   BackgroundVariant,
   Node,
   Edge,
+  useReactFlow,
+  useViewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import Legend from '../../../common/Legend';
@@ -32,6 +34,28 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
   onEdgesChange,
   onNodeClick,
 }) => {
+  const { setViewport, setCenter } = useReactFlow();
+  const { zoom } = useViewport();
+
+
+  const handleMiniMapDrag = useCallback((event: React.DragEvent<SVGSVGElement>) => {
+
+    const svgElement = event.currentTarget;
+    const svgRect = svgElement.getBoundingClientRect();
+    
+ 
+    const x = (event.clientX - svgRect.left) / zoom;
+    const y = (event.clientY - svgRect.top) / zoom;
+
+    setViewport(
+      {
+        x: -x,
+        y: -y,
+        zoom,
+      },
+      { duration: 0 }
+    );
+  }, [setViewport, zoom]);
   return (
     <div style={flowStyles}>
       <ReactFlow
@@ -71,6 +95,8 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
           }}
           maskColor="rgba(0, 0, 0, 0.3)"
           className="bg-gray-800 border border-gray-700"
+
+          onDrag={handleMiniMapDrag}
         />
 
         {/* Légende */}
