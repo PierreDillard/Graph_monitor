@@ -7,36 +7,33 @@ import {
   maximizeWidget,
   restoreWidget,
 } from '../../store/slices/widgetsSlice';
-import { cn } from '../../utils/cn';
-import type { RootState } from '../../store';
 
+import type { RootState } from '../../store';
 
 interface WidgetWrapperProps {
   id: string;
   title: string;
+
   children: React.ReactNode;
   className?: string;
-  isResizable?: boolean;
-  minWidth?: number;
-  minHeight?: number;
-  maxWidth?: number;
-  maxHeight?: number;
-  onResize?: (width: number, height: number) => void; 
 }
 
+// Memoized styles
+const headerStyles = {
+  base: 'flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-600 transition-colors hover:bg-gray-650',
+  title: 'flex items-center gap-2',
+  actions: 'flex items-center gap-2',
+};
 
+const buttonStyles = {
+  base: 'p-1 hover:bg-gray-600 rounded text-gray-400 hover:text-white cursor-pointer no-drag z-50',
+};
 
 const WidgetWrapper = ({
   id,
   title,
   children,
   className = '',
-  isResizable =true,
-  minWidth = 320,
-  minHeight = 200, 
-  maxWidth,
-  maxHeight,
-  onResize,
 }: WidgetWrapperProps) => {
   const dispatch = useDispatch();
 
@@ -73,76 +70,46 @@ const WidgetWrapper = ({
     [dispatch, id],
   );
 
-  const containerStyles = React.useMemo(() => ({
-    minWidth: isMaximized ? 'auto' : minWidth,
-    minHeight: isMaximized ? 'auto' : minHeight,
-    maxWidth: isMaximized ? '100%' : maxWidth,
-    maxHeight: isMaximized ? '100%' : maxHeight,
-  }), [isMaximized, minWidth, minHeight, maxWidth, maxHeight]);
-
-  // Resize observer handler
-  const resizeObserverRef = React.useRef<ResizeObserver | null>(null);
-  
-  React.useEffect(() => {
-    if (!isResizable || isMaximized || !onResize) return;
-
-    const element = document.getElementById(`widget-${id}`);
-    if (!element) return;
-
-    resizeObserverRef.current = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      onResize(width, height);
-    });
-
-    resizeObserverRef.current.observe(element);
-    return () => {
-      resizeObserverRef.current?.disconnect();
-    };
-  }, [id, isResizable, isMaximized, onResize]);
+  //Memoized container classes
+  const containerClasses = React.useMemo(() => {
+    return [
+      'flex flex-col bg-gray-800 overflow-hidden rounded-lg',
+      isMaximized ? 'fixed inset-0 z-50' : '',
+      isMinimized ? 'h-12' : 'h-full',
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ');
+  }, [isMaximized, isMinimized, className]);
 
   return (
-    <div 
-      id={`widget-${id}`}
-      className={cn(
-        "flex flex-col bg-black overflow-hidden ml-0 mt-0 rounded-lg",
-        {
-          "fixed inset-0 z-50": isMaximized,
-          "h-12": isMinimized,
-          "h-full w-full": !isMinimized,
-          "resize": isResizable && !isMaximized && !isMinimized,
-        },
-        className
-      )}
-      style={containerStyles}
-    >
-      <div className={cn(
-        "flex items-center justify-between px-4 py-2",
-        "bg-gray-700 border-b border-gray-600",
-        "transition-colors hover:bg-gray-650",
-        "cursor-move drag-indicator"
-      )}>
-        <div className="flex items-center gap-2">
+    <div className={containerClasses}>
+      <div className={`${headerStyles.base} cursor-move drag-indicator`}>
+        <div className={headerStyles.title}>
           <h3 className="text-sm font-medium">{title}</h3>
-          <div>
-      
-          </div>
         </div>
 
-        <div className="flex items-center gap-2 no-drag">
+        <div className={`${headerStyles.actions} no-drag`}>
           {!isMaximized && !isMinimized && (
             <button
               onClick={handleMinimize}
-              className={cn(
-                "p-1 text-gray-400",
-                "hover:bg-gray-600 hover:text-white",
-                "rounded transition-colors",
-                "cursor-pointer"
-              )}
+              className={buttonStyles.base}
               title="Minimize"
               type="button"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4"/>
+              {/* Icon minimisé */}
+              <svg
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 12H4"
+                />
               </svg>
             </button>
           )}
@@ -150,18 +117,23 @@ const WidgetWrapper = ({
           {!isMaximized && (
             <button
               onClick={handleMaximize}
-              className={cn(
-                "p-1 text-gray-400",
-                "hover:bg-gray-600 hover:text-white",
-                "rounded transition-colors",
-                "cursor-pointer "
-              )}
+              className={buttonStyles.base}
               title="Maximize"
               type="button"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                      d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              {/* Icon maximisé */}
+              <svg
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+                />
               </svg>
             </button>
           )}
@@ -169,12 +141,7 @@ const WidgetWrapper = ({
           {isMaximized && (
             <button
               onClick={handleRestore}
-              className={cn(
-                "p-1 text-gray-400",
-                "hover:bg-gray-600 hover:text-white",
-                "rounded transition-colors",
-                "cursor-pointer z-50"
-              )}
+              className={buttonStyles.base}
               title="Restore"
               type="button"
             >
@@ -184,12 +151,7 @@ const WidgetWrapper = ({
 
           <button
             onClick={handleClose}
-            className={cn(
-                "p-1 text-gray-400",
-                "hover:bg-gray-600 hover:text-white",
-                "rounded transition-colors",
-                "cursor-pointer z-50"
-            )}
+            className={buttonStyles.base}
             title="Close widget"
             type="button"
           >
@@ -199,14 +161,13 @@ const WidgetWrapper = ({
       </div>
 
       {!isMinimized && (
-        <div className="flex-1 overflow-auto no-drag">
-          {children}
-        </div>
+        <div className="flex-1 overflow-auto no-drag">{children}</div>
       )}
     </div>
   );
 };
 
+// Ajout du displayName pour faciliter le debugging
 WidgetWrapper.displayName = 'WidgetWrapper';
 
 export default React.memo(WidgetWrapper);

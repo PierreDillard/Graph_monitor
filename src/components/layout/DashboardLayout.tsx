@@ -109,10 +109,10 @@ const DashboardLayout: React.FC = () => {
         </div>
 
  
-        <main className="flex-1 ml-64 p-6]">
+        <main className="flex-1 pl-64 p-6]">
           <ResponsiveGridLayout
          
-            className="layout"
+            className="layout "
             layouts={layouts}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
             cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
