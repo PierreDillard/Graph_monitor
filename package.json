@@ -8,6 +8,7 @@
     "start:gpac": "gpac -js=./server/mx.js",
     "start": "concurrently \"npm run start:gpac\" \"npm run dev\"",
     "build": "tsc && vite build",
+    "depcheck": "depcheck",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
@@ -38,7 +39,8 @@
     "react-responsive": "^10.0.0",
     "react-use": "^17.6.0",
     "recharts": "^2.13.3",
-    "tailwind-merge": "^2.5.5"
+    "tailwind-merge": "^2.5.5",
+    "unimported": "^1.31.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

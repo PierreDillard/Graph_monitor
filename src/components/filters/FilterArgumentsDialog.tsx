@@ -64,10 +64,15 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter })
         </button>
       </DialogTrigger>
       
-      <DialogContent className={cn(
-        "bg-gray-800 border-gray-700",
-        "text-gray-100 shadow-lg"
-      )}>
+      <DialogContent
+        className={cn(
+          "bg-gray-800 border-gray-700",
+          "text-gray-100 shadow-lg",
+          // Limite la largeur du contenu pour qu'il ne déborde pas
+          "max-w-[90vw] md:max-w-md",
+          "w-full"
+        )}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             {filter.name} Arguments
@@ -78,12 +83,14 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter })
         </DialogHeader>
 
         <div className="relative pt-4">
-          <div className={cn(
-            "space-y-4 max-h-[60vh] overflow-y-auto",
-            "pr-2 pb-2 -mr-2",
-            "scrollbar-thin scrollbar-thumb-gray-600",
-            "scrollbar-track-gray-800/50"
-          )}>
+          <div
+            className={cn(
+              "space-y-4 max-h-[60vh] overflow-y-auto",
+              "pr-2 pb-2 -mr-2",
+              "scrollbar-thin scrollbar-thumb-gray-600",
+              "scrollbar-track-gray-800/50"
+            )}
+          >
             {filter.gpac_args?.map((arg, index) => (
               <div 
                 key={index} 
@@ -95,20 +102,8 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter })
                 )}
               >
                 <div className="flex flex-col gap-2">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <h4 className="font-medium text-gray-100">
-                        {arg.name}
-                      </h4>
-                      {arg.desc && (
-                        <p className="text-sm text-gray-400 max-w-[300px]">
-                          {arg.desc}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-sm font-mono bg-gray-900/50 px-2 py-1 rounded">
-                      {arg.value !== undefined ? String(arg.value) : 'default'}
-                    </div>
+                  <div className="flex flex-col justify-between items-start w-1/2">
+             
                     <ArgumentDisplayValue 
                       value={arg.value}
                       isEditable={!!arg.update}
@@ -124,7 +119,7 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter })
         </div>
 
         <DialogFooter className="border-t border-gray-700 pt-4 mt-4">
-     
+          {/* Vous pouvez ajouter ici des boutons d'action si nécessaire */}
         </DialogFooter>
       </DialogContent>
     </Dialog>

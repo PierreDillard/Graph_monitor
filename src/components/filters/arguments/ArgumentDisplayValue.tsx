@@ -41,11 +41,4 @@ interface ArgumentDisplayValueProps {
       return String(val);
     };
   
-    return (
-      <div className={`font-mono text-sm p-1 rounded ${
-        isEditable ? 'bg-blue-900/20' : 'bg-gray-800'
-      }`}>
-        {formatValue(value)}
-      </div>
-    );
   };
