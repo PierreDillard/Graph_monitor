@@ -3,6 +3,7 @@ import { Node, Edge } from '@xyflow/react';
 import { throttle } from 'lodash';
 import { GpacNodeData } from '@/types/gpac/model';
 import { createNodeFromFilter, createEdgesFromFilters } from '../../components/widgets/graph/utils/GraphOperations';
+import { RootState } from '@/types/store';
 
 export interface GraphState {
   filters: GpacNodeData[];
@@ -106,5 +107,10 @@ export const {
   setSelectedFilterDetails,
   selectSelectedFilterDetails,
 } = graphSlice.actions;
+
+export const selectFilterNameById = (state: RootState, filterId: string) => {
+  const filter = state.graph.filters.find(f => f.idx.toString() === filterId);
+  return filter ? filter.name : '';
+};
 
 export default graphSlice.reducer;

@@ -23,8 +23,8 @@ interface ArgumentRule {
       type: T;
       desc?: string;
       default?: GPACTypes[T];
-      enums?: string[];
-      level?: 'normal' | 'advanced' | 'expert';
+      hint?: string;
+      min_max_enum?: string; 
     };
     value: GPACTypes[T] | undefined;
     onChange: (value: InputValue<T> | null) => void;

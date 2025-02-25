@@ -13,14 +13,18 @@ import {
 import { GPACArgumentType } from '../../types/gpac/arguments';
 import { InputValue } from '../../types/gpac/arguments';
 import { convertArgumentValue } from '../../utils/filtersArguments';
+import { updateFilterArgument } from '../../store/slices/filterArgumentSlice';
+import { useAppDispatch } from '../../hooks/redux';
 
 
 interface FilterArgumentBase {
   name: string;
   desc?: string;
-  level?: 'normal' | 'advanced' | 'expert';
+  hint?: string;
   default?: any;
-  enums?: string[];
+  min_max_enum?: string; 
+  update?: boolean;
+  update_sync?: boolean;  
 }
 
 interface FilterArgumentInputProps<T extends keyof GPACTypes = keyof GPACTypes> {
@@ -31,6 +35,7 @@ interface FilterArgumentInputProps<T extends keyof GPACTypes = keyof GPACTypes> 
   onChange: (value: InputValue<T> | null) => void;
   rules?: Record<string, any>;
   standalone?: boolean;
+  filterId?: string;
 }
 
 
@@ -40,20 +45,34 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
   onChange,
   rules,
   standalone = false,
+  filterId,
 }: FilterArgumentInputProps<T>) => {
 
   const [localValue, setLocalValue] = useState<InputValue<T> | undefined>(value);
   const firstRender = useFirstMountState();
-
+  const dispatch = useAppDispatch();
+ 
 
   useDebounce(
     () => {
       if (firstRender || localValue === value) return;
+      
       const convertedValue = convertArgumentValue(localValue, argument.type);
+      
+      // Call the parent onChange handler
       onChange(convertedValue);
+      
+      // If the argument is updatable and we have a filterId, dispatch the update action
+      if (argument.update && filterId) {
+        dispatch(updateFilterArgument(
+          filterId,
+          argument.name,
+          convertedValue
+        ));
+      }
     },
     1000,
-    [localValue]
+    [localValue, filterId, argument.update]
   );
 
 
