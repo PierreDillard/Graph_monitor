@@ -9,12 +9,14 @@ import {
   NumberInput,
   StringInput,
   FractionInput,
+  EnumInput,
 } from '../input/index';
 import { GPACArgumentType } from '../../types/gpac/arguments';
 import { InputValue } from '../../types/gpac/arguments';
 import { convertArgumentValue } from '../../utils/filtersArguments';
 import { updateFilterArgument } from '../../store/slices/filterArgumentSlice';
 import { useAppDispatch } from '../../hooks/redux';
+import { isEnumArgument } from '../../utils/filtersArguments';
 
 
 interface FilterArgumentBase {
@@ -71,7 +73,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
         ));
       }
     },
-    1000,
+    300,
     [localValue, filterId, argument.update]
   );
 
@@ -96,6 +98,28 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       },
       argument,
     };
+     // Détection des énumérations en vérifiant le min_max_enum
+  if (argument.min_max_enum && (
+    // Vérifier si c'est au format d'énumération
+    argument.min_max_enum.includes('|') || 
+    argument.min_max_enum.includes('=')
+  )) {
+    if (isEnumArgument(argument)) {
+    return (
+      <EnumInput
+      value={localValue as string | number}
+      onChange={(newValue) => {
+        // Nous nous assurons de ne jamais envoyer null pour un enum
+        handleLocalChange(newValue !== null ? newValue : 
+          // Utiliser la première option comme fallback
+          argument.min_max_enum?.split('|')[0]?.trim() || '');
+      }}
+      options={argument.min_max_enum || ''}
+      rules={inputProps.rules}
+    />
+    );
+  }
+  }
 
 
     switch (argument.type as GPACArgumentType) {
