@@ -1,5 +1,5 @@
 import { Settings } from 'lucide-react';
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Dialog,
   DialogContent,
@@ -9,8 +9,9 @@ import {
   DialogDescription,
   DialogFooter
 } from '../ui/dialog';
+
 import { GpacNodeData } from '../../types/gpac/model';
-import { FilterArgumentInput } from '../ui/FilterArgumentInput';
+import { FilterArgumentInput } from './FilterArgumentInput';
 import { useFilterArguments } from './hooks/useFilterArguments';
 import { ArgumentDisplayValue } from './arguments/ArgumentDisplayValue';
 import { cn } from '../../utils/cn';
