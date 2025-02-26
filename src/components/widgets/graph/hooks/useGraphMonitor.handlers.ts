@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Node, Edge } from '@xyflow/react';
-import { GpacNodeData } from '../../../../types/gpac/model';
+import { GpacNodeData } from '../../../../types/domain/gpac';
 import { MonitoredFilter } from '../../../../store/slices/multiFilterSlice';
 
 

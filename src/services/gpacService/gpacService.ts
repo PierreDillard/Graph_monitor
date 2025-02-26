@@ -1,11 +1,11 @@
 import { WebSocketBase } from '../WebSocketBase';
 import { store } from '../../store';
-import { GpacNodeData } from '../../types/gpac/index';
+import { GpacNodeData } from '../../types/domain/gpac/model';
 import { updateFilterData, setSelectedFilters } from '../../store/slices/multiFilterSlice';
 import { updateRealTimeMetrics } from '../../store/slices/filter-monitoringSlice';
 import { updateGraphData, setLoading, setError, setFilterDetails } from '../../store/slices/graphSlice';
 import { GpacCommunicationAdapter } from '../communication/adapters/GpacCommunicationAdapter';
-import { IGpacCommunication, GpacMessage } from '../communication/types/IgpacCommunication';
+import { IGpacCommunication, GpacMessage } from '../../types/communication/IgpacCommunication';
 import { throttle } from 'lodash';
 import { messageProcessor } from './messageProcessor';
 

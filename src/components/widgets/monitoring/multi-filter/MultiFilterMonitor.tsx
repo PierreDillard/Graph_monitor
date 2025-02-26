@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMultiFilterMonitor } from './hooks/useMultiFilterMonitor';
 import WidgetWrapper from '../../../common/WidgetWrapper';
-import { WidgetProps } from '../../../../types/widget';
+import { WidgetProps } from '../../../../types/ui/widget';
 import FilterCard from './components/FilterCard';
 
 

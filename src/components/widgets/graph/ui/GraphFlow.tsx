@@ -34,7 +34,7 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
   onEdgesChange,
   onNodeClick,
 }) => {
-  const { setViewport, setCenter } = useReactFlow();
+  const { setViewport } = useReactFlow();
   const { zoom } = useViewport();
 
 

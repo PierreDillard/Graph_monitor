@@ -1,5 +1,5 @@
-import { GPACTypes } from '../types/gpac/index';
-import { InputValue } from '../types/gpac/arguments';
+import { GPACTypes } from '../types/domain/gpac';
+import { InputValue } from '../types/domain/gpac';
 
 
 export function convertArgumentValue<T extends keyof GPACTypes>(

@@ -11,12 +11,12 @@ import {
   Legend,
 } from 'recharts';
 import { RootState } from '../../store';
-import { WidgetProps } from '../../types/widget';
+import { WidgetProps } from '../../types/ui/widget';
 import {
   MetricCardProps,
   ProcessingChartProps,
   FilterMetric,
-} from '../../types/filterMonitor';
+} from '../../types/domain/monitoring/filterMonitor';
 import WidgetWrapper from '../common/WidgetWrapper';
 import { addFilterMetric } from '../../store/slices/filter-monitoringSlice';
 import { formatBytes } from '../../utils/filterMonitorUtils';

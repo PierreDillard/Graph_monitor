@@ -1,5 +1,5 @@
 import React from 'react';
-import { GpacNodeData } from '../../../../../types/gpac/model';
+import { GpacNodeData } from '../../../../../types/domain/gpac';
 import BufferMonitoring from './BufferMonitoring';
 import AdvancedMetrics from '../../../../common/metrics/AdvancedMetrics';
 import { PIDMetricsCard } from './PIDMetricsCard';

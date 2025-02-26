@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { addWidget } from '../../store/slices/widgetsSlice';
-import { WidgetType } from '../../types/widget';
+import { WidgetType } from '../../types/ui/widget';
 
 import {
   Activity,

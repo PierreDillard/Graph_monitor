@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Widget, WidgetType, WidgetConfig } from '../../types/widget';
+import { Widget, WidgetType, WidgetConfig } from '../../types/ui/widget';
 import { createSelector } from '@reduxjs/toolkit';
 
 export interface RootState {

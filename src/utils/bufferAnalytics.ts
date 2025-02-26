@@ -1,4 +1,4 @@
-import { BufferMetrics } from '../types/bufferMetrics';
+import { BufferMetrics } from '../types/domain/monitoring';
 
 export function analyzeBufferMetrics(
   buffer: number,

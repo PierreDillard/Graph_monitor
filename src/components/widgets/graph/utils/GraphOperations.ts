@@ -1,5 +1,5 @@
-import { FilterType, GpacNodeData } from '../../../../types/gpac/model';
-import { Node, Edge, MarkerType, Handle, Position} from '@xyflow/react';
+import { FilterType, GpacNodeData } from '../../../../types/domain/gpac/index';
+import { Node, Edge, MarkerType, Position} from '@xyflow/react';
 
 
 

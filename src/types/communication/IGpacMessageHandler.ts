@@ -1,4 +1,4 @@
-import { ConnectionStatus, GpacMessage, GpacCommunicationError } from './IgpacCommunication';
+import { ConnectionStatus, GpacMessage, GpacCommunicationError } from '../communication/IgpacCommunication';
 
 /**
  * Handler interface for GPAC communication events.

@@ -1,4 +1,4 @@
-import { GPACTypes } from '../../../types/gpac/index'; 
+import { GPACTypes } from '../gpac/index'; 
 
 interface ArgumentRule {
     disabled?: boolean;

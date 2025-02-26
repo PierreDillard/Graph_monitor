@@ -4,7 +4,7 @@ import WidgetWrapper from '../../../common/WidgetWrapper';
 import LoadingState from '../../../common/LoadingState';
 import ConnectionErrorState from '../../../common/ConnectionErrorState';
 import GraphFlow from './GraphFlow';
-import { WidgetProps } from '../../../../types/widget';
+import { WidgetProps } from '../../../../types/ui/widget';
 import { Node, Edge } from '@xyflow/react';
 
 interface GraphMonitorUIProps extends WidgetProps {

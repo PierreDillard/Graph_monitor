@@ -2,15 +2,15 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import { RootState } from '../../../../store';
-import { GpacService, gpacService } from '../../../../services/gpacService';
+import { gpacService } from '../../../../services/gpacService';
 import { useToast } from '../../../../hooks/useToast';
 
 import {
   ConnectionStatus,
   GpacMessage,
   GpacCommunicationError,
-} from '../../../../services/communication/types/IgpacCommunication';
-import { IGpacMessageHandler } from '../../../../services/communication/types/IGpacMessageHandler';
+} from '../../../../types/communication/IgpacCommunication';
+import { IGpacMessageHandler } from '../../../../types/communication/IGpacMessageHandler';  
 
 import {
   setSelectedFilterDetails,
@@ -26,7 +26,7 @@ import {
   selectIsLoading,
   selectError,
 } from '../../../../store/selectors/graphSelectors';
-import { GpacNodeData } from '../../../../types/gpac/model';
+
 
 import {
   updateNodesWithPositions,
@@ -41,6 +41,8 @@ import {
   useGraphMonitorConnection,
   useGraphMonitorErrorEffect,
 } from './useGraphMonitor.effects';
+
+type GpacService = typeof gpacService;
 
 const useGraphMonitor = () => {
   const { toast } = useToast();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
-import { TimeFraction } from '../../../types/gpac/model';
+import { TimeFraction } from '../../../types/domain/gpac/index';
 
 interface FPSMetricProps {
   fps?: {

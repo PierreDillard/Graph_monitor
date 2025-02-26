@@ -1,11 +1,10 @@
-import { GpacNodeData } from '../types/gpac/model';
-import { TrendDirection } from '../types/bufferMetrics';
+import { GpacNodeData } from '../types/domain/gpac/model';
+import { TrendDirection } from '../types/domain/monitoring/bufferMetrics';
 
 // Types
 export type TrendType = 'up' | 'down' | 'stable';
 export type StatusColorType = string;
 
-// Constantes
 const STATUS_COLORS = {
   active: 'bg-green-500',
   warning: 'bg-yellow-500',

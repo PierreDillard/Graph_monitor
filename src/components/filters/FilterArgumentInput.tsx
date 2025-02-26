@@ -3,7 +3,7 @@ import { useDebounce, useFirstMountState } from 'react-use';
 import { Info } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { CustomTooltip } from '../ui/tooltip';
-import { GPACTypes } from '../../types/gpac/arguments';
+import { GPACTypes } from '../../types/domain/gpac/index';
 import {
   BooleanInput,
   NumberInput,
@@ -11,8 +11,8 @@ import {
   FractionInput,
   EnumInput,
 } from '../input/index';
-import { GPACArgumentType } from '../../types/gpac/arguments';
-import { InputValue } from '../../types/gpac/arguments';
+import { GPACArgumentType } from '../../types/domain/gpac/index';
+import { InputValue } from '../../types/domain/gpac/index';
 import { convertArgumentValue } from '../../utils/filtersArguments';
 import { updateFilterArgument } from '../../store/slices/filterArgumentSlice';
 import { useAppDispatch } from '../../hooks/redux';
@@ -98,9 +98,9 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       },
       argument,
     };
-     // Détection des énumérations en vérifiant le min_max_enum
+    
   if (argument.min_max_enum && (
-    // Vérifier si c'est au format d'énumération
+  
     argument.min_max_enum.includes('|') || 
     argument.min_max_enum.includes('=')
   )) {
@@ -109,9 +109,9 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       <EnumInput
       value={localValue as string | number}
       onChange={(newValue) => {
-        // Nous nous assurons de ne jamais envoyer null pour un enum
+       
         handleLocalChange(newValue !== null ? newValue : 
-          // Utiliser la première option comme fallback
+    
           argument.min_max_enum?.split('|')[0]?.trim() || '');
       }}
       options={argument.min_max_enum || ''}
@@ -159,7 +159,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
           <StringInput
             {...(inputProps as FilterArgumentInputProps<'str'>)}
             value={Array.isArray(localValue) ? localValue.join(',') : undefined}
-            onChange={(val) => 
+            onChange={(val: string | undefined) => 
               handleLocalChange(val ? val.split(',').filter(Boolean) : null)
             }
           />

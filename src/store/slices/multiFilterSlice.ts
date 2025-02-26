@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { GpacNodeData } from '@/types/gpac/model';
+import { GpacNodeData } from '../../types/domain/gpac';
 
 export interface MonitoredFilter {
   id: string;

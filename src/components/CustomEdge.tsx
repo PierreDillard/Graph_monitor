@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { EdgeProps, BaseEdge, EdgeLabelRenderer, Position } from '@xyflow/react';
-import { EdgeData } from '../types/gpac/model';
+import { EdgeData } from '../types/domain/gpac/index';
 
 interface CustomEdgeProps extends EdgeProps {
   sourceX: number;

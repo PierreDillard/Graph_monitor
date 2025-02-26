@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
-import { IGpacMessageHandler } from '../../../../services/communication/types/IGpacMessageHandler';
-import { GpacService } from '../../../../services/gpacService';
+import { IGpacMessageHandler } from '../../../../types/communication/index';
+import { gpacService } from '../../../../services/gpacService';
+
+
+type GpacService = typeof gpacService;
 
 interface ConnectionParams {
   service: GpacService;

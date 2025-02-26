@@ -4,11 +4,13 @@ import {
     GpacMessage,
     ConnectionStatus,
     GpacCommunicationError
-} from '../types/IgpacCommunication';
-import { IGpacMessageHandler } from '../types/IGpacMessageHandler';
-import { GpacService } from '../../gpacService';
+} from '../../../types/communication/IgpacCommunication';
+import { IGpacMessageHandler } from '../../../types/communication/IGpacMessageHandler';
+import { gpacService } from '../../gpacService';
 import { store } from '../../../store';
 import { setError, setLoading } from '../../../store/slices/graphSlice';
+
+type GpacService = typeof gpacService;
 
 /**
  * Adapts existing GpacService to IGpacCommunication interface.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { GpacNodeData } from '../../../../../types/gpac/model';
+import { GpacNodeData } from '../../../../../types/domain/gpac';
 import { formatBytes } from '../../../../../utils/filterMonitorUtils';
 import { Accordion, AccordionItem } from '../../../../ui/accordion';
 

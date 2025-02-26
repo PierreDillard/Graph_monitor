@@ -1,5 +1,5 @@
 import React from 'react';
-import { WidgetProps } from '../../../types/widget';
+import { WidgetProps } from '../../../types/ui/widget';
 import useGraphMonitor from './hooks/useGraphMonitor';
 import GraphMonitorUI from '../graph/ui/GraphMonitorUI';
 

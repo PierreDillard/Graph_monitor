@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { WidgetProps } from '../../../types/widget';
+import { WidgetProps } from '../../../types/ui/widget';
 import WidgetWrapper from '../../common/WidgetWrapper';
 import { RootState } from '../../../store';
-import { GpacNodeData } from '../../../types/gpac/model';
+import { GpacNodeData } from '../../../types/domain/gpac/index';
 import {
   extractResolution,
   extractCodec,
   calculateBitrate,
   extractFPS,
 } from './utils/videoUtils';
-import { VideoStats } from '../video/type/videoTypes';
+import { VideoStats } from '../../../types/ui/videoTypes';
 
 const VideoMonitor: React.FC<WidgetProps> = ({ id, title }) => {
   const videoRef = useRef<HTMLVideoElement>(null);

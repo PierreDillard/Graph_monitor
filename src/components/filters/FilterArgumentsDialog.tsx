@@ -1,6 +1,6 @@
 import { Settings, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { 
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter
 } from '../ui/dialog';
 import { Button } from '../ui/button';
-import { GpacNodeData } from '../../types/gpac/model';
+import { GpacNodeData } from '../../types/domain/gpac/index';
 import { FilterArgumentInput } from './FilterArgumentInput';
 import { ArgumentDisplayValue } from './arguments/ArgumentDisplayValue';
 import { cn } from '../../utils/cn';
