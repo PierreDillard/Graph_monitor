@@ -190,7 +190,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       )}
     >
       {/* Section titre et description */}
-      <div className="flex-1 flex items-center gap-2">
+ {/*      <div className="flex-1 flex items-center gap-2">
         <span className="font-medium text-sm">{argument.name}</span>
         {argument.desc && (
           <CustomTooltip
@@ -203,7 +203,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
                            hover:text-gray-300 transition-colors" />
           </CustomTooltip>
         )}
-      </div>
+      </div> */}
 
 
       <div className="flex-1">{renderInput()}</div>
