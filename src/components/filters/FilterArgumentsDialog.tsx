@@ -210,7 +210,10 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({ filter })
                       
                       {arg.min_max_enum && (
                         <p className="text-xs text-gray-500">
-                          Constraints: <span className="font-mono">{arg.min_max_enum}</span>
+                          Constraints:    <span className="font-mono max-w-[160px] inline-block  text-ellipsis whitespace-nowrap" 
+          title={arg.min_max_enum}>
+      {arg.min_max_enum}
+    </span>
                         </p>
                       )}
                     </div>
