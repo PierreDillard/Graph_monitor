@@ -1,54 +1,73 @@
-import { GPACTypes } from '../types/domain/gpac';
-import { InputValue } from '../types/domain/gpac';
 
 
-export function convertArgumentValue<T extends keyof GPACTypes>(
-    value: any,
-    type: T
-  ): InputValue<T> | null {
-    if (value === null || value === undefined) return null;
+export function convertArgumentValue(value: any, type: string): any {
+  if (value === null || value === undefined) return null;
   
-    switch (type) {
-      case 'bool':
-        return Boolean(value) as InputValue<T>;
-      case 'uint':
-      case 'sint':
-      case 'luint':
-      case 'lsint':
-      case 'flt':
-      case 'dbl':
-        return Number(value) as InputValue<T>;
-      case 'frac':
-      case 'lfrac':
-        return String(value) as InputValue<T>;
-      default:
-        return value as InputValue<T>;
-    }
+  // Handle specific types
+  switch (type) {
+    case 'bool':
+      return !!value;
+      
+    case 'uint':
+    case 'sint':
+    case 'luint':
+    case 'lsint':
+      return parseInt(value, 10);
+      
+    case 'flt':
+    case 'dbl':
+      return parseFloat(value);
+      
+    case 'frac':
+    case 'lfrac':
+      // Ensure consistent fraction format (num/den)
+      if (typeof value === 'string' && value.includes('/')) {
+        return value;
+      } else if (typeof value === 'object' && 'num' in value && 'den' in value) {
+        return `${value.num}/${value.den}`;
+      } else {
+        return `${value}/1`; // Default denominator
+      }
+      
+    // For list types, ensure they're properly formatted
+    case 'strl':
+    case 'uintl':
+    case 'sintl':
+    case '4ccl':
+      if (Array.isArray(value)) {
+        return value.join(',');
+      }
+      return String(value);
+      
+    default:
+      return String(value);
   }
+}
 
 
 /**
  * Determines if an argument is of enum type by analyzing its metadata
  */
 export function isEnumArgument(argument: any): boolean {
-
-  if (!argument) return false;
-  
-  
+  // Check for explicit enum type
   if (argument.type === 'enum') return true;
   
-  
+  // Check min_max_enum format that indicates an enum
   if (argument.min_max_enum && (
-    argument.min_max_enum.includes('|') 
+    argument.min_max_enum.includes('|') || 
+    argument.min_max_enum.includes('=')
   )) {
-    return true;
-  }
   
-  // Case 3: Detection by naming convention for certain known GPAC filters
-  const enumArgNames = ['mode', 'layout', 'preset', 'profile', 'level', 'format'];
-  if (enumArgNames.some(name => argument.name.toLowerCase().includes(name))) {
+    const parts = argument.min_max_enum.split('|');
+    if (parts.length > 1) {
+      // Multiple options separated by |
+      return true;
+    }
     
-    return !!argument.min_max_enum;
+    // Check for key=value pairs
+    if (parts[0].includes('=')) {
+      return true;
+    }
   }
   
   return false;

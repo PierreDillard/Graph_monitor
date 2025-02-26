@@ -59,23 +59,29 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
     () => {
       if (firstRender || localValue === value) return;
       
+      try {
       const convertedValue = convertArgumentValue(localValue, argument.type);
       
       // Call the parent onChange handler
       onChange(convertedValue);
       
       // If the argument is updatable and we have a filterId, dispatch the update action
-      if (argument.update && filterId) {
+      if (argument.update && filterId && !standalone) {
         dispatch(updateFilterArgument(
           filterId,
           argument.name,
           convertedValue
         ));
       }
-    },
-    300,
-    [localValue, filterId, argument.update]
-  );
+     } catch (error) {
+      console.error('Error converting value:', error);
+      // Reset to previous value on error
+      setLocalValue(value);
+    }
+  },
+  1000, 
+  [localValue, filterId, argument.update]
+);
 
 
   useEffect(() => {
@@ -107,12 +113,10 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
     if (isEnumArgument(argument)) {
     return (
       <EnumInput
-      value={localValue as string | number}
+      value={localValue as string}
       onChange={(newValue) => {
        
-        handleLocalChange(newValue !== null ? newValue : 
-    
-          argument.min_max_enum?.split('|')[0]?.trim() || '');
+        handleLocalChange(newValue !== null ? newValue : argument.default || '');
       }}
       options={argument.min_max_enum || ''}
       rules={inputProps.rules}
