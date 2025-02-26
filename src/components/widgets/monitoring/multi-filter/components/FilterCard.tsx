@@ -25,26 +25,24 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
         {/* header */}
         <header className="p-4 bg-gray-700 flex justify-center items-center ">
           <div className="flex-1">
-            <div className='flex'>
-            <span className='mr-6'>
-              <FilterArgumentsDialog filter={filter.nodeData} />
-            </span>
-            <h3 className="font-medium text-lg flex items-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  filter.nodeData.status?.includes('error')
-                    ? 'bg-red-500'
-                    : filter.nodeData.status?.includes('warning')
-                      ? 'bg-yellow-500'
-                      : 'bg-green-500'
-                }`}
-              />
-              {filter.nodeData.name}
-            </h3>
-        
-
+            <div className="flex">
+              <span className="mr-6">
+                <FilterArgumentsDialog filter={filter.nodeData} />
+              </span>
+              <h3 className="font-medium text-lg flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    filter.nodeData.status?.includes('error')
+                      ? 'bg-red-500'
+                      : filter.nodeData.status?.includes('warning')
+                        ? 'bg-yellow-500'
+                        : 'bg-green-500'
+                  }`}
+                />
+                {filter.nodeData.name}
+              </h3>
             </div>
-        
+
             <div className="flex items-center gap-4 text-sm text-gray-400">
               <span>{filter.nodeData.type}</span>
               <span className="text-xs px-2 py-0.5 bg-gray-600 rounded-full">
@@ -61,10 +59,8 @@ const FilterCard: React.FC<FilterCardProps> = React.memo(
           </button>
         </header>
 
-
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-4 p-4">
-       
             <section className="bg-gray-900 rounded-lg p-4 border border-gray-700/50">
               <PIDMetricsCard data={filter.nodeData} />
             </section>

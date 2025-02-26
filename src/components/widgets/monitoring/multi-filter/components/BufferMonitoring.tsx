@@ -63,10 +63,7 @@ const BufferMonitoring: React.FC<{
       {/* Input Buffers Accordion */}
       {data.nb_ipid > 0 && (
         <Accordion>
-          <AccordionItem 
-            value="input-buffers"
-            title="Input Buffers"
-          >
+          <AccordionItem value="input-buffers" title="Input Buffers">
             <div className="space-y-2">
               {Object.entries(data.ipid || {}).map(
                 ([name, pid]: [string, any]) => (
@@ -87,10 +84,7 @@ const BufferMonitoring: React.FC<{
       {/* Output Buffers Accordion */}
       {data.nb_opid > 0 && (
         <Accordion>
-          <AccordionItem 
-            value="output-buffers"
-            title="Output Buffers"
-          >
+          <AccordionItem value="output-buffers" title="Output Buffers">
             <div className="space-y-2">
               {Object.entries(data.opid || {}).map(
                 ([name, pid]: [string, any]) => (

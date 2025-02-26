@@ -1,7 +1,7 @@
 import React from 'react';
 import { GpacNodeData } from '../../../types/domain/gpac/model';
 import { Activity, Cpu, Package } from 'lucide-react';
-import { Accordion , AccordionItem } from '../../ui/accordion';
+import { Accordion, AccordionItem } from '../../ui/accordion';
 import FPSMetric from './FPSMetric';
 
 interface AdvancedMetricsProps {
@@ -24,7 +24,9 @@ const AdvancedMetrics: React.FC<AdvancedMetricsProps> = React.memo(
 
     return (
       <div className="space-y-4 mt-4">
-      <Accordion defaultExpanded={['codec','processing','performance','stats']}>    
+        <Accordion
+          defaultExpanded={['codec', 'processing', 'performance', 'stats']}
+        >
           {/* Section Codec Information */}
           <AccordionItem title="Codec Information" value="codec">
             <div className="space-y-2 bg-black p-3 rounded-lg">
@@ -99,7 +101,9 @@ const AdvancedMetrics: React.FC<AdvancedMetricsProps> = React.memo(
                 </div>
               </div>
               <div className="bg-black p3 rounded-lg text-center">
-                <div className="text-xs text-gray-400 mb-1">Interface Packets</div>
+                <div className="text-xs text-gray-400 mb-1">
+                  Interface Packets
+                </div>
                 <div className="font-medium text-indigo-400">
                   {data.pck_ifce_sent?.toLocaleString() ?? 0}
                 </div>

@@ -1,25 +1,23 @@
 import { toastService } from '../hooks/useToast';
 
-
-
 export class WebSocketBase {
-
   private socket: WebSocket | null = null;
   private messageHandlers: {
     [key: string]: ((connection: WebSocketBase, dataView: DataView) => void)[];
   } = {};
 
   public isConnected(): boolean {
-    const isConnected = this.socket !== null && this.socket.readyState === WebSocket.OPEN;
+    const isConnected =
+      this.socket !== null && this.socket.readyState === WebSocket.OPEN;
 
     if (isConnected) {
       toastService.show({
-        title: " WebSocket connexion",
-        description: "Connexion established",
-        variant: "default"
+        title: ' WebSocket connexion',
+        description: 'Connexion established',
+        variant: 'default',
       });
     }
-    
+
     return isConnected;
   }
 
@@ -38,9 +36,9 @@ export class WebSocketBase {
 
       this.socket.onopen = () => {
         toastService.show({
-          title: "Connexion established",
+          title: 'Connexion established',
           description: `Connected at ${address}`,
-          variant: "default"
+          variant: 'default',
         });
         this.callMessageHandlers(
           '__OnConnect__',
@@ -52,7 +50,7 @@ export class WebSocketBase {
         try {
           const dataView = new DataView(event.data);
 
-          // Pour les messages qui commencent par un caractère {
+            // For messages starting with a { character
           const firstChar = String.fromCharCode(dataView.getInt8(0));
           if (firstChar === '{') {
             console.log('[WebSocket] Message received:', firstChar);
@@ -70,7 +68,6 @@ export class WebSocketBase {
             );
             console.log('[WebSocket] Message received:', id);
 
-            // Essayer d'abord le handler spécifique
             const handlers = this.messageHandlers[id];
             if (handlers && handlers.length > 0) {
               handlers.forEach((handler) => handler(this, dataView));
@@ -78,7 +75,6 @@ export class WebSocketBase {
             }
           }
 
-          // Si aucun handler spécifique n'a été trouvé
           this.callMessageHandlers('__default__', dataView);
         } catch (error) {
           console.error('[WebSocket] Error processing message:', error);
@@ -91,9 +87,9 @@ export class WebSocketBase {
           `[WebSocket] Connection closed: Code=${event.code}, Clean=${event.wasClean}, Reason=${event.reason || 'No reason provided'}`,
         );
         toastService.show({
-          title: "Connexion closed",
+          title: 'Connexion closed',
           description: event.reason || 'Connexion closed',
-          variant: event.wasClean ? "default" : "destructive"
+          variant: event.wasClean ? 'default' : 'destructive',
         });
         this.socket = null;
         this.callMessageHandlers(
@@ -105,9 +101,9 @@ export class WebSocketBase {
       this.socket.onerror = (error) => {
         console.error('[WebSocket] Connection error:', error);
         toastService.show({
-          title: "WebSocket error",
-          description: "An error occurred",
-          variant: "destructive"
+          title: 'WebSocket error',
+          description: 'An error occurred',
+          variant: 'destructive',
         });
       };
     } catch (error) {
@@ -173,8 +169,8 @@ export class WebSocketBase {
   private callMessageHandlers(messageName: string, dataView: DataView): void {
     const handlers = this.messageHandlers[messageName];
     if (!handlers || handlers.length === 0) {
-      // Si pas de handler spécifique et ce n'est pas déjà le handler par défaut,
-      // essayer le handler par défaut
+      // If no specific handler and it's not already the default handler,
+      // try the default handler
       if (messageName !== '__default__') {
         const defaultHandlers = this.messageHandlers['__default__'];
         if (defaultHandlers) {

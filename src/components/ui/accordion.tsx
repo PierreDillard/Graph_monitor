@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
@@ -14,16 +13,16 @@ interface AccordionProps {
   defaultExpanded?: string[];
 }
 
-export const Accordion: React.FC<AccordionProps> = ({ 
-  children, 
-  defaultExpanded = [] 
+export const Accordion: React.FC<AccordionProps> = ({
+  children,
+  defaultExpanded = [],
 }) => {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(
-    new Set(defaultExpanded)
+    new Set(defaultExpanded),
   );
 
   const toggleExpanded = (value: string) => {
-    setExpandedItems(prev => {
+    setExpandedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(value)) {
         newSet.delete(value);
@@ -36,9 +35,7 @@ export const Accordion: React.FC<AccordionProps> = ({
 
   return (
     <AccordionContext.Provider value={{ expandedItems, toggleExpanded }}>
-      <div className="space-y-2">
-        {children}
-      </div>
+      <div className="space-y-2">{children}</div>
     </AccordionContext.Provider>
   );
 };
@@ -52,7 +49,7 @@ interface AccordionItemProps {
 export const AccordionItem: React.FC<AccordionItemProps> = ({
   title,
   children,
-  value
+  value,
 }) => {
   const context = useContext(AccordionContext);
   if (!context) throw new Error('AccordionItem must be used within Accordion');
@@ -78,9 +75,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
           isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="p-4 border-t border-gray-700">
-          {children}
-        </div>
+        <div className="p-4 border-t border-gray-700">{children}</div>
       </div>
     </div>
   );

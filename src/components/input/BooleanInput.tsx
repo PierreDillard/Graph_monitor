@@ -6,9 +6,13 @@ interface BooleanInputProps {
   rules?: { disabled?: boolean };
 }
 
-export const BooleanInput: React.FC<BooleanInputProps> = ({ value, onChange, rules }) => {
+export const BooleanInput: React.FC<BooleanInputProps> = ({
+  value,
+  onChange,
+  rules,
+}) => {
   return (
-    <Switch 
+    <Switch
       checked={value || false}
       onCheckedChange={onChange}
       disabled={rules?.disabled}

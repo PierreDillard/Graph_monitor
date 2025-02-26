@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { IGpacMessageHandler } from '../../../../types/communication/index';
 import { gpacService } from '../../../../services/gpacService';
 
-
 type GpacService = typeof gpacService;
 
 interface ConnectionParams {
@@ -28,7 +27,9 @@ export function useGraphMonitorConnection({
     return () => {
       cleanup
         .then(() => console.log('[useGraphMonitor] Disconnected from GPAC'))
-        .catch((err) => console.error('[useGraphMonitor] Disconnection error:', err));
+        .catch((err) =>
+          console.error('[useGraphMonitor] Disconnection error:', err),
+        );
     };
   }, [service, setConnectionError, messageHandler]);
 }

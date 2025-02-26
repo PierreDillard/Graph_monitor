@@ -3,7 +3,6 @@ import { Node, Edge } from '@xyflow/react';
 import { GpacNodeData } from '../../../../types/domain/gpac';
 import { MonitoredFilter } from '../../../../store/slices/multiFilterSlice';
 
-
 // =========================
 //       NODES HANDLER
 // =========================
@@ -31,12 +30,12 @@ export function createHandleNodesChange({
           return change && change.position
             ? { ...node, position: change.position }
             : node;
-        })
+        }),
       );
 
       nodesRef.current = localNodes;
     },
-    [onNodesChange, localNodes, setLocalNodes, nodesRef]
+    [onNodesChange, localNodes, setLocalNodes, nodesRef],
   );
 }
 
@@ -47,7 +46,6 @@ interface EdgesHandlerParams {
   onEdgesChange: (changes: any[]) => void;
   localEdges: Edge[];
   edgesRef: React.MutableRefObject<Edge[]>;
-
 }
 
 export function createHandleEdgesChange({
@@ -61,7 +59,7 @@ export function createHandleEdgesChange({
       // Update localEdges ref
       edgesRef.current = localEdges.map((edge) => ({ ...edge }));
     },
-    [onEdgesChange, localEdges, edgesRef]
+    [onEdgesChange, localEdges, edgesRef],
   );
 }
 
@@ -69,12 +67,15 @@ export function createHandleEdgesChange({
 //    ON NODE CLICK HANDLER
 // =========================
 interface OnNodeClickParams {
-  dispatch: Function; 
-  monitoredFilters:MonitoredFilter[];
-  service: any; 
-  addSelectedFilter: (payload: MonitoredFilter)  => void;
+  dispatch: Function;
+  monitoredFilters: MonitoredFilter[];
+  service: any;
+  addSelectedFilter: (payload: MonitoredFilter) => void;
   setSelectedNode: (nodeId: string) => { payload: string; type: string };
-  setSelectedFilterDetails: (data: GpacNodeData) => { payload: GpacNodeData; type: string };
+  setSelectedFilterDetails: (data: GpacNodeData) => {
+    payload: GpacNodeData;
+    type: string;
+  };
 }
 
 export function createOnNodeClick({
@@ -97,10 +98,10 @@ export function createOnNodeClick({
       const isAlreadyMonitored = monitoredFilters.some((f) => f.id === nodeId);
       if (!isAlreadyMonitored) {
         const monitoredFilter: MonitoredFilter = {
-            id: nodeId,
-            nodeData: nodeData as GpacNodeData,
-          };
-    
+          id: nodeId,
+          nodeData: nodeData as GpacNodeData,
+        };
+
         dispatch(addSelectedFilter(monitoredFilter));
         service.subscribeToFilter(nodeId);
       }
@@ -114,6 +115,6 @@ export function createOnNodeClick({
       addSelectedFilter,
       setSelectedFilterDetails,
       setSelectedNode,
-    ]
+    ],
   );
 }

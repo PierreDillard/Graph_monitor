@@ -3,7 +3,7 @@ import { Input } from '../ui/input';
 interface NumberInputProps {
   value?: number;
   onChange: (value: number | null) => void;
-  rules?: { 
+  rules?: {
     disabled?: boolean;
     min?: number;
     max?: number;
@@ -11,7 +11,11 @@ interface NumberInputProps {
   };
 }
 
-export const NumberInput: React.FC<NumberInputProps> = ({ value, onChange, rules }) => {
+export const NumberInput: React.FC<NumberInputProps> = ({
+  value,
+  onChange,
+  rules,
+}) => {
   return (
     <Input
       type="number"

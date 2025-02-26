@@ -31,7 +31,10 @@ const multiFilterSlice = createSlice({
       if (state.selectedFilters.some((filter) => filter.id === filterId)) {
         return;
       }
-      state.selectedFilters.push({ id: filterId, nodeData: action.payload.nodeData });
+      state.selectedFilters.push({
+        id: filterId,
+        nodeData: action.payload.nodeData,
+      });
       state.activeSubscriptions.push(filterId);
     },
     removeSelectedFilter: (state, action: PayloadAction<string>) => {

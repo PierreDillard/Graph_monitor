@@ -37,25 +37,25 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
   const { setViewport } = useReactFlow();
   const { zoom } = useViewport();
 
+  const handleMiniMapDrag = useCallback(
+    (event: React.DragEvent<SVGSVGElement>) => {
+      const svgElement = event.currentTarget;
+      const svgRect = svgElement.getBoundingClientRect();
 
-  const handleMiniMapDrag = useCallback((event: React.DragEvent<SVGSVGElement>) => {
+      const x = (event.clientX - svgRect.left) / zoom;
+      const y = (event.clientY - svgRect.top) / zoom;
 
-    const svgElement = event.currentTarget;
-    const svgRect = svgElement.getBoundingClientRect();
-    
- 
-    const x = (event.clientX - svgRect.left) / zoom;
-    const y = (event.clientY - svgRect.top) / zoom;
-
-    setViewport(
-      {
-        x: -x,
-        y: -y,
-        zoom,
-      },
-      { duration: 0 }
-    );
-  }, [setViewport, zoom]);
+      setViewport(
+        {
+          x: -x,
+          y: -y,
+          zoom,
+        },
+        { duration: 0 },
+      );
+    },
+    [setViewport, zoom],
+  );
   return (
     <div style={flowStyles}>
       <ReactFlow
@@ -68,11 +68,10 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
         minZoom={0.1}
         maxZoom={4}
         defaultEdgeOptions={{
-          type: 'smoothstep', 
+          type: 'smoothstep',
           animated: true,
-          style: { stroke: '#4b5563', strokeWidth: 2 }
+          style: { stroke: '#4b5563', strokeWidth: 2 },
         }}
-      
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={{ hideAttribution: true }}
         selectionKeyCode={null}
@@ -95,7 +94,6 @@ const GraphFlow: React.FC<GraphFlowProps> = ({
           }}
           maskColor="rgba(0, 0, 0, 0.3)"
           className="bg-gray-800 border border-gray-700"
-
           onDrag={handleMiniMapDrag}
         />
 

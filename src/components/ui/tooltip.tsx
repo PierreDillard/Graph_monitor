@@ -1,6 +1,6 @@
-import { cn } from "../../utils/cn";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import * as React from "react";
+import { cn } from '../../utils/cn';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import * as React from 'react';
 
 const TooltipProvider = TooltipPrimitive.Provider;
 
@@ -19,8 +19,8 @@ const TooltipContent = React.forwardRef<
     sideOffset={sideOffset}
     side={side}
     className={cn(
-      "z-50 overflow-hidden rounded-md bg-gray-900 border border-gray-700 px-3 py-2 text-sm text-gray-300 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
+      'z-50 overflow-hidden rounded-md bg-gray-900 border border-gray-700 px-3 py-2 text-sm text-gray-300 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+      className,
     )}
     {...props}
   />
@@ -31,21 +31,25 @@ interface CustomTooltipProps {
   content: string;
   children: React.ReactNode;
   side?: 'top' | 'right' | 'bottom' | 'left';
-  maxWidth?: string; // Valeur dynamique pour la largeur
-  maxHeight?: string; // Valeur dynamique pour la hauteur
+  maxWidth?: string;
+  maxHeight?: string; 
 }
 
- export const CustomTooltip: React.FC<CustomTooltipProps> = ({ content, children, side = 'top', maxWidth = "20rem", maxHeight = "8rem" }) => {
+export const CustomTooltip: React.FC<CustomTooltipProps> = ({
+  content,
+  children,
+  side = 'top',
+  maxWidth = '20rem',
+  maxHeight = '8rem',
+}) => {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          {children}
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent side={side}>
-          <div 
-            className="overflow-y-auto" 
-            style={{ maxWidth, maxHeight }} // Appliquer les valeurs dynamiques
+          <div
+            className="overflow-y-auto"
+            style={{ maxWidth, maxHeight }}
           >
             {content}
           </div>

@@ -23,7 +23,6 @@ import FilterMonitor from '../widgets/FilterMonitor';
 import MetricsMonitor from '../widgets/MetricsMonitor';
 import { Widget, WidgetType, WidgetComponent } from '../../types/ui/widget';
 
-
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const WIDGET_COMPONENTS: Record<
@@ -40,7 +39,6 @@ const WIDGET_COMPONENTS: Record<
 };
 
 const DashboardLayout: React.FC = () => {
-
   const isDesktop = useMediaQuery({ minWidth: 1200 });
   const isTablet = useMediaQuery({ minWidth: 768, maxWidth: 1199 });
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -101,17 +99,14 @@ const DashboardLayout: React.FC = () => {
         <Header />
       </div>
 
-  
       <div className="flex pt-16">
         {/* Sidebar fixe */}
         <div className="fixed left-0 top-16 bottom-0 w-64 z-10 bg-gray-800">
           <Sidebar />
         </div>
 
- 
         <main className="flex-1 pl-64 p-6]">
           <ResponsiveGridLayout
-         
             className="layout "
             layouts={layouts}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}

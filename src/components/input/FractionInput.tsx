@@ -1,16 +1,17 @@
-
 import { Input } from '../ui/input';
 import { useState, useEffect } from 'react';
 import { useDebounce, useFirstMountState } from 'react-use';
 import type { FilterArgumentInputProps } from '../../types/domain/gpac/index';
 
-export const FractionInput: React.FC<FilterArgumentInputProps<"frac">> = ({
+export const FractionInput: React.FC<FilterArgumentInputProps<'frac'>> = ({
   argument,
   value,
   onChange,
-  rules
+  rules,
 }) => {
-  const parseFraction = (val: string | number | undefined): [number, number] => {
+  const parseFraction = (
+    val: string | number | undefined,
+  ): [number, number] => {
     // if no value return [0, 1]
     if (val === undefined || val === null) {
       return [0, 1];
@@ -41,7 +42,9 @@ export const FractionInput: React.FC<FilterArgumentInputProps<"frac">> = ({
     return [0, 1];
   };
 
-  const [fraction, setFraction] = useState<[number, number]>(parseFraction(value));
+  const [fraction, setFraction] = useState<[number, number]>(
+    parseFraction(value),
+  );
   const firstRender = useFirstMountState();
 
   useDebounce(
@@ -50,7 +53,7 @@ export const FractionInput: React.FC<FilterArgumentInputProps<"frac">> = ({
       onChange(`${fraction[0]}/${fraction[1]}`);
     },
     1000,
-    [fraction]
+    [fraction],
   );
 
   useEffect(() => {
@@ -88,4 +91,3 @@ export const FractionInput: React.FC<FilterArgumentInputProps<"frac">> = ({
     </div>
   );
 };
-  

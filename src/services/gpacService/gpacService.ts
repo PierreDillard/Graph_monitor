@@ -1,11 +1,22 @@
 import { WebSocketBase } from '../WebSocketBase';
 import { store } from '../../store';
 import { GpacNodeData } from '../../types/domain/gpac/model';
-import { updateFilterData, setSelectedFilters } from '../../store/slices/multiFilterSlice';
+import {
+  updateFilterData,
+  setSelectedFilters,
+} from '../../store/slices/multiFilterSlice';
 import { updateRealTimeMetrics } from '../../store/slices/filter-monitoringSlice';
-import { updateGraphData, setLoading, setError, setFilterDetails } from '../../store/slices/graphSlice';
+import {
+  updateGraphData,
+  setLoading,
+  setError,
+  setFilterDetails,
+} from '../../store/slices/graphSlice';
 import { GpacCommunicationAdapter } from '../communication/adapters/GpacCommunicationAdapter';
-import { IGpacCommunication, GpacMessage } from '../../types/communication/IgpacCommunication';
+import {
+  IGpacCommunication,
+  GpacMessage,
+} from '../../types/communication/IgpacCommunication';
 import { throttle } from 'lodash';
 import { messageProcessor } from './messageProcessor';
 
@@ -35,7 +46,9 @@ export class GpacService {
   public onError?: (error: Error) => void;
   public onDisconnect?: () => void;
 
-  private constructor(private readonly address: string = DEFAULT_WS_CONFIG.address) {
+  private constructor(
+    private readonly address: string = DEFAULT_WS_CONFIG.address,
+  ) {
     this.ws = new WebSocketBase();
     this.setupWebSocketHandlers();
   }
@@ -145,7 +158,7 @@ export class GpacService {
       }
     },
     1000,
-    { leading: true, trailing: true }
+    { leading: true, trailing: true },
   );
 
   private setupWebSocketHandlers(): void {
@@ -220,7 +233,10 @@ export class GpacService {
 
   private handleDisconnect(): void {
     this.onDisconnect?.();
-    if (!this.isConnecting && this.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
+    if (
+      !this.isConnecting &&
+      this.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS
+    ) {
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       if (this.reconnectTimeout) {
         clearTimeout(this.reconnectTimeout);

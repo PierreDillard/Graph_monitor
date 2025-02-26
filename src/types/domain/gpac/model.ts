@@ -84,47 +84,40 @@ export interface GpacEdgeProps extends EdgeProps<EdgeData> {
 export interface GpacArgument {
   /** The name of the argument, used as the identifier when updating */
   name: string;
-  
+
   /** Optional description of the argument's purpose and functionality */
   desc?: string;
-  
+
   /** The current value of the argument */
   value?: any;
-  
+
   /** The data type of the argument (e.g., 'bool', 'uint', 'str', etc.) */
   type?: string;
-  
+
   /** Default value for the argument when not explicitly set */
   default?: any;
-  
+
   /** Additional information about the argument's usage or purpose */
   hint?: string;
-  
+
   /** String representing constraints like min/max values or enumeration options */
   min_max_enum?: string;
-  
+
   /** Indicates whether this argument can be updated at runtime */
   update?: boolean;
-  
+
   /** Indicates whether updates to this argument need to be synchronized */
   update_sync?: boolean;
-  
-  
+
   /** Minimum allowed value for numeric arguments */
   min?: number;
-  
+
   /** Maximum allowed value for numeric arguments */
   max?: number;
-  
+
   /** Step size for numeric argument inputs */
   step?: number;
-  
+
   /** For enumeration types, the list of possible values */
   enum_values?: string[];
 }
-
-
-
-
-
-

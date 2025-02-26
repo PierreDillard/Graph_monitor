@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
 import { GpacNodeData } from '../../../../types/domain/gpac';
-import { VideoStreamStats, UseVideoMonitorOptions } from '../../../../types/ui/videoTypes';
+import {
+  VideoStreamStats,
+  UseVideoMonitorOptions,
+} from '../../../../types/ui/videoTypes';
 
 export const useVideoMonitor = (options: UseVideoMonitorOptions = {}) => {
   const { updateInterval = 1000, enablePeakTracking = true } = options;

@@ -1,4 +1,3 @@
-
 import { DataViewReader } from '../DataViewReader';
 
 export const messageProcessor = {

@@ -2,7 +2,7 @@ import { Node, Edge } from '@xyflow/react';
 
 export function updateNodesWithPositions(
   newNodes: Node[],
-  nodesRef: React.MutableRefObject<Node[]>
+  nodesRef: React.MutableRefObject<Node[]>,
 ) {
   return newNodes.map((node) => {
     const existingNode = nodesRef.current.find((n) => n.id === node.id);
@@ -20,7 +20,7 @@ export function updateNodesWithPositions(
 
 export function updateEdgesWithState(
   newEdges: Edge[],
-  edgesRef: React.MutableRefObject<Edge[]>
+  edgesRef: React.MutableRefObject<Edge[]>,
 ) {
   return newEdges.map((edge) => {
     const existingEdge = edgesRef.current.find((e) => e.id === edge.id);

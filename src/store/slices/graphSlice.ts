@@ -2,7 +2,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Node, Edge } from '@xyflow/react';
 import { throttle } from 'lodash';
 import { GpacNodeData } from '../../types/domain/gpac';
-import { createNodeFromFilter, createEdgesFromFilters } from '../../components/widgets/graph/utils/GraphOperations';
+import {
+  createNodeFromFilter,
+  createEdgesFromFilters,
+} from '../../components/widgets/graph/utils/GraphOperations';
 import { RootState } from '../../types/core/store';
 
 export interface GraphState {
@@ -44,12 +47,10 @@ const graphSlice = createSlice({
     },
     updateGraphData: {
       reducer(state, action: PayloadAction<GpacNodeData[]>) {
-     
         state.filters = [];
         state.nodes = [];
         state.edges = [];
 
-      
         state.filters = action.payload;
         state.nodes = action.payload.map((f, i) =>
           createNodeFromFilter(f, i, []),
@@ -57,10 +58,13 @@ const graphSlice = createSlice({
         state.edges = createEdgesFromFilters(action.payload, []);
         state.lastUpdate = Date.now();
       },
-      prepare: throttle((data: GpacNodeData[]) => ({
-        payload: data,
-        meta: { throttle: THROTTLE_INTERVAL }
-      }), THROTTLE_INTERVAL)
+      prepare: throttle(
+        (data: GpacNodeData[]) => ({
+          payload: data,
+          meta: { throttle: THROTTLE_INTERVAL },
+        }),
+        THROTTLE_INTERVAL,
+      ),
     },
 
     updateLayout(
@@ -109,7 +113,7 @@ export const {
 } = graphSlice.actions;
 
 export const selectFilterNameById = (state: RootState, filterId: string) => {
-  const filter = state.graph.filters.find(f => f.idx.toString() === filterId);
+  const filter = state.graph.filters.find((f) => f.idx.toString() === filterId);
   return filter ? filter.name : '';
 };
 

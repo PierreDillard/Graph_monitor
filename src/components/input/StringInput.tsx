@@ -1,14 +1,13 @@
-
 import { Input } from '../ui/input';
 import { useState, useEffect } from 'react';
 import { useDebounce, useFirstMountState } from 'react-use';
 import type { FilterArgumentInputProps } from '../../types/domain/gpac/index';
 
-export const StringInput: React.FC<FilterArgumentInputProps<"str">> = ({ 
-  argument, 
-  value, 
-  onChange, 
-  rules 
+export const StringInput: React.FC<FilterArgumentInputProps<'str'>> = ({
+  argument,
+  value,
+  onChange,
+  rules,
 }) => {
   const [localValue, setLocalValue] = useState<string>(value ?? '');
   const firstRender = useFirstMountState();
@@ -19,7 +18,7 @@ export const StringInput: React.FC<FilterArgumentInputProps<"str">> = ({
       onChange(localValue || null);
     },
     1000,
-    [localValue]
+    [localValue],
   );
 
   useEffect(() => setLocalValue(value ?? ''), [value]);

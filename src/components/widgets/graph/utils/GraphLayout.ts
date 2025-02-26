@@ -18,7 +18,7 @@ export interface LayoutOptions {
 export function applyGraphLayout(
   nodes: Node[],
   edges: Edge[],
-  options: LayoutOptions = { type: LayoutType.HORIZONTAL }
+  options: LayoutOptions = { type: LayoutType.HORIZONTAL },
 ): Node[] {
   switch (options.type) {
     case LayoutType.DAGRE:
@@ -54,11 +54,11 @@ function applyVerticalLayout(nodes: Node[]): Node[] {
 function applyDagreLayout(
   nodes: Node[],
   edges: Edge[],
-  options: LayoutOptions
+  options: LayoutOptions,
 ): Node[] {
   // Create a new directed graph
   const g = new dagre.graphlib.Graph();
-  
+
   // Set graph direction and spacing options
   g.setGraph({
     rankdir: options.direction || 'LR',
@@ -67,7 +67,7 @@ function applyDagreLayout(
     marginx: 20,
     marginy: 20,
   });
- 
+
   g.setDefaultEdgeLabel(() => ({}));
 
   // Add nodes to the graph
@@ -89,23 +89,25 @@ function applyDagreLayout(
   // Apply the calculated layout to the nodes
   return nodes.map((node) => {
     const nodeWithPosition = { ...node };
-    
+
     // Respect existing positions if configured and the node already has a position
-    if (options.respectExistingPositions && 
-        node.position && 
-        node.position.x !== 0 && 
-        node.position.y !== 0) {
+    if (
+      options.respectExistingPositions &&
+      node.position &&
+      node.position.x !== 0 &&
+      node.position.y !== 0
+    ) {
       return nodeWithPosition;
     }
-    
+
     const dagreNode = g.node(node.id);
-    
+
     // Center the node on the calculated position
     nodeWithPosition.position = {
       x: dagreNode.x - (node.style?.width || 180) / 2,
       y: dagreNode.y - (node.style?.height || 60) / 2,
     };
-    
+
     return nodeWithPosition;
   });
 }

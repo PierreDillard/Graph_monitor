@@ -18,18 +18,19 @@ import { updateFilterArgument } from '../../store/slices/filterArgumentSlice';
 import { useAppDispatch } from '../../hooks/redux';
 import { isEnumArgument } from '../../utils/filtersArguments';
 
-
 interface FilterArgumentBase {
   name: string;
   desc?: string;
   hint?: string;
   default?: any;
-  min_max_enum?: string; 
+  min_max_enum?: string;
   update?: boolean;
-  update_sync?: boolean;  
+  update_sync?: boolean;
 }
 
-interface FilterArgumentInputProps<T extends keyof GPACTypes = keyof GPACTypes> {
+interface FilterArgumentInputProps<
+  T extends keyof GPACTypes = keyof GPACTypes,
+> {
   argument: FilterArgumentBase & {
     type: T;
   };
@@ -40,7 +41,6 @@ interface FilterArgumentInputProps<T extends keyof GPACTypes = keyof GPACTypes> 
   filterId?: string;
 }
 
-
 export const FilterArgumentInput = <T extends keyof GPACTypes>({
   argument,
   value,
@@ -49,50 +49,45 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
   standalone = false,
   filterId,
 }: FilterArgumentInputProps<T>) => {
-
-  const [localValue, setLocalValue] = useState<InputValue<T> | undefined>(value);
+  const [localValue, setLocalValue] = useState<InputValue<T> | undefined>(
+    value,
+  );
   const firstRender = useFirstMountState();
   const dispatch = useAppDispatch();
- 
 
   useDebounce(
     () => {
       if (firstRender || localValue === value) return;
-      
-      try {
-      const convertedValue = convertArgumentValue(localValue, argument.type);
-      
-      // Call the parent onChange handler
-      onChange(convertedValue);
-      
-      // If the argument is updatable and we have a filterId, dispatch the update action
-      if (argument.update && filterId && !standalone) {
-        dispatch(updateFilterArgument(
-          filterId,
-          argument.name,
-          convertedValue
-        ));
-      }
-     } catch (error) {
-      console.error('Error converting value:', error);
-      // Reset to previous value on error
-      setLocalValue(value);
-    }
-  },
-  1000, 
-  [localValue, filterId, argument.update]
-);
 
+      try {
+        const convertedValue = convertArgumentValue(localValue, argument.type);
+
+        // Call the parent onChange handler
+        onChange(convertedValue);
+
+        // If the argument is updatable and we have a filterId, dispatch the update action
+        if (argument.update && filterId && !standalone) {
+          dispatch(
+            updateFilterArgument(filterId, argument.name, convertedValue),
+          );
+        }
+      } catch (error) {
+        console.error('Error converting value:', error);
+        // Reset to previous value on error
+        setLocalValue(value);
+      }
+    },
+    1000,
+    [localValue, filterId, argument.update],
+  );
 
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
 
-
   const handleLocalChange = (newValue: any) => {
     setLocalValue(newValue);
   };
-
 
   const renderInput = () => {
     const inputProps = {
@@ -104,34 +99,32 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       },
       argument,
     };
-    
-  if (argument.min_max_enum && (
-  
-    argument.min_max_enum.includes('|') || 
-    argument.min_max_enum.includes('=')
-  )) {
-    if (isEnumArgument(argument)) {
-    return (
-      <EnumInput
-      value={localValue as string}
-      onChange={(newValue) => {
-       
-        handleLocalChange(newValue !== null ? newValue : argument.default || '');
-      }}
-      options={argument.min_max_enum || ''}
-      rules={inputProps.rules}
-    />
-    );
-  }
-  }
 
+    if (
+      argument.min_max_enum &&
+      (argument.min_max_enum.includes('|') ||
+        argument.min_max_enum.includes('='))
+    ) {
+      if (isEnumArgument(argument)) {
+        return (
+          <EnumInput
+            value={localValue as string}
+            onChange={(newValue) => {
+              handleLocalChange(
+                newValue !== null ? newValue : argument.default || '',
+              );
+            }}
+            options={argument.min_max_enum || ''}
+            rules={inputProps.rules}
+          />
+        );
+      }
+    }
 
     switch (argument.type as GPACArgumentType) {
       case 'bool':
         return (
-          <BooleanInput
-            {...(inputProps as FilterArgumentInputProps<'bool'>)}
-          />
+          <BooleanInput {...(inputProps as FilterArgumentInputProps<'bool'>)} />
         );
 
       case 'uint':
@@ -141,9 +134,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       case 'flt':
       case 'dbl':
         return (
-          <NumberInput
-            {...(inputProps as FilterArgumentInputProps<'uint'>)}
-          />
+          <NumberInput {...(inputProps as FilterArgumentInputProps<'uint'>)} />
         );
 
       case 'frac':
@@ -158,12 +149,11 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
       case 'uintl':
       case 'sintl':
       case '4ccl':
-      
         return (
           <StringInput
             {...(inputProps as FilterArgumentInputProps<'str'>)}
             value={Array.isArray(localValue) ? localValue.join(',') : undefined}
-            onChange={(val: string | undefined) => 
+            onChange={(val: string | undefined) =>
               handleLocalChange(val ? val.split(',').filter(Boolean) : null)
             }
           />
@@ -171,26 +161,22 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
 
       default:
         return (
-          <StringInput
-            {...(inputProps as FilterArgumentInputProps<'str'>)}
-          />
+          <StringInput {...(inputProps as FilterArgumentInputProps<'str'>)} />
         );
     }
   };
 
   if (standalone) return renderInput();
 
-
   return (
     <div
       className={cn(
         'flex items-center p-4 gap-4',
         'transition-all duration-200',
-      
       )}
     >
       {/* Section titre et description */}
- {/*      <div className="flex-1 flex items-center gap-2">
+      {/*      <div className="flex-1 flex items-center gap-2">
         <span className="font-medium text-sm">{argument.name}</span>
         {argument.desc && (
           <CustomTooltip
@@ -205,10 +191,7 @@ export const FilterArgumentInput = <T extends keyof GPACTypes>({
         )}
       </div> */}
 
-
       <div className="flex-1">{renderInput()}</div>
     </div>
   );
 };
-
-

@@ -10,7 +10,7 @@ import {
   GpacMessage,
   GpacCommunicationError,
 } from '../../../../types/communication/IgpacCommunication';
-import { IGpacMessageHandler } from '../../../../types/communication/IGpacMessageHandler';  
+import { IGpacMessageHandler } from '../../../../types/communication/IGpacMessageHandler';
 
 import {
   setSelectedFilterDetails,
@@ -26,7 +26,6 @@ import {
   selectIsLoading,
   selectError,
 } from '../../../../store/selectors/graphSelectors';
-
 
 import {
   updateNodesWithPositions,
@@ -65,7 +64,7 @@ const useGraphMonitor = () => {
   const error = useSelector(selectError);
 
   const monitoredFilters = useSelector(
-    (state: RootState) => state.multiFilter.selectedFilters
+    (state: RootState) => state.multiFilter.selectedFilters,
   );
 
   // Services
@@ -78,7 +77,10 @@ const useGraphMonitor = () => {
   const messageHandler = useMemo<IGpacMessageHandler>(
     () => ({
       onMessage(message: GpacMessage) {
-        console.log(`[GraphMonitor] Message received #${++renderCount.current}`, message);
+        console.log(
+          `[GraphMonitor] Message received #${++renderCount.current}`,
+          message,
+        );
       },
       onStatusChange(status: ConnectionStatus) {
         dispatch(setLoading(status === ConnectionStatus.CONNECTING));
@@ -89,7 +91,7 @@ const useGraphMonitor = () => {
         dispatch(setError(gpacError.message));
       },
     }),
-    [dispatch]
+    [dispatch],
   );
 
   // Handlers p
@@ -119,12 +121,12 @@ const useGraphMonitor = () => {
   // Mise à jour mémorisée des nœuds et arêtes (positions, états)
   const updatedNodes = useMemo(
     () => updateNodesWithPositions(nodes, nodesRef),
-    [nodes, nodesRef]
+    [nodes, nodesRef],
   );
 
   const updatedEdges = useMemo(
     () => updateEdgesWithState(edges, edgesRef),
-    [edges, edgesRef]
+    [edges, edgesRef],
   );
 
   //Connexion
@@ -139,7 +141,6 @@ const useGraphMonitor = () => {
     error,
     setConnectionError,
   });
-
 
   useEffect(() => {
     if (nodes.length > 0 && !isLoading) {
@@ -160,7 +161,6 @@ const useGraphMonitor = () => {
       });
     }
   }, [error, toast]);
-
 
   useEffect(() => {
     if (updatedNodes.length > 0 || updatedEdges.length > 0) {
