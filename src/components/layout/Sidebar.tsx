@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/hooks/redux';
 import { addWidget } from '../../store/slices/widgetsSlice';
 import { WidgetType } from '../../types/ui/widget';
 
@@ -42,7 +42,7 @@ const availableWidgets = [
     type: WidgetType.GRAPH,
     title: 'Pipeline Graph',
     icon: Share2,
-    defaultSize: { w: 8, h: 6 },
+    defaultSize: { w: 6, h: 8 },
   },
   {
     type: WidgetType.FILTER,
@@ -54,12 +54,12 @@ const availableWidgets = [
     type: WidgetType.MULTI_FILTER,
     title: 'Multi-Filter Monitor',
     icon: Layout,
-    defaultSize: { w: 12, h: 6 },
+    defaultSize: { w: 12, h: 4 },
   },
 ];
 
 const Sidebar: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleAddWidget = (
     type: WidgetType,

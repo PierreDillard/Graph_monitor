@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface ArgumentDisplayValueProps {
   value: any;
   isEditable?: boolean;
@@ -45,4 +47,6 @@ export const ArgumentDisplayValue: React.FC<ArgumentDisplayValueProps> = ({
     // Simple value
     return String(val);
   };
+
+  return <span className={isEditable ? 'cursor-pointer' : ''}>{formatValue(value)}</span>;
 };
