@@ -1,6 +1,5 @@
 import { Settings, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import {
   Dialog,
   DialogContent,
@@ -20,8 +19,7 @@ import {
   selectArgumentUpdate,
   updateFilterArgument,
 } from '../../store/slices/filterArgumentSlice';
-import { RootState } from '../../store';
-import { useAppDispatch } from '../../hooks/redux';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 
 interface FilterArgumentsDialogProps {
   filter: GpacNodeData;
@@ -36,7 +34,7 @@ const FilterArgumentsDialog: React.FC<FilterArgumentsDialogProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useAppDispatch();
 
-  const argumentUpdates = useSelector((state: RootState) =>
+  const argumentUpdates = useAppSelector((state ) =>
     filter.gpac_args?.reduce(
       (acc, arg) => {
         acc[arg.name] = selectArgumentUpdate(

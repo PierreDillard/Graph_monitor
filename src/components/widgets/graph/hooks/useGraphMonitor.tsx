@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
-import { RootState } from '../../../../store';
 import { gpacService } from '../../../../services/gpacService';
 import { useToast } from '../../../../hooks/useToast';
 
@@ -45,7 +44,7 @@ type GpacService = typeof gpacService;
 
 const useGraphMonitor = () => {
   const { toast } = useToast();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // Refs
   const nodesRef = useRef<Node[]>([]);
@@ -58,13 +57,13 @@ const useGraphMonitor = () => {
   const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Redux selectors
-  const nodes = useSelector(selectNodesForGraphMonitor);
-  const edges = useSelector(selectEdges);
-  const isLoading = useSelector(selectIsLoading);
-  const error = useSelector(selectError);
+  const nodes = useAppSelector(selectNodesForGraphMonitor);
+  const edges = useAppSelector(selectEdges);
+  const isLoading = useAppSelector(selectIsLoading);
+  const error = useAppSelector(selectError);
 
-  const monitoredFilters = useSelector(
-    (state: RootState) => state.multiFilter.selectedFilters,
+  const monitoredFilters = useAppSelector(
+    (state ) => state.multiFilter.selectedFilters,
   );
 
   // Services

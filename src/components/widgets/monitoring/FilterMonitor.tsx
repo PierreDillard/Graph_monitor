@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import {
   LineChart,
   Line,
@@ -137,11 +137,11 @@ const ProcessingChart: React.FC<ProcessingChartProps> = ({
 };
 
 const FilterMonitor: React.FC<WidgetProps> = ({ id, title }) => {
-  const dispatch = useDispatch();
-  const selectedFilter = useSelector(
-    (state: RootState) => state.graph.selectedFilterDetails,
+  const dispatch = useAppDispatch();
+  const selectedFilter = useAppSelector(
+    (state ) => state.graph.selectedFilterDetails,
   );
-  const filterHistory = useSelector((state: RootState) =>
+  const filterHistory = useAppSelector((state ) =>
     selectedFilter
       ? state.filterMonitoring.selectedFilterHistory[selectedFilter.idx]
       : [],

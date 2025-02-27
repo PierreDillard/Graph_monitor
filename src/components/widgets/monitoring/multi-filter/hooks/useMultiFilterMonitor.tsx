@@ -1,17 +1,17 @@
 import { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { gpacService } from '../../../../../services/gpacService';
 import { removeSelectedFilter } from '../../../../../store/slices/multiFilterSlice';
 import { setFilterDetails } from '../../../../../store/slices/graphSlice';
 import { RootState } from '../../../../../store';
 
 export const useMultiFilterMonitor = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
-  const selectedFilters = useSelector(
+  const selectedFilters = useAppSelector(
     (state: RootState) => state.multiFilter.selectedFilters,
   );
-  const isLoading = useSelector((state: RootState) => state.graph.isLoading);
+  const isLoading = useAppSelector((state ) => state.graph.isLoading);
 
   const handleCloseMonitor = useCallback(
     (filterId: string) => {

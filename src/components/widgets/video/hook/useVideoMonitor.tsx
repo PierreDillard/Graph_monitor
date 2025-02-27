@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/hooks/redux';
 import { RootState } from '../../../../store';
 import { GpacNodeData } from '../../../../types/domain/gpac';
 import {
@@ -35,7 +35,7 @@ export const useVideoMonitor = (options: UseVideoMonitorOptions = {}) => {
     },
   });
 
-  const selectedNode = useSelector(
+  const selectedNode = useAppSelector(
     (state: RootState) => state.graph.selectedFilterDetails,
   );
 

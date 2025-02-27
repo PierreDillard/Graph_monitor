@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import {
   Responsive,
   WidthProvider,
@@ -9,8 +9,6 @@ import {
 import 'react-grid-layout/css/styles.css';
 import { useMediaQuery } from 'react-responsive';
 import 'react-resizable/css/styles.css';
-
-import { RootState } from '../../store';
 import { updateWidgetPosition } from '../../store/slices/widgetsSlice';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -49,11 +47,11 @@ const DashboardLayout: React.FC = () => {
     return 'sm';
   };
 
-  const dispatch = useDispatch();
-  const activeWidgets = useSelector(
-    (state: RootState) => state.widgets.activeWidgets,
+  const dispatch = useAppDispatch();
+  const activeWidgets = useAppSelector(
+    (state) => state.widgets.activeWidgets,
   );
-  const configs = useSelector((state: RootState) => state.widgets.configs);
+  const configs = useAppSelector((state) => state.widgets.configs);
 
   const layouts: RGLLayouts = {
     lg: activeWidgets.map((widget) => ({

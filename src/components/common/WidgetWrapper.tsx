@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+
 import { X, RotateCcw } from 'lucide-react';
 import {
   removeWidget,
@@ -8,7 +9,6 @@ import {
   restoreWidget,
 } from '../../store/slices/widgetsSlice';
 
-import type { RootState } from '../../store';
 
 interface WidgetWrapperProps {
   id: string;
@@ -35,11 +35,11 @@ const WidgetWrapper = ({
   children,
   className = '',
 }: WidgetWrapperProps) => {
-  const dispatch = useDispatch();
+  const dispatch =useAppDispatch();
 
   // Memoized widget config
-  const config = useSelector(
-    (state: RootState) =>
+  const config = useAppSelector(
+    (state) =>
       state.widgets.configs[id] ?? {
         isMaximized: false,
         isMinimized: false,
