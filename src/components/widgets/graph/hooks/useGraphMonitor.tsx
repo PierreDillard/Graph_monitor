@@ -1,8 +1,16 @@
+// src/components/widgets/graph/hooks/useGraphMonitor.tsx
+
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import { gpacService } from '../../../../services/gpacService';
 import { useToast } from '../../../../hooks/useToast';
+import { 
+  LayoutType, 
+  LayoutOptions, 
+  applyGraphLayout, 
+  suggestLayoutOptions
+} from '../utils/GraphLayout';
 
 import {
   ConnectionStatus,
@@ -56,6 +64,28 @@ const useGraphMonitor = () => {
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState<Node>([]);
   const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  // Layout state
+  const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(() => {
+    // Try to load saved layout from localStorage
+    try {
+      const savedLayout = localStorage.getItem('gpacMonitorLayout');
+      if (savedLayout) {
+        return JSON.parse(savedLayout) as LayoutOptions;
+      }
+    } catch (e) {
+      console.error('Failed to load layout preferences:', e);
+    }
+    
+    // Default layout options
+    return {
+      type: LayoutType.DAGRE,
+      direction: 'LR',
+      nodeSeparation: 80,
+      rankSeparation: 200,
+      respectExistingPositions: true,
+    };
+  });
+
   // Redux selectors
   const nodes = useAppSelector(selectNodesForGraphMonitor);
   const edges = useAppSelector(selectEdges);
@@ -63,7 +93,7 @@ const useGraphMonitor = () => {
   const error = useAppSelector(selectError);
 
   const monitoredFilters = useAppSelector(
-    (state ) => state.multiFilter.selectedFilters,
+    (state) => state.multiFilter.selectedFilters,
   );
 
   // Services
@@ -71,6 +101,58 @@ const useGraphMonitor = () => {
   const communication = useMemo(() => {
     return service.getCommunicationAdapter();
   }, [service]);
+
+  // Apply layout function
+  const applyLayout = useCallback((respectPositions: boolean = true) => {
+    if (localNodes.length === 0) return;
+    
+    const currentOptions = {
+      ...layoutOptions,
+      respectExistingPositions: respectPositions,
+    };
+    
+    const layoutedNodes = applyGraphLayout(
+      localNodes,
+      localEdges.flat(),
+      currentOptions
+    );
+    
+    setLocalNodes(layoutedNodes);
+    nodesRef.current = layoutedNodes;
+  }, [localNodes, localEdges, layoutOptions, setLocalNodes]);
+
+  // Auto-layout function that suggests optimal layout
+  const autoLayout = useCallback(() => {
+    if (localNodes.length === 0) return;
+    
+    const suggestedOptions = suggestLayoutOptions(localNodes, localEdges.flat());
+    setLayoutOptions(suggestedOptions);
+    
+    // Apply the suggested layout immediately
+    const layoutedNodes = applyGraphLayout(
+      localNodes,
+      localEdges.flat(),
+      suggestedOptions
+    );
+    
+    setLocalNodes(layoutedNodes);
+    nodesRef.current = layoutedNodes;
+  }, [localNodes, localEdges, setLocalNodes]);
+
+  // Handle layout option changes
+  const handleLayoutChange = useCallback((newOptions: LayoutOptions) => {
+    setLayoutOptions(newOptions);
+    
+    // Apply the new layout
+    const layoutedNodes = applyGraphLayout(
+      localNodes,
+      localEdges.flat(),
+      newOptions
+    );
+    
+    setLocalNodes(layoutedNodes);
+    nodesRef.current = layoutedNodes;
+  }, [localNodes, localEdges, setLocalNodes]);
 
   // Handlers de message
   const messageHandler = useMemo<IGpacMessageHandler>(
@@ -93,7 +175,7 @@ const useGraphMonitor = () => {
     [dispatch],
   );
 
-  // Handlers p
+  // Handlers
   const handleNodesChange = createHandleNodesChange({
     onNodesChange,
     localNodes,
@@ -128,7 +210,7 @@ const useGraphMonitor = () => {
     [edges, edgesRef],
   );
 
-  //Connexion
+  // Connexion
   useGraphMonitorConnection({
     service,
     setConnectionError,
@@ -141,6 +223,7 @@ const useGraphMonitor = () => {
     setConnectionError,
   });
 
+  // Notifications
   useEffect(() => {
     if (nodes.length > 0 && !isLoading) {
       toast({
@@ -161,6 +244,7 @@ const useGraphMonitor = () => {
     }
   }, [error, toast]);
 
+  // Update local nodes and edges from redux
   useEffect(() => {
     if (updatedNodes.length > 0 || updatedEdges.length > 0) {
       setLocalNodes(updatedNodes);
@@ -170,6 +254,25 @@ const useGraphMonitor = () => {
       edgesRef.current = updatedEdges;
     }
   }, [updatedNodes, updatedEdges, setLocalNodes, setLocalEdges]);
+
+  // Apply layout when nodes change significantly
+  useEffect(() => {
+    if (updatedNodes.length > 0 && updatedNodes.length !== nodesRef.current.length) {
+      // Only auto-layout for significant changes to prevent layout jumps
+      autoLayout();
+    }
+  }, [updatedNodes.length, autoLayout]);
+
+  // Save layout preferences
+  useEffect(() => {
+    try {
+      if (layoutOptions.type) {
+        localStorage.setItem('gpacMonitorLayout', JSON.stringify(layoutOptions));
+      }
+    } catch (e) {
+      console.error('Failed to save layout preferences:', e);
+    }
+  }, [layoutOptions]);
 
   // Reconnexion
   const retryConnection = useCallback(() => {
@@ -197,6 +300,9 @@ const useGraphMonitor = () => {
     handleNodesChange,
     handleEdgesChange,
     onNodeClick,
+    layoutOptions,
+    handleLayoutChange,
+    autoLayout,
   };
 };
 
