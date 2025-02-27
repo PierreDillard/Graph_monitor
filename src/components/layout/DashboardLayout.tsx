@@ -19,7 +19,7 @@ import GraphMonitor from '../widgets/graph/GraphMonitor';
 import AudioMonitor from '../widgets/AudioMonitor';
 import VideoMonitor from '../widgets/video/VideoMonitor';
 import LogsMonitor from '../widgets/LogsMonitor';
-import FilterMonitor from '../widgets/FilterMonitor';
+import FilterMonitor from '../widgets/monitoring/FilterMonitor';
 import MetricsMonitor from '../widgets/MetricsMonitor';
 import { Widget, WidgetType, WidgetComponent } from '../../types/ui/widget';
 
