@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDebounce, useFirstMountState } from 'react-use';
-import { Info } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { CustomTooltip } from '../ui/tooltip';
 import { GPACTypes } from '../../types/domain/gpac/index';
 import {
   BooleanInput,

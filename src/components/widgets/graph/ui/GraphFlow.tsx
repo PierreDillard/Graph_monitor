@@ -9,6 +9,8 @@ import {
   Edge,
   useReactFlow,
   useViewport,
+  NodeChange,
+  EdgeChange
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import Legend from '../../../common/Legend';
@@ -16,8 +18,8 @@ import Legend from '../../../common/Legend';
 interface GraphFlowProps {
   nodes: Node[];
   edges: Edge[];
-  onNodesChange: any;
-  onEdgesChange: any;
+  onNodesChange: (changes: NodeChange[]) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
   onNodeClick: (event: React.MouseEvent, node: Node) => void;
 }
 
