@@ -1,5 +1,3 @@
-// src/components/widgets/graph/hooks/useGraphMonitor.tsx
-
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
@@ -58,6 +56,7 @@ const useGraphMonitor = () => {
   const nodesRef = useRef<Node[]>([]);
   const edgesRef = useRef<Edge[]>([]);
   const renderCount = useRef(0);
+  const isApplyingLayout = useRef(false); 
 
   // Local states
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -106,6 +105,9 @@ const useGraphMonitor = () => {
   const applyLayout = useCallback((respectPositions: boolean = true) => {
     if (localNodes.length === 0) return;
     
+    // Set flag to prevent state overrides during layout application
+    isApplyingLayout.current = true;
+    
     const currentOptions = {
       ...layoutOptions,
       respectExistingPositions: respectPositions,
@@ -119,11 +121,19 @@ const useGraphMonitor = () => {
     
     setLocalNodes(layoutedNodes);
     nodesRef.current = layoutedNodes;
+    
+    // Reset flag after React has processed state updates
+    setTimeout(() => {
+      isApplyingLayout.current = false;
+    }, 100);
   }, [localNodes, localEdges, layoutOptions, setLocalNodes]);
 
-  // Auto-layout function that suggests optimal layout
+  // Auto-layout function - Corrected implementation
   const autoLayout = useCallback(() => {
     if (localNodes.length === 0) return;
+    
+    // Set flag to prevent state overrides
+    isApplyingLayout.current = true;
     
     const suggestedOptions = suggestLayoutOptions(localNodes, localEdges.flat());
     setLayoutOptions(suggestedOptions);
@@ -137,10 +147,18 @@ const useGraphMonitor = () => {
     
     setLocalNodes(layoutedNodes);
     nodesRef.current = layoutedNodes;
+    
+    // Reset flag after React has processed state updates
+    setTimeout(() => {
+      isApplyingLayout.current = false;
+    }, 100);
   }, [localNodes, localEdges, setLocalNodes]);
 
-  // Handle layout option changes
+  // Handle layout option changes - Implementation is correct
   const handleLayoutChange = useCallback((newOptions: LayoutOptions) => {
+    // Set flag to prevent state overrides
+    isApplyingLayout.current = true;
+    
     setLayoutOptions(newOptions);
     
     // Apply the new layout
@@ -152,8 +170,12 @@ const useGraphMonitor = () => {
     
     setLocalNodes(layoutedNodes);
     nodesRef.current = layoutedNodes;
+    
+    // Reset flag after React has processed state updates
+    setTimeout(() => {
+      isApplyingLayout.current = false;
+    }, 100);
   }, [localNodes, localEdges, setLocalNodes]);
-
   // Handlers de message
   const messageHandler = useMemo<IGpacMessageHandler>(
     () => ({
@@ -246,7 +268,8 @@ const useGraphMonitor = () => {
 
   // Update local nodes and edges from redux
   useEffect(() => {
-    if (updatedNodes.length > 0 || updatedEdges.length > 0) {
+    // Only update if not currently applying a layout
+    if ((updatedNodes.length > 0 || updatedEdges.length > 0) && !isApplyingLayout.current) {
       setLocalNodes(updatedNodes);
       setLocalEdges(updatedEdges);
 
@@ -303,6 +326,7 @@ const useGraphMonitor = () => {
     layoutOptions,
     handleLayoutChange,
     autoLayout,
+    applyLayout
   };
 };
 
