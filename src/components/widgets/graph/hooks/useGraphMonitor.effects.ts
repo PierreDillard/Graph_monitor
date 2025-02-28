@@ -1,20 +1,20 @@
 import { useEffect } from 'react';
-import { IGpacMessageHandler } from '../../../../types/communication/index';
-import { gpacService } from '../../../../services/gpacService';
+import { IGpacMessageHandler } from '@/types/communication';
+import { useGpacService } from '@/hooks/useGpacService';
 
-type GpacService = typeof gpacService;
+
 
 interface ConnectionParams {
-  service: GpacService;
+
   setConnectionError: React.Dispatch<React.SetStateAction<string | null>>;
   messageHandler: IGpacMessageHandler;
 }
 
 export function useGraphMonitorConnection({
-  service,
   setConnectionError,
   messageHandler,
 }: ConnectionParams) {
+  const service = useGpacService();
   useEffect(() => {
     const cleanup = service
       .connect()
